@@ -244,9 +244,4 @@ docker exec bow_api php /var/www/html/vendor/bin/pest /var/www/html/tests/Unit/S
 docker exec bow_api php /var/www/html/vendor/bin/pest /var/www/html/tests/Unit/Services/RAGGovernanceTest.php
 docker exec bow_api php /var/www/html/vendor/bin/pest /var/www/html/tests/Unit/Services/ImportDeduplicationTest.php
 
-# Avec details
-docker exec bow_api php /var/www/html/vendor/bin/pest /var/www/html/tests/Unit/ --verbose
-
-# Filtrer par nom de test
-docker exec bow_api php /var/www/html/vendor/bin/pest /var/www/html/tests/Unit/ --filter="returns TIER_A"
 ```

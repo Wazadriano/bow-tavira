@@ -1,6 +1,5 @@
 <?php
 
-use Mockery;
 use App\Models\Risk;
 use App\Enums\RiskAppetiteStatus;
 use App\Services\RiskScoringService;
