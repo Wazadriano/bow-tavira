@@ -2,6 +2,7 @@
 
 use App\Models\Risk;
 use App\Services\RiskScoringService;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 beforeEach(function () {
     $this->service = new RiskScoringService;
@@ -28,8 +29,8 @@ function createRiskWithControls(array $attributes, array $controlEffectiveness =
         return $control;
     }, $controlEffectiveness));
 
-    // Mock la chaine riskControls()->with()->where()->get()
-    $queryMock = Mockery::mock();
+    // Mock HasMany pour satisfaire le type de retour
+    $queryMock = Mockery::mock(HasMany::class);
     $queryMock->shouldReceive('with')->andReturnSelf();
     $queryMock->shouldReceive('where')->andReturnSelf();
     $queryMock->shouldReceive('get')->andReturn($controls);

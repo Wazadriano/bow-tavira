@@ -3,6 +3,7 @@
 use App\Enums\RiskAppetiteStatus;
 use App\Models\Risk;
 use App\Services\RiskScoringService;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 beforeEach(function () {
     $this->service = new RiskScoringService;
@@ -26,8 +27,8 @@ function createRiskForAppetite(int $residualScore, ?int $appetiteThreshold = nul
     $risk->reputational_impact = 0;
     $risk->inherent_probability = 1;
 
-    // Mock controles vides (pas de reduction)
-    $queryMock = Mockery::mock();
+    // Mock HasMany pour satisfaire le type de retour
+    $queryMock = Mockery::mock(HasMany::class);
     $queryMock->shouldReceive('with')->andReturnSelf();
     $queryMock->shouldReceive('where')->andReturnSelf();
     $queryMock->shouldReceive('get')->andReturn(collect([]));
