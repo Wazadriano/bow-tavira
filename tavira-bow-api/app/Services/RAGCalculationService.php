@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\CurrentStatus;
 use App\Enums\RAGStatus;
 use App\Models\WorkItem;
 use App\Models\GovernanceItem;
@@ -15,7 +16,7 @@ class RAGCalculationService
     public function calculateWorkItemRAG(WorkItem $workItem): RAGStatus
     {
         // Completed items are always Blue
-        if ($workItem->current_status?->value === 'completed') {
+        if ($workItem->current_status === CurrentStatus::COMPLETED) {
             return RAGStatus::BLUE;
         }
 
@@ -39,7 +40,7 @@ class RAGCalculationService
         }
 
         // Within 14 days and not started = Amber
-        if ($daysUntilDeadline <= 14 && $workItem->current_status?->value === 'not_started') {
+        if ($daysUntilDeadline <= 14 && $workItem->current_status === CurrentStatus::NOT_STARTED) {
             return RAGStatus::AMBER;
         }
 
@@ -53,7 +54,7 @@ class RAGCalculationService
     public function calculateGovernanceRAG(GovernanceItem $item): RAGStatus
     {
         // Completed items are Blue
-        if ($item->status?->value === 'completed') {
+        if ($item->status === CurrentStatus::COMPLETED) {
             return RAGStatus::BLUE;
         }
 

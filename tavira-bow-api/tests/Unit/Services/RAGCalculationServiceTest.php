@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\CurrentStatus;
 use App\Enums\RAGStatus;
 use App\Models\WorkItem;
 use App\Services\RAGCalculationService;
@@ -15,55 +16,37 @@ beforeEach(function () {
 // ============================================
 
 it('returns BLUE for completed work items', function () {
-    $item = new WorkItem(['deadline' => Carbon::now()->addDays(30)]);
-    $item->current_status = new class {
-        public string $value = 'completed';
-    };
+    $item = new WorkItem(['deadline' => Carbon::now()->addDays(30), 'current_status' => CurrentStatus::COMPLETED]);
 
     expect($this->service->calculateWorkItemRAG($item))->toBe(RAGStatus::BLUE);
 });
 
 it('returns GREEN when no deadline is set', function () {
-    $item = new WorkItem(['deadline' => null]);
-    $item->current_status = new class {
-        public string $value = 'in_progress';
-    };
+    $item = new WorkItem(['deadline' => null, 'current_status' => CurrentStatus::IN_PROGRESS]);
 
     expect($this->service->calculateWorkItemRAG($item))->toBe(RAGStatus::GREEN);
 });
 
 it('returns GREEN when deadline is more than 14 days away', function () {
-    $item = new WorkItem(['deadline' => Carbon::now()->addDays(20)]);
-    $item->current_status = new class {
-        public string $value = 'in_progress';
-    };
+    $item = new WorkItem(['deadline' => Carbon::now()->addDays(20), 'current_status' => CurrentStatus::IN_PROGRESS]);
 
     expect($this->service->calculateWorkItemRAG($item))->toBe(RAGStatus::GREEN);
 });
 
 it('returns AMBER when deadline is within 7 days', function () {
-    $item = new WorkItem(['deadline' => Carbon::now()->addDays(5)]);
-    $item->current_status = new class {
-        public string $value = 'in_progress';
-    };
+    $item = new WorkItem(['deadline' => Carbon::now()->addDays(5), 'current_status' => CurrentStatus::IN_PROGRESS]);
 
     expect($this->service->calculateWorkItemRAG($item))->toBe(RAGStatus::AMBER);
 });
 
 it('returns AMBER when not started and deadline within 14 days', function () {
-    $item = new WorkItem(['deadline' => Carbon::now()->addDays(10)]);
-    $item->current_status = new class {
-        public string $value = 'not_started';
-    };
+    $item = new WorkItem(['deadline' => Carbon::now()->addDays(10), 'current_status' => CurrentStatus::NOT_STARTED]);
 
     expect($this->service->calculateWorkItemRAG($item))->toBe(RAGStatus::AMBER);
 });
 
 it('returns RED when deadline is past', function () {
-    $item = new WorkItem(['deadline' => Carbon::now()->subDays(1)]);
-    $item->current_status = new class {
-        public string $value = 'in_progress';
-    };
+    $item = new WorkItem(['deadline' => Carbon::now()->subDays(1), 'current_status' => CurrentStatus::IN_PROGRESS]);
 
     expect($this->service->calculateWorkItemRAG($item))->toBe(RAGStatus::RED);
 });
@@ -73,19 +56,13 @@ it('returns RED when deadline is past', function () {
 // ============================================
 
 it('returns AMBER when deadline is exactly 7 days away', function () {
-    $item = new WorkItem(['deadline' => Carbon::now()->addDays(7)]);
-    $item->current_status = new class {
-        public string $value = 'in_progress';
-    };
+    $item = new WorkItem(['deadline' => Carbon::now()->addDays(7), 'current_status' => CurrentStatus::IN_PROGRESS]);
 
     expect($this->service->calculateWorkItemRAG($item))->toBe(RAGStatus::AMBER);
 });
 
 it('returns BLUE regardless of deadline when completed', function () {
-    $item = new WorkItem(['deadline' => Carbon::now()->subDays(30)]);
-    $item->current_status = new class {
-        public string $value = 'completed';
-    };
+    $item = new WorkItem(['deadline' => Carbon::now()->subDays(30), 'current_status' => CurrentStatus::COMPLETED]);
 
     expect($this->service->calculateWorkItemRAG($item))->toBe(RAGStatus::BLUE);
 });
