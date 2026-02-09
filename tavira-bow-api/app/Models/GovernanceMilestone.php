@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\RAGStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\User;
 
 class GovernanceMilestone extends Model
 {
@@ -16,6 +17,7 @@ class GovernanceMilestone extends Model
         'completion_date',
         'rag_status',
         'order',
+        'owner_id',
     ];
 
     protected function casts(): array
@@ -33,6 +35,11 @@ class GovernanceMilestone extends Model
     public function governanceItem(): BelongsTo
     {
         return $this->belongsTo(GovernanceItem::class);
+    }
+
+    public function owner(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'owner_id');
     }
 
     // ========== Scopes ==========

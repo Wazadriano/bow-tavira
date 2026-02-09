@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class WorkItemController extends Controller
 {
@@ -236,7 +237,7 @@ class WorkItemController extends Controller
         return response()->json([
             'events' => $items->map(fn ($item) => [
                 'id' => $item->id,
-                'title' => $item->ref_no.' - '.\Str::limit($item->description, 50),
+                'title' => $item->ref_no.' - '.Str::limit($item->description, 50),
                 'start' => $item->deadline->toDateString(),
                 'color' => $this->getRagColor($item->rag_status?->value),
                 'extendedProps' => [

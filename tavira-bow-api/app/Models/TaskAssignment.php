@@ -37,11 +37,11 @@ class TaskAssignment extends Model
 
     public function scopeOwners($query)
     {
-        return $query->where('assignment_type', AssignmentType::Owner);
+        return $query->where('assignment_type', AssignmentType::OWNER);
     }
 
     public function scopeMembers($query)
     {
-        return $query->where('assignment_type', AssignmentType::Member);
+        return $query->where('assignment_type', AssignmentType::MEMBER);
     }
 }
