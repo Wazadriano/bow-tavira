@@ -11,8 +11,8 @@ return new class extends Migration
         Schema::create('governance_milestones', function (Blueprint $table) {
             $table->id();
             $table->foreignId('governance_item_id')
-                  ->constrained()
-                  ->onDelete('cascade');
+                ->constrained()
+                ->onDelete('cascade');
             $table->string('title');
             $table->text('description')->nullable();
             $table->date('target_date');

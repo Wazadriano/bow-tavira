@@ -12,7 +12,9 @@ class ImportCompletedNotification extends Notification implements ShouldQueue
     use Queueable;
 
     private string $importType;
+
     private array $results;
+
     private bool $failed;
 
     public function __construct(string $importType, array $results, bool $failed = false)
@@ -38,7 +40,7 @@ class ImportCompletedNotification extends Notification implements ShouldQueue
         if ($this->failed) {
             $mail->error()
                 ->line("Your import of {$this->importType} has failed.")
-                ->line("Error: " . ($this->results['errors'][0] ?? 'Unknown error'));
+                ->line('Error: '.($this->results['errors'][0] ?? 'Unknown error'));
         } else {
             $mail->success()
                 ->line("Your import of {$this->importType} has completed successfully.")
@@ -47,8 +49,8 @@ class ImportCompletedNotification extends Notification implements ShouldQueue
                 ->line("Updated: {$this->results['updated']}")
                 ->line("Skipped: {$this->results['skipped']}");
 
-            if (!empty($this->results['errors'])) {
-                $mail->line("Errors encountered: " . count($this->results['errors']));
+            if (! empty($this->results['errors'])) {
+                $mail->line('Errors encountered: '.count($this->results['errors']));
             }
         }
 

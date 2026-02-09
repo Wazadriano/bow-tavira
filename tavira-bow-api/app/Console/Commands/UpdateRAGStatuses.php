@@ -9,6 +9,7 @@ use Illuminate\Console\Command;
 class UpdateRAGStatuses extends Command
 {
     protected $signature = 'rag:update {--type=all : Type to update (workitems, governance, risks, all)}';
+
     protected $description = 'Update RAG statuses for work items, governance items, and risk scores';
 
     public function handle(RAGCalculationService $ragService, RiskScoringService $riskService): int

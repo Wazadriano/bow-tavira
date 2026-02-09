@@ -29,7 +29,7 @@ class WorkItemController extends Controller
             ->with(['responsibleParty', 'assignments.user']);
 
         // Non-admins only see items from departments they have access to
-        if (!$user->isAdmin()) {
+        if (! $user->isAdmin()) {
             $departments = $user->departmentPermissions()
                 ->where('can_view', true)
                 ->pluck('department')
@@ -192,7 +192,7 @@ class WorkItemController extends Controller
         $workitem->update($request->only(['current_status', 'rag_status', 'monthly_update']));
 
         // Auto-set completion date
-        if ($request->current_status === 'Completed' && !$workitem->completion_date) {
+        if ($request->current_status === 'Completed' && ! $workitem->completion_date) {
             $workitem->update(['completion_date' => now()]);
         }
 
@@ -213,7 +213,7 @@ class WorkItemController extends Controller
             ->select('id', 'ref_no', 'description', 'deadline', 'rag_status', 'current_status', 'department');
 
         // Non-admins only see items from their departments
-        if (!$user->isAdmin()) {
+        if (! $user->isAdmin()) {
             $departments = $user->departmentPermissions()
                 ->where('can_view', true)
                 ->pluck('department')
@@ -234,9 +234,9 @@ class WorkItemController extends Controller
         $items = $query->get();
 
         return response()->json([
-            'events' => $items->map(fn($item) => [
+            'events' => $items->map(fn ($item) => [
                 'id' => $item->id,
-                'title' => $item->ref_no . ' - ' . \Str::limit($item->description, 50),
+                'title' => $item->ref_no.' - '.\Str::limit($item->description, 50),
                 'start' => $item->deadline->toDateString(),
                 'color' => $this->getRagColor($item->rag_status?->value),
                 'extendedProps' => [

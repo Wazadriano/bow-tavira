@@ -17,9 +17,9 @@ return new class extends Migration
             $table->string('location')->default('Global');           // GovernanceLocation enum
             $table->string('department');                            // Department
             $table->foreignId('responsible_party_id')
-                  ->nullable()
-                  ->constrained('users')
-                  ->nullOnDelete();
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
             $table->string('current_status')->default('Not Started');
             $table->string('rag_status')->nullable();                // RAG status
             $table->date('deadline')->nullable();                    // Due date

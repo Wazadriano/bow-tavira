@@ -186,7 +186,7 @@ export default function RisksDashboardPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5 text-red-500" />
-                Depassements d'Appetit
+                Depassements d&apos;Appetit
               </CardTitle>
             </CardHeader>
             <CardContent>

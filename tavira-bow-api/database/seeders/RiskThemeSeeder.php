@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\RiskTheme;
 use App\Models\RiskCategory;
+use App\Models\RiskTheme;
 use Illuminate\Database\Seeder;
 
 class RiskThemeSeeder extends Seeder

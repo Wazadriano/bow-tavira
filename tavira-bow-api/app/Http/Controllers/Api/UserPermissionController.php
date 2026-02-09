@@ -5,14 +5,15 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\UserDepartmentPermission;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class UserPermissionController extends Controller
 {
     public function index(User $user): JsonResponse
     {
         $permissions = $user->departmentPermissions()->with('user')->get();
+
         return response()->json($permissions);
     }
 
@@ -27,6 +28,7 @@ class UserPermissionController extends Controller
         ]);
 
         $permission = $user->departmentPermissions()->create($validated);
+
         return response()->json($permission, 201);
     }
 
@@ -40,12 +42,14 @@ class UserPermissionController extends Controller
         ]);
 
         $permission->update($validated);
+
         return response()->json($permission);
     }
 
     public function destroy(User $user, UserDepartmentPermission $permission): JsonResponse
     {
         $permission->delete();
+
         return response()->json(null, 204);
     }
 }

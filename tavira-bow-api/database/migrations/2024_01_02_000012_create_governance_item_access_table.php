@@ -11,8 +11,8 @@ return new class extends Migration
         Schema::create('governance_item_access', function (Blueprint $table) {
             $table->id();
             $table->foreignId('governance_item_id')
-                  ->constrained()
-                  ->onDelete('cascade');
+                ->constrained()
+                ->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->boolean('can_view')->default(true);
             $table->boolean('can_edit')->default(false);

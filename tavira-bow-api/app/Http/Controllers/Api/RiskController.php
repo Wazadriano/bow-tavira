@@ -28,7 +28,7 @@ class RiskController extends Controller
             ->with(['category.theme', 'owner', 'responsibleParty']);
 
         // Filter by user's theme permissions
-        if (!$user->isAdmin()) {
+        if (! $user->isAdmin()) {
             $themeIds = $user->riskThemePermissions()
                 ->where('can_view', true)
                 ->pluck('theme_id');
@@ -121,6 +121,7 @@ class RiskController extends Controller
             $risk = Risk::create($request->all());
             $risk->calculateScores();
             $risk->save();
+
             return $risk;
         });
 
@@ -160,7 +161,7 @@ class RiskController extends Controller
     {
         $request->validate([
             'category_id' => 'sometimes|exists:risk_categories,id',
-            'ref_no' => 'sometimes|string|max:50|unique:risks,ref_no,' . $risk->id,
+            'ref_no' => 'sometimes|string|max:50|unique:risks,ref_no,'.$risk->id,
             'name' => 'sometimes|string|max:200',
             'description' => 'nullable|string',
             'tier' => 'nullable|string',
@@ -212,7 +213,7 @@ class RiskController extends Controller
             ->select('financial_impact', 'regulatory_impact', 'reputational_impact', 'inherent_probability', 'ref_no', 'name', 'inherent_risk_score', 'inherent_rag');
 
         // Filter by user's theme permissions
-        if (!$user->isAdmin()) {
+        if (! $user->isAdmin()) {
             $themeIds = $user->riskThemePermissions()
                 ->where('can_view', true)
                 ->pluck('theme_id');

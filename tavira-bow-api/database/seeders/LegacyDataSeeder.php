@@ -9,7 +9,6 @@ use App\Models\Supplier;
 use App\Models\User;
 use App\Models\WorkItem;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class LegacyDataSeeder extends Seeder
@@ -21,8 +20,9 @@ class LegacyDataSeeder extends Seeder
     {
         $dataPath = database_path('seeders/data/legacy_data.json');
 
-        if (!file_exists($dataPath)) {
+        if (! file_exists($dataPath)) {
             $this->command->error("Legacy data file not found: {$dataPath}");
+
             return;
         }
 
@@ -78,7 +78,7 @@ class LegacyDataSeeder extends Seeder
 
         foreach ($lists as $item) {
             $type = strtolower($item['type']);
-            if (!isset($typeMap[$type])) {
+            if (! isset($typeMap[$type])) {
                 continue;
             }
 
@@ -109,7 +109,7 @@ class LegacyDataSeeder extends Seeder
 
             // Map role to lowercase
             $role = strtolower($user['role'] ?? 'member');
-            if (!in_array($role, ['admin', 'member'])) {
+            if (! in_array($role, ['admin', 'member'])) {
                 $role = 'member';
             }
 
@@ -141,7 +141,7 @@ class LegacyDataSeeder extends Seeder
 
             // Validate responsible_party_id exists
             $responsibleId = $item['responsible_party_id'];
-            if ($responsibleId && !User::find($responsibleId)) {
+            if ($responsibleId && ! User::find($responsibleId)) {
                 $responsibleId = null;
             }
 
@@ -150,13 +150,13 @@ class LegacyDataSeeder extends Seeder
 
             // Map BAU
             $bau = $item['bau_or_transformative'] ?? 'BAU';
-            if (!in_array($bau, ['BAU', 'Non BAU', 'Transformative'])) {
+            if (! in_array($bau, ['BAU', 'Non BAU', 'Transformative'])) {
                 $bau = 'BAU';
             }
 
             // Map impact level
             $impact = $item['impact_level'] ?? 'Medium';
-            if (!in_array($impact, ['High', 'Medium', 'Low'])) {
+            if (! in_array($impact, ['High', 'Medium', 'Low'])) {
                 $impact = 'Medium';
             }
 
@@ -165,7 +165,7 @@ class LegacyDataSeeder extends Seeder
 
             // Parse tags
             $tags = null;
-            if (!empty($item['tags'])) {
+            if (! empty($item['tags'])) {
                 $tags = is_string($item['tags']) ? json_decode($item['tags'], true) : $item['tags'];
             }
 
@@ -208,25 +208,25 @@ class LegacyDataSeeder extends Seeder
 
             // Map location - legacy has 'Local'/'Overseas', map to 'Global'
             $location = $supplier['location'] ?? 'Global';
-            if (!in_array($location, $validLocations)) {
+            if (! in_array($location, $validLocations)) {
                 $location = 'Global';
             }
 
             // Map status
             $status = $supplier['status'] ?? 'Active';
-            if (!in_array($status, ['Active', 'Exited', 'Pending'])) {
+            if (! in_array($status, ['Active', 'Exited', 'Pending'])) {
                 $status = 'Active';
             }
 
             // Validate sage_category_id
             $sageCatId = $supplier['sage_category_id'];
-            if ($sageCatId && !SageCategory::find($sageCatId)) {
+            if ($sageCatId && ! SageCategory::find($sageCatId)) {
                 $sageCatId = null;
             }
 
             // Parse tags
             $tags = null;
-            if (!empty($supplier['tags'])) {
+            if (! empty($supplier['tags'])) {
                 $tags = is_string($supplier['tags']) ? json_decode($supplier['tags'], true) : $supplier['tags'];
             }
 
@@ -259,19 +259,19 @@ class LegacyDataSeeder extends Seeder
 
             // Validate owner_id
             $ownerId = $item['owner_id'] ?? null;
-            if ($ownerId && !User::find($ownerId)) {
+            if ($ownerId && ! User::find($ownerId)) {
                 $ownerId = null;
             }
 
             // Map frequency
             $frequency = ucfirst(strtolower($item['frequency'] ?? 'Quarterly'));
-            if (!in_array($frequency, ['Daily', 'Weekly', 'Monthly', 'Quarterly', 'Annually', 'Ad Hoc'])) {
+            if (! in_array($frequency, ['Daily', 'Weekly', 'Monthly', 'Quarterly', 'Annually', 'Ad Hoc'])) {
                 $frequency = 'Quarterly';
             }
 
             // Map location
             $location = $item['location'] ?? 'Global';
-            if (!in_array($location, ['Local', 'Global', 'Remote'])) {
+            if (! in_array($location, ['Local', 'Global', 'Remote'])) {
                 $location = 'Global';
             }
 
@@ -329,7 +329,7 @@ class LegacyDataSeeder extends Seeder
             return 'Blue';
         }
 
-        if (!$deadline) {
+        if (! $deadline) {
             return 'Green';
         }
 

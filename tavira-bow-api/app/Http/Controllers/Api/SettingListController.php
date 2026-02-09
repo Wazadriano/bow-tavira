@@ -48,7 +48,7 @@ class SettingListController extends Controller
 
         return response()->json([
             'type' => $type,
-            'values' => $settings->map(fn($s) => [
+            'values' => $settings->map(fn ($s) => [
                 'id' => $s->id,
                 'value' => $s->value,
                 'label' => $s->label ?? $s->value,

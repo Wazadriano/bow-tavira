@@ -62,6 +62,6 @@ class TaskMilestone extends Model
 
     public function getIsOverdueAttribute(): bool
     {
-        return $this->due_date && $this->due_date->isPast() && !$this->completion_date;
+        return $this->due_date && $this->due_date->isPast() && ! $this->completion_date;
     }
 }

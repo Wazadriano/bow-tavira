@@ -1,34 +1,34 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ControlLibraryController;
+use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\GovernanceController;
+use App\Http\Controllers\Api\GovernanceFileController;
+use App\Http\Controllers\Api\GovernanceMilestoneController;
+use App\Http\Controllers\Api\ImportExportController;
+use App\Http\Controllers\Api\MilestoneController;
+use App\Http\Controllers\Api\RiskActionController;
+use App\Http\Controllers\Api\RiskCategoryController;
+use App\Http\Controllers\Api\RiskControlController;
+use App\Http\Controllers\Api\RiskController;
+use App\Http\Controllers\Api\RiskFileController;
+use App\Http\Controllers\Api\RiskThemeController;
+use App\Http\Controllers\Api\SageCategoryController;
+use App\Http\Controllers\Api\SearchController;
+use App\Http\Controllers\Api\SettingListController;
+use App\Http\Controllers\Api\SupplierContractController;
+use App\Http\Controllers\Api\SupplierController;
+use App\Http\Controllers\Api\SupplierFileController;
+use App\Http\Controllers\Api\SupplierInvoiceController;
+use App\Http\Controllers\Api\SystemSettingController;
+use App\Http\Controllers\Api\TeamController;
+use App\Http\Controllers\Api\TeamMemberController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\UserPermissionController;
 use App\Http\Controllers\Api\WorkItemController;
 use App\Http\Controllers\Api\WorkItemFileController;
-use App\Http\Controllers\Api\TeamController;
-use App\Http\Controllers\Api\TeamMemberController;
-use App\Http\Controllers\Api\MilestoneController;
-use App\Http\Controllers\Api\GovernanceController;
-use App\Http\Controllers\Api\GovernanceFileController;
-use App\Http\Controllers\Api\GovernanceMilestoneController;
-use App\Http\Controllers\Api\SupplierController;
-use App\Http\Controllers\Api\SupplierContractController;
-use App\Http\Controllers\Api\SupplierInvoiceController;
-use App\Http\Controllers\Api\SupplierFileController;
-use App\Http\Controllers\Api\SageCategoryController;
-use App\Http\Controllers\Api\SettingListController;
-use App\Http\Controllers\Api\SystemSettingController;
-use App\Http\Controllers\Api\RiskThemeController;
-use App\Http\Controllers\Api\RiskCategoryController;
-use App\Http\Controllers\Api\RiskController;
-use App\Http\Controllers\Api\ControlLibraryController;
-use App\Http\Controllers\Api\RiskControlController;
-use App\Http\Controllers\Api\RiskActionController;
-use App\Http\Controllers\Api\RiskFileController;
-use App\Http\Controllers\Api\DashboardController;
-use App\Http\Controllers\Api\SearchController;
-use App\Http\Controllers\Api\ImportExportController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------

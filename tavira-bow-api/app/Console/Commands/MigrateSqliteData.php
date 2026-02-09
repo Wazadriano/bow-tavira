@@ -4,8 +4,8 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use PDO;
 
 class MigrateSqliteData extends Command
@@ -18,7 +18,9 @@ class MigrateSqliteData extends Command
     protected $description = 'Migrate data from SQLite (TAVIRA_BOW) to PostgreSQL';
 
     private PDO $sqlite;
+
     private array $stats = [];
+
     private bool $dryRun = false;
 
     // Table mapping: sqlite_table => [postgresql_table, transform_callback]
@@ -65,14 +67,15 @@ class MigrateSqliteData extends Command
         $sqlitePath = $this->argument('sqlite_path');
         $this->dryRun = $this->option('dry-run');
 
-        if (!file_exists($sqlitePath)) {
+        if (! file_exists($sqlitePath)) {
             $this->error("SQLite file not found: {$sqlitePath}");
+
             return 1;
         }
 
         $this->info("Migrating data from: {$sqlitePath}");
         if ($this->dryRun) {
-            $this->warn("DRY RUN MODE - No data will be written");
+            $this->warn('DRY RUN MODE - No data will be written');
         }
 
         try {
@@ -81,19 +84,20 @@ class MigrateSqliteData extends Command
             $this->sqlite->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
             // Start transaction
-            if (!$this->dryRun) {
+            if (! $this->dryRun) {
                 DB::beginTransaction();
             }
 
             // Disable foreign key checks for PostgreSQL
-            if (!$this->dryRun) {
+            if (! $this->dryRun) {
                 DB::statement('SET session_replication_role = replica;');
             }
 
             // Migrate tables in order
             foreach ($this->tableMappings as $sqliteTable => $pgTable) {
                 if ($sqliteTable === 'users' && $this->option('skip-users')) {
-                    $this->info("Skipping users table");
+                    $this->info('Skipping users table');
+
                     continue;
                 }
 
@@ -101,17 +105,17 @@ class MigrateSqliteData extends Command
             }
 
             // Re-enable foreign key checks
-            if (!$this->dryRun) {
+            if (! $this->dryRun) {
                 DB::statement('SET session_replication_role = DEFAULT;');
             }
 
             // Reset sequences
-            if (!$this->dryRun) {
+            if (! $this->dryRun) {
                 $this->resetSequences();
             }
 
             // Commit transaction
-            if (!$this->dryRun) {
+            if (! $this->dryRun) {
                 DB::commit();
             }
 
@@ -119,14 +123,16 @@ class MigrateSqliteData extends Command
             $this->displaySummary();
 
             $this->info('Migration completed successfully!');
+
             return 0;
 
         } catch (\Exception $e) {
-            if (!$this->dryRun) {
+            if (! $this->dryRun) {
                 DB::rollBack();
             }
-            $this->error("Migration failed: " . $e->getMessage());
+            $this->error('Migration failed: '.$e->getMessage());
             $this->error($e->getTraceAsString());
+
             return 1;
         }
     }
@@ -138,16 +144,18 @@ class MigrateSqliteData extends Command
             "SELECT name FROM sqlite_master WHERE type='table' AND name='{$sqliteTable}'"
         );
 
-        if (!$check->fetch()) {
+        if (! $check->fetch()) {
             $this->warn("Table not found in SQLite: {$sqliteTable}");
             $this->stats[$pgTable] = ['skipped' => true];
+
             return;
         }
 
         // Check if PostgreSQL table exists
-        if (!Schema::hasTable($pgTable)) {
+        if (! Schema::hasTable($pgTable)) {
             $this->warn("Table not found in PostgreSQL: {$pgTable}");
             $this->stats[$pgTable] = ['skipped' => true];
+
             return;
         }
 
@@ -158,8 +166,9 @@ class MigrateSqliteData extends Command
         $count = count($rows);
 
         if ($count === 0) {
-            $this->line("  No data to migrate");
+            $this->line('  No data to migrate');
             $this->stats[$pgTable] = ['rows' => 0];
+
             return;
         }
 
@@ -174,18 +183,18 @@ class MigrateSqliteData extends Command
             try {
                 $data = $this->transformRow($row, $sqliteTable, $pgColumns);
 
-                if (!$this->dryRun && $data) {
+                if (! $this->dryRun && $data) {
                     DB::table($pgTable)->insert($data);
                 }
                 $transformed++;
 
             } catch (\Exception $e) {
-                $this->warn("  Error row ID {$row['id']}: " . $e->getMessage());
+                $this->warn("  Error row ID {$row['id']}: ".$e->getMessage());
                 $errors++;
             }
         }
 
-        $this->line("  Migrated: {$transformed}/{$count} rows" . ($errors ? " ({$errors} errors)" : ""));
+        $this->line("  Migrated: {$transformed}/{$count} rows".($errors ? " ({$errors} errors)" : ''));
         $this->stats[$pgTable] = ['rows' => $transformed, 'errors' => $errors];
     }
 
@@ -198,7 +207,7 @@ class MigrateSqliteData extends Command
             $pgColumn = $this->mapColumnName($column, $table);
 
             // Skip if column doesn't exist in PostgreSQL
-            if (!in_array($pgColumn, $pgColumns)) {
+            if (! in_array($pgColumn, $pgColumns)) {
                 continue;
             }
 
@@ -247,6 +256,7 @@ class MigrateSqliteData extends Command
         // JSON transformation
         if ($column === 'tags' && is_string($value)) {
             $decoded = json_decode($value, true);
+
             return $decoded !== null ? json_encode($decoded) : null;
         }
 
@@ -255,6 +265,7 @@ class MigrateSqliteData extends Command
             if ($value && strtotime($value)) {
                 return date('Y-m-d H:i:s', strtotime($value));
             }
+
             return null;
         }
 
@@ -264,10 +275,10 @@ class MigrateSqliteData extends Command
     private function applyTableTransformations(array $data, string $table): array
     {
         // Ensure timestamps exist
-        if (!isset($data['created_at'])) {
+        if (! isset($data['created_at'])) {
             $data['created_at'] = now();
         }
-        if (!isset($data['updated_at'])) {
+        if (! isset($data['updated_at'])) {
             $data['updated_at'] = now();
         }
 
@@ -307,10 +318,10 @@ class MigrateSqliteData extends Command
 
     private function resetSequences(): void
     {
-        $this->info("Resetting PostgreSQL sequences...");
+        $this->info('Resetting PostgreSQL sequences...');
 
         foreach ($this->tableMappings as $pgTable) {
-            if (!Schema::hasTable($pgTable)) {
+            if (! Schema::hasTable($pgTable)) {
                 continue;
             }
 
@@ -329,7 +340,7 @@ class MigrateSqliteData extends Command
     private function displaySummary(): void
     {
         $this->newLine();
-        $this->info("=== Migration Summary ===");
+        $this->info('=== Migration Summary ===');
 
         $total = 0;
         $errors = 0;
@@ -342,7 +353,7 @@ class MigrateSqliteData extends Command
                 $errs = $stat['errors'] ?? 0;
                 $total += $rows;
                 $errors += $errs;
-                $this->line("  {$table}: {$rows} rows" . ($errs ? " ({$errs} errors)" : ""));
+                $this->line("  {$table}: {$rows} rows".($errs ? " ({$errs} errors)" : ''));
             }
         }
 

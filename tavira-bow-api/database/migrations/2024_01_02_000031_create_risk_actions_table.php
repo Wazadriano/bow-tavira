@@ -15,9 +15,9 @@ return new class extends Migration
             $table->string('title');
             $table->text('description')->nullable();
             $table->foreignId('owner_id')
-                  ->nullable()
-                  ->constrained('users')
-                  ->nullOnDelete();
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
             $table->date('due_date');
             $table->string('status')->default('Open');           // ActionStatus enum
             $table->string('priority')->default('Medium');        // ActionPriority enum

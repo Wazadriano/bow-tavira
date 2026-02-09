@@ -29,12 +29,12 @@ class SupplierController extends Controller
             ->with(['sageCategory', 'responsibleParty', 'entities']);
 
         // Filter by user access
-        if (!$user->isAdmin()) {
+        if (! $user->isAdmin()) {
             $query->where(function ($q) use ($user) {
                 $q->whereHas('access', function ($q2) use ($user) {
                     $q2->where('user_id', $user->id)->where('can_view', true);
                 })
-                ->orWhere('responsible_party_id', $user->id);
+                    ->orWhere('responsible_party_id', $user->id);
             });
         }
 
@@ -148,7 +148,7 @@ class SupplierController extends Controller
     public function update(Request $request, Supplier $supplier): JsonResponse
     {
         $request->validate([
-            'ref_no' => 'sometimes|string|max:50|unique:suppliers,ref_no,' . $supplier->id,
+            'ref_no' => 'sometimes|string|max:50|unique:suppliers,ref_no,'.$supplier->id,
             'name' => 'sometimes|string|max:200',
             'sage_category_id' => 'nullable|exists:sage_categories,id',
             'responsible_party_id' => 'nullable|exists:users,id',

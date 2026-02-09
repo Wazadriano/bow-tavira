@@ -18,9 +18,9 @@ return new class extends Migration
             $table->string('path');
             $table->string('category')->nullable();                   // e.g., 'general', 'compliance', 'contract'
             $table->foreignId('uploaded_by_id')
-                  ->nullable()
-                  ->constrained('users')
-                  ->nullOnDelete();
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
             $table->timestamps();
 
             $table->index('category');

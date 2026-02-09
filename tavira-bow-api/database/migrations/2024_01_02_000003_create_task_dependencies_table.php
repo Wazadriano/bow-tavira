@@ -11,11 +11,11 @@ return new class extends Migration
         Schema::create('task_dependencies', function (Blueprint $table) {
             $table->id();
             $table->foreignId('work_item_id')
-                  ->constrained('work_items')
-                  ->onDelete('cascade');
+                ->constrained('work_items')
+                ->onDelete('cascade');
             $table->foreignId('depends_on_id')
-                  ->constrained('work_items')
-                  ->onDelete('cascade');
+                ->constrained('work_items')
+                ->onDelete('cascade');
             $table->timestamps();
 
             $table->unique(['work_item_id', 'depends_on_id']);

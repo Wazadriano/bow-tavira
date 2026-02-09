@@ -259,14 +259,14 @@ export default function RiskDetailPage() {
                 {risk.appetite_status && (
                   <div className="mt-4 rounded-lg bg-muted p-4">
                     <div className="flex items-center justify-between">
-                      <span className="font-medium">Statut d'appetence</span>
+                      <span className="font-medium">Statut d&apos;appetence</span>
                       <Badge variant={risk.appetite_status === 'exceeded' ? 'destructive' : risk.appetite_status === 'approaching' ? 'secondary' : 'default'}>
                         {risk.appetite_status === 'within' ? 'Dans les limites' : risk.appetite_status === 'approaching' ? 'Approche' : 'Depasse'}
                       </Badge>
                     </div>
                     {risk.appetite_status === 'exceeded' && (
                       <p className="mt-2 text-sm text-destructive">
-                        Le risque residuel depasse l'appetence definie
+                        Le risque residuel depasse l&apos;appetence definie
                       </p>
                     )}
                   </div>

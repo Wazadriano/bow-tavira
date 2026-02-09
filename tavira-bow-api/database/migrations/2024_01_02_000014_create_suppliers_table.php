@@ -20,9 +20,9 @@ return new class extends Migration
             $table->string('status')->default('Active');              // SupplierStatus enum
             $table->boolean('is_common_provider')->default(false);    // Multi-entity provider
             $table->foreignId('sage_category_id')
-                  ->nullable()
-                  ->constrained('sage_categories')
-                  ->nullOnDelete();
+                ->nullable()
+                ->constrained('sage_categories')
+                ->nullOnDelete();
             $table->text('notes')->nullable();
             $table->json('tags')->nullable();
             $table->timestamps();

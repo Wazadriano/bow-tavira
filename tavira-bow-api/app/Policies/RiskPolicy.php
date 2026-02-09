@@ -26,7 +26,7 @@ class RiskPolicy
 
         // Check theme permission
         $themeId = $risk->category?->theme_id;
-        if (!$themeId) {
+        if (! $themeId) {
             return false;
         }
 
@@ -86,7 +86,7 @@ class RiskPolicy
 
         // Check theme permission
         $themeId = $risk->category?->theme_id;
-        if (!$themeId) {
+        if (! $themeId) {
             return false;
         }
 
@@ -106,7 +106,7 @@ class RiskPolicy
         }
 
         $themeId = $risk->category?->theme_id;
-        if (!$themeId) {
+        if (! $themeId) {
             return false;
         }
 

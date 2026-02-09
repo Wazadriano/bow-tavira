@@ -215,7 +215,7 @@ export function WorkItemForm({ workItem, mode }: WorkItemFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="impact_level">Niveau d'impact</Label>
+              <Label htmlFor="impact_level">Niveau d&apos;impact</Label>
               <Select
                 value={watch('impact_level') || ''}
                 onValueChange={(value) => setValue('impact_level', value as WorkItemFormData['impact_level'])}

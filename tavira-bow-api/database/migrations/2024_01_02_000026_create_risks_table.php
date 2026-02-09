@@ -13,19 +13,19 @@ return new class extends Migration
             $table->id();
             $table->string('ref_no')->unique();              // Reference number
             $table->foreignId('category_id')
-                  ->constrained('risk_categories')
-                  ->onDelete('cascade');
+                ->constrained('risk_categories')
+                ->onDelete('cascade');
             $table->string('name');                          // Risk name
             $table->text('description')->nullable();         // Risk description
             $table->string('tier')->nullable();              // Risk tier
             $table->foreignId('owner_id')
-                  ->nullable()
-                  ->constrained('users')
-                  ->nullOnDelete();
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
             $table->foreignId('responsible_party_id')
-                  ->nullable()
-                  ->constrained('users')
-                  ->nullOnDelete();
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
 
             // Impact scores (1-5)
             $table->unsignedTinyInteger('financial_impact')->default(1);

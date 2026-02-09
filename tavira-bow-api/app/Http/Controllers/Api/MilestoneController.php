@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\TaskMilestone;
 use App\Models\WorkItem;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class MilestoneController extends Controller
 {
@@ -24,6 +24,7 @@ class MilestoneController extends Controller
     public function forWorkItem(WorkItem $workitem): JsonResponse
     {
         $milestones = $workitem->milestones()->with('assignments.user')->get();
+
         return response()->json($milestones);
     }
 
@@ -38,6 +39,7 @@ class MilestoneController extends Controller
         ]);
 
         $milestone = TaskMilestone::create($validated);
+
         return response()->json($milestone->load(['workItem', 'assignments.user']), 201);
     }
 
@@ -56,12 +58,14 @@ class MilestoneController extends Controller
         ]);
 
         $milestone->update($validated);
+
         return response()->json($milestone->load(['workItem', 'assignments.user']));
     }
 
     public function destroy(TaskMilestone $milestone): JsonResponse
     {
         $milestone->delete();
+
         return response()->json(null, 204);
     }
 }

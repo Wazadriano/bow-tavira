@@ -28,16 +28,16 @@ class GovernanceController extends Controller
             ->with(['responsibleParty', 'milestones']);
 
         // Filter by user access
-        if (!$user->isAdmin()) {
+        if (! $user->isAdmin()) {
             $query->where(function ($q) use ($user) {
                 // Items with explicit access
                 $q->whereHas('access', function ($q2) use ($user) {
                     $q2->where('user_id', $user->id)->where('can_view', true);
                 })
                 // Or items in user's departments
-                ->orWhereIn('department', $user->departmentPermissions()
-                    ->where('can_view', true)
-                    ->pluck('department'));
+                    ->orWhereIn('department', $user->departmentPermissions()
+                        ->where('can_view', true)
+                        ->pluck('department'));
             });
         }
 
@@ -132,7 +132,7 @@ class GovernanceController extends Controller
     public function update(Request $request, GovernanceItem $governance): JsonResponse
     {
         $request->validate([
-            'ref_no' => 'sometimes|string|max:50|unique:governance_items,ref_no,' . $governance->id,
+            'ref_no' => 'sometimes|string|max:50|unique:governance_items,ref_no,'.$governance->id,
             'activity' => 'nullable|string|max:100',
             'description' => 'sometimes|string',
             'frequency' => 'nullable|string',
@@ -177,14 +177,14 @@ class GovernanceController extends Controller
 
         // Base query with access control
         $query = GovernanceItem::query();
-        if (!$user->isAdmin()) {
+        if (! $user->isAdmin()) {
             $query->where(function ($q) use ($user) {
                 $q->whereHas('access', function ($q2) use ($user) {
                     $q2->where('user_id', $user->id)->where('can_view', true);
                 })
-                ->orWhereIn('department', $user->departmentPermissions()
-                    ->where('can_view', true)
-                    ->pluck('department'));
+                    ->orWhereIn('department', $user->departmentPermissions()
+                        ->where('can_view', true)
+                        ->pluck('department'));
             });
         }
 
@@ -209,7 +209,7 @@ class GovernanceController extends Controller
             ->orderByDesc('count')
             ->limit(10)
             ->get()
-            ->map(fn($item) => [
+            ->map(fn ($item) => [
                 'name' => $item->department,
                 'count' => (int) $item->count,
             ]);
@@ -222,7 +222,7 @@ class GovernanceController extends Controller
             ->groupBy('frequency')
             ->orderByDesc('count')
             ->get()
-            ->map(fn($item) => [
+            ->map(fn ($item) => [
                 'name' => ucfirst($item->frequency?->value ?? $item->frequency ?? 'Unknown'),
                 'count' => (int) $item->count,
             ]);
@@ -236,7 +236,7 @@ class GovernanceController extends Controller
             ->orderBy('deadline')
             ->limit(5)
             ->get()
-            ->map(fn($item) => [
+            ->map(fn ($item) => [
                 'id' => $item->id,
                 'title' => $item->activity ?? $item->description ?? $item->ref_no,
                 'next_due' => $item->deadline?->toDateString(),

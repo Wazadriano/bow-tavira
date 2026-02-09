@@ -4,9 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Risk;
-use App\Models\RiskAttachment;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class RiskFileController extends Controller
@@ -14,6 +13,7 @@ class RiskFileController extends Controller
     public function index(Risk $risk): JsonResponse
     {
         $files = $risk->attachments()->get();
+
         return response()->json($files);
     }
 
@@ -41,7 +41,7 @@ class RiskFileController extends Controller
     {
         $path = "risks/{$risk->id}/{$filename}";
 
-        if (!Storage::disk('local')->exists($path)) {
+        if (! Storage::disk('local')->exists($path)) {
             return response()->json(['message' => 'File not found'], 404);
         }
 

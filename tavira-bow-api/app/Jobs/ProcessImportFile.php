@@ -2,11 +2,11 @@
 
 namespace App\Jobs;
 
-use App\Models\User;
-use App\Models\WorkItem;
+use App\Models\Risk;
 use App\Models\Supplier;
 use App\Models\SupplierInvoice;
-use App\Models\Risk;
+use App\Models\User;
+use App\Models\WorkItem;
 use App\Notifications\ImportCompletedNotification;
 use App\Services\ImportNormalizationService;
 use Illuminate\Bus\Queueable;
@@ -24,11 +24,15 @@ class ProcessImportFile implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public int $timeout = 600;
 
     private string $filePath;
+
     private string $type;
+
     private array $columnMapping;
+
     private int $userId;
 
     public function __construct(
@@ -87,11 +91,11 @@ class ProcessImportFile implements ShouldQueue
                         $results['skipped']++;
                     }
                 } catch (\Exception $e) {
-                    $results['errors'][] = "Row " . ($index + 2) . ": " . $e->getMessage();
+                    $results['errors'][] = 'Row '.($index + 2).': '.$e->getMessage();
                     $results['skipped']++;
 
                     if (count($results['errors']) >= 100) {
-                        $results['errors'][] = "Too many errors. Stopping at row " . ($index + 2);
+                        $results['errors'][] = 'Too many errors. Stopping at row '.($index + 2);
                         break;
                     }
                 }
@@ -105,13 +109,13 @@ class ProcessImportFile implements ShouldQueue
             // Notify user
             $this->notifyUser($results);
 
-            Log::info("Import completed: " . json_encode($results));
+            Log::info('Import completed: '.json_encode($results));
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error("Import failed: " . $e->getMessage());
+            Log::error('Import failed: '.$e->getMessage());
 
-            $results['errors'][] = "Import failed: " . $e->getMessage();
+            $results['errors'][] = 'Import failed: '.$e->getMessage();
             $this->notifyUser($results, true);
 
             throw $e;
@@ -122,6 +126,7 @@ class ProcessImportFile implements ShouldQueue
     {
         $spreadsheet = IOFactory::load($path);
         $sheet = $spreadsheet->getActiveSheet();
+
         return $sheet->toArray(null, true, true, false);
     }
 
@@ -152,7 +157,7 @@ class ProcessImportFile implements ShouldQueue
         $refNo = $data['ref_no'] ?? null;
 
         if (empty($refNo)) {
-            throw new \Exception("ref_no is required");
+            throw new \Exception('ref_no is required');
         }
 
         $existing = WorkItem::where('ref_no', $refNo)->first();
@@ -172,7 +177,7 @@ class ProcessImportFile implements ShouldQueue
         ];
 
         // Handle responsible party lookup
-        if (!empty($data['responsible_party_id'])) {
+        if (! empty($data['responsible_party_id'])) {
             $user = User::where('full_name', $data['responsible_party_id'])
                 ->orWhere('email', $data['responsible_party_id'])
                 ->first();
@@ -183,10 +188,12 @@ class ProcessImportFile implements ShouldQueue
 
         if ($existing) {
             $existing->update($attributes);
+
             return 'updated';
         }
 
         WorkItem::create($attributes);
+
         return 'created';
     }
 
@@ -195,7 +202,7 @@ class ProcessImportFile implements ShouldQueue
         $refNo = $data['ref_no'] ?? null;
 
         if (empty($refNo)) {
-            throw new \Exception("ref_no is required");
+            throw new \Exception('ref_no is required');
         }
 
         $existing = Supplier::where('ref_no', $refNo)->first();
@@ -211,10 +218,12 @@ class ProcessImportFile implements ShouldQueue
 
         if ($existing) {
             $existing->update($attributes);
+
             return 'updated';
         }
 
         Supplier::create($attributes);
+
         return 'created';
     }
 
@@ -224,11 +233,11 @@ class ProcessImportFile implements ShouldQueue
         $invoiceRef = $data['invoice_ref'] ?? null;
 
         if (empty($supplierRef) || empty($invoiceRef)) {
-            throw new \Exception("supplier_ref and invoice_ref are required");
+            throw new \Exception('supplier_ref and invoice_ref are required');
         }
 
         $supplier = Supplier::where('ref_no', $supplierRef)->first();
-        if (!$supplier) {
+        if (! $supplier) {
             throw new \Exception("Supplier not found: {$supplierRef}");
         }
 
@@ -250,10 +259,12 @@ class ProcessImportFile implements ShouldQueue
 
         if ($existing) {
             $existing->update($attributes);
+
             return 'updated';
         }
 
         SupplierInvoice::create($attributes);
+
         return 'created';
     }
 
@@ -262,7 +273,7 @@ class ProcessImportFile implements ShouldQueue
         $refNo = $data['ref_no'] ?? null;
 
         if (empty($refNo)) {
-            throw new \Exception("ref_no is required");
+            throw new \Exception('ref_no is required');
         }
 
         $existing = Risk::where('ref_no', $refNo)->first();
@@ -279,7 +290,7 @@ class ProcessImportFile implements ShouldQueue
         ];
 
         // Handle category lookup
-        if (!empty($data['category_code'])) {
+        if (! empty($data['category_code'])) {
             $category = \App\Models\RiskCategory::where('code', $data['category_code'])->first();
             if ($category) {
                 $attributes['category_id'] = $category->id;
@@ -288,10 +299,12 @@ class ProcessImportFile implements ShouldQueue
 
         if ($existing) {
             $existing->update($attributes);
+
             return 'updated';
         }
 
         Risk::create($attributes);
+
         return 'created';
     }
 

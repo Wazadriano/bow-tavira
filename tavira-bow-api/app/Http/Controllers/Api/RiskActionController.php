@@ -107,7 +107,7 @@ class RiskActionController extends Controller
         $action->update($request->all());
 
         // Auto-set completion date if status is Completed
-        if ($request->status === 'Completed' && !$action->completion_date) {
+        if ($request->status === 'Completed' && ! $action->completion_date) {
             $action->update(['completion_date' => now()]);
         }
 
@@ -150,7 +150,7 @@ class RiskActionController extends Controller
             ->orderBy('due_date');
 
         // Filter by user's theme permissions
-        if (!$user->isAdmin()) {
+        if (! $user->isAdmin()) {
             $themeIds = $user->riskThemePermissions()
                 ->where('can_view', true)
                 ->pluck('theme_id');

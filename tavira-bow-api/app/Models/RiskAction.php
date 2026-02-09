@@ -72,6 +72,6 @@ class RiskAction extends Model
     {
         return $this->due_date
             && $this->due_date->isPast()
-            && !$this->completion_date;
+            && ! $this->completion_date;
     }
 }

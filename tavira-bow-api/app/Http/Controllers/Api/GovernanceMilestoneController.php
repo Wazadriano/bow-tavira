@@ -5,14 +5,15 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\GovernanceItem;
 use App\Models\GovernanceMilestone;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class GovernanceMilestoneController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
         $milestones = GovernanceMilestone::with(['governanceItem', 'owner'])->get();
+
         return response()->json($milestones);
     }
 
@@ -48,12 +49,14 @@ class GovernanceMilestoneController extends Controller
         ]);
 
         $milestone->update($validated);
+
         return response()->json($milestone->load(['governanceItem', 'owner']));
     }
 
     public function destroy(GovernanceMilestone $milestone): JsonResponse
     {
         $milestone->delete();
+
         return response()->json(null, 204);
     }
 }

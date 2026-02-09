@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Log;
 class ImportNormalizationService
 {
     private array $errors = [];
+
     private array $warnings = [];
 
     /**
@@ -33,7 +34,7 @@ class ImportNormalizationService
             }
 
             $row = str_getcsv($line, $delimiter);
-            $data[] = array_map(fn($cell) => $this->normalizeCell($cell), $row);
+            $data[] = array_map(fn ($cell) => $this->normalizeCell($cell), $row);
         }
 
         return $data;
@@ -173,15 +174,15 @@ class ImportNormalizationService
                 $errors[] = "Row {$rowNum}: Field '{$field}' is required";
             }
 
-            if (str_contains($rule, 'date') && $value && !$this->isValidDate($value)) {
+            if (str_contains($rule, 'date') && $value && ! $this->isValidDate($value)) {
                 $errors[] = "Row {$rowNum}: Field '{$field}' must be a valid date";
             }
 
-            if (str_contains($rule, 'numeric') && $value && !is_numeric($value)) {
+            if (str_contains($rule, 'numeric') && $value && ! is_numeric($value)) {
                 $errors[] = "Row {$rowNum}: Field '{$field}' must be numeric";
             }
 
-            if (str_contains($rule, 'email') && $value && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
+            if (str_contains($rule, 'email') && $value && ! filter_var($value, FILTER_VALIDATE_EMAIL)) {
                 $errors[] = "Row {$rowNum}: Field '{$field}' must be a valid email";
             }
         }
@@ -233,6 +234,7 @@ class ImportNormalizationService
     private function parseDate(string $value): ?string
     {
         $timestamp = strtotime($value);
+
         return $timestamp ? date('Y-m-d', $timestamp) : null;
     }
 
@@ -242,6 +244,7 @@ class ImportNormalizationService
     private function parseDateTime(string $value): ?string
     {
         $timestamp = strtotime($value);
+
         return $timestamp ? date('Y-m-d H:i:s', $timestamp) : null;
     }
 

@@ -19,9 +19,9 @@ return new class extends Migration
             $table->string('category')->nullable();              // 'evidence', 'documentation', 'report'
             $table->integer('version')->default(1);
             $table->foreignId('uploaded_by_id')
-                  ->nullable()
-                  ->constrained('users')
-                  ->nullOnDelete();
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
             $table->timestamps();
 
             $table->index(['risk_id', 'category']);

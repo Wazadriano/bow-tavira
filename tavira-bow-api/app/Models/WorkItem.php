@@ -113,6 +113,6 @@ class WorkItem extends Model
 
     public function getIsOverdueAttribute(): bool
     {
-        return $this->deadline && $this->deadline->isPast() && !$this->completion_date;
+        return $this->deadline && $this->deadline->isPast() && ! $this->completion_date;
     }
 }

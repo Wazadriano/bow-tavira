@@ -96,7 +96,7 @@ class ImportExportController extends Controller
             'column_mapping' => 'required|array',
         ]);
 
-        if (!Storage::exists($request->temp_file)) {
+        if (! Storage::exists($request->temp_file)) {
             return response()->json([
                 'message' => 'Temporary file not found. Please upload again.',
             ], 404);
@@ -125,28 +125,28 @@ class ImportExportController extends Controller
             'workitems' => [
                 'ref_no', 'type', 'activity', 'department', 'description',
                 'bau_or_transformative', 'impact_level', 'current_status',
-                'deadline', 'responsible_party', 'tags', 'priority_item'
+                'deadline', 'responsible_party', 'tags', 'priority_item',
             ],
             'suppliers' => [
                 'ref_no', 'name', 'sage_category', 'location',
-                'is_common_provider', 'status', 'entities', 'notes'
+                'is_common_provider', 'status', 'entities', 'notes',
             ],
             'invoices' => [
                 'supplier_ref', 'invoice_ref', 'description', 'amount',
-                'currency', 'invoice_date', 'due_date', 'frequency', 'status'
+                'currency', 'invoice_date', 'due_date', 'frequency', 'status',
             ],
             'risks' => [
                 'ref_no', 'theme_code', 'category_code', 'name', 'description',
                 'tier', 'owner', 'responsible_party', 'financial_impact',
-                'regulatory_impact', 'reputational_impact', 'inherent_probability'
+                'regulatory_impact', 'reputational_impact', 'inherent_probability',
             ],
         ];
 
-        if (!isset($templates[$type])) {
+        if (! isset($templates[$type])) {
             abort(404, 'Template not found');
         }
 
-        $spreadsheet = new Spreadsheet();
+        $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
 
         // Add headers
@@ -155,7 +155,7 @@ class ImportExportController extends Controller
         }
 
         // Style headers
-        $headerRange = 'A1:' . chr(65 + count($templates[$type]) - 1) . '1';
+        $headerRange = 'A1:'.chr(65 + count($templates[$type]) - 1).'1';
         $sheet->getStyle($headerRange)->getFont()->setBold(true);
 
         // Auto-size columns
@@ -167,7 +167,7 @@ class ImportExportController extends Controller
         $filename = "{$type}_template.xlsx";
         $tempPath = storage_path("app/temp/{$filename}");
 
-        if (!file_exists(dirname($tempPath))) {
+        if (! file_exists(dirname($tempPath))) {
             mkdir(dirname($tempPath), 0755, true);
         }
 
@@ -188,7 +188,7 @@ class ImportExportController extends Controller
             abort(404, 'No data to export');
         }
 
-        $spreadsheet = new Spreadsheet();
+        $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
 
         // Add headers
@@ -205,7 +205,7 @@ class ImportExportController extends Controller
         }
 
         // Style headers
-        $headerRange = 'A1:' . chr(65 + count($headers) - 1) . '1';
+        $headerRange = 'A1:'.chr(65 + count($headers) - 1).'1';
         $sheet->getStyle($headerRange)->getFont()->setBold(true);
 
         // Auto-size columns
@@ -214,10 +214,10 @@ class ImportExportController extends Controller
         }
 
         // Create file
-        $filename = "{$type}_export_" . date('Y-m-d_His') . '.xlsx';
+        $filename = "{$type}_export_".date('Y-m-d_His').'.xlsx';
         $tempPath = storage_path("app/temp/{$filename}");
 
-        if (!file_exists(dirname($tempPath))) {
+        if (! file_exists(dirname($tempPath))) {
             mkdir(dirname($tempPath), 0755, true);
         }
 
@@ -370,7 +370,7 @@ class ImportExportController extends Controller
             'workitems' => \App\Models\WorkItem::query()
                 ->with('responsibleParty')
                 ->get()
-                ->map(fn($item) => [
+                ->map(fn ($item) => [
                     'ref_no' => $item->ref_no,
                     'type' => $item->type,
                     'activity' => $item->activity,
@@ -390,7 +390,7 @@ class ImportExportController extends Controller
             'suppliers' => \App\Models\Supplier::query()
                 ->with(['sageCategory', 'responsibleParty', 'entities'])
                 ->get()
-                ->map(fn($item) => [
+                ->map(fn ($item) => [
                     'ref_no' => $item->ref_no,
                     'name' => $item->name,
                     'sage_category' => $item->sageCategory?->name,
@@ -405,7 +405,7 @@ class ImportExportController extends Controller
             'risks' => \App\Models\Risk::query()
                 ->with(['category.theme', 'owner', 'responsibleParty'])
                 ->get()
-                ->map(fn($item) => [
+                ->map(fn ($item) => [
                     'ref_no' => $item->ref_no,
                     'theme' => $item->category?->theme?->name,
                     'category' => $item->category?->name,

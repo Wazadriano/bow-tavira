@@ -4,8 +4,8 @@ namespace App\Services;
 
 use App\Enums\CurrentStatus;
 use App\Enums\RAGStatus;
-use App\Models\WorkItem;
 use App\Models\GovernanceItem;
+use App\Models\WorkItem;
 use Carbon\Carbon;
 
 class RAGCalculationService
@@ -21,7 +21,7 @@ class RAGCalculationService
         }
 
         // If no deadline, return Green (no urgency)
-        if (!$workItem->deadline) {
+        if (! $workItem->deadline) {
             return RAGStatus::GREEN;
         }
 
@@ -59,7 +59,7 @@ class RAGCalculationService
         }
 
         // If no due date, return Green
-        if (!$item->due_date) {
+        if (! $item->due_date) {
             return RAGStatus::GREEN;
         }
 
@@ -159,7 +159,7 @@ class RAGCalculationService
             : GovernanceItem::query();
 
         return $query->whereIn('rag_status', [RAGStatus::AMBER, RAGStatus::RED])
-            ->orderByRaw("CASE WHEN rag_status = ? THEN 1 ELSE 2 END", [RAGStatus::RED->value])
+            ->orderByRaw('CASE WHEN rag_status = ? THEN 1 ELSE 2 END', [RAGStatus::RED->value])
             ->orderBy($model === 'workitems' ? 'deadline' : 'due_date')
             ->limit($limit)
             ->get()

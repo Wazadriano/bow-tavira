@@ -263,7 +263,7 @@ class RiskScoringService
         // For now, return current state
         $risk = Risk::find($riskId);
 
-        if (!$risk) {
+        if (! $risk) {
             return [];
         }
 
@@ -282,7 +282,7 @@ class RiskScoringService
     {
         $category = RiskCategory::with('risks')->find($categoryId);
 
-        if (!$category) {
+        if (! $category) {
             return [];
         }
 

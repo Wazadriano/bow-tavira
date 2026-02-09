@@ -5,7 +5,7 @@ use App\Models\Risk;
 use App\Services\RiskScoringService;
 
 beforeEach(function () {
-    $this->service = new RiskScoringService();
+    $this->service = new RiskScoringService;
 });
 
 // ============================================

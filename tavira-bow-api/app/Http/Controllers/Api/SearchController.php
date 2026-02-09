@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\WorkItem;
 use App\Models\GovernanceItem;
-use App\Models\Supplier;
 use App\Models\Risk;
 use App\Models\SettingList;
-use Illuminate\Http\Request;
+use App\Models\Supplier;
+use App\Models\WorkItem;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class SearchController extends Controller
 {
@@ -20,7 +20,7 @@ class SearchController extends Controller
 
         $results = [];
 
-        if (!$type || $type === 'workitems') {
+        if (! $type || $type === 'workitems') {
             $workItems = WorkItem::where('title', 'like', "%{$query}%")
                 ->orWhere('description', 'like', "%{$query}%")
                 ->limit(10)
@@ -28,7 +28,7 @@ class SearchController extends Controller
             $results['workitems'] = $workItems;
         }
 
-        if (!$type || $type === 'governance') {
+        if (! $type || $type === 'governance') {
             $governance = GovernanceItem::where('title', 'like', "%{$query}%")
                 ->orWhere('description', 'like', "%{$query}%")
                 ->limit(10)
@@ -36,14 +36,14 @@ class SearchController extends Controller
             $results['governance'] = $governance;
         }
 
-        if (!$type || $type === 'suppliers') {
+        if (! $type || $type === 'suppliers') {
             $suppliers = Supplier::where('name', 'like', "%{$query}%")
                 ->limit(10)
                 ->get();
             $results['suppliers'] = $suppliers;
         }
 
-        if (!$type || $type === 'risks') {
+        if (! $type || $type === 'risks') {
             $risks = Risk::where('title', 'like', "%{$query}%")
                 ->orWhere('description', 'like', "%{$query}%")
                 ->limit(10)

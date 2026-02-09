@@ -73,7 +73,7 @@ class RiskThemeController extends Controller
     public function update(Request $request, RiskTheme $theme): JsonResponse
     {
         $request->validate([
-            'code' => 'sometimes|string|max:20|unique:risk_themes,code,' . $theme->id,
+            'code' => 'sometimes|string|max:20|unique:risk_themes,code,'.$theme->id,
             'name' => 'sometimes|string|max:100',
             'description' => 'nullable|string',
             'board_appetite' => 'nullable|integer|min:1|max:5',

@@ -299,7 +299,7 @@ export default function RiskHeatmapPage() {
         <div className="grid gap-6 lg:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>Echelle d'Impact</CardTitle>
+              <CardTitle>Echelle d&apos;Impact</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">

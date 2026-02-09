@@ -7,7 +7,7 @@ use App\Services\RAGCalculationService;
 use Carbon\Carbon;
 
 beforeEach(function () {
-    $this->service = new RAGCalculationService();
+    $this->service = new RAGCalculationService;
 });
 
 // ============================================

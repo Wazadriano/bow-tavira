@@ -195,7 +195,7 @@ class UserController extends Controller
         $users = $query->orderBy('full_name')->get();
 
         return response()->json([
-            'users' => $users->map(fn($user) => [
+            'users' => $users->map(fn ($user) => [
                 'id' => $user->id,
                 'label' => $user->full_name,
                 'username' => $user->username,

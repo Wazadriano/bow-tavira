@@ -4,7 +4,6 @@ namespace App\Http\Requests;
 
 use App\Enums\UserRole;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 use Illuminate\Validation\Rules\Password;
 

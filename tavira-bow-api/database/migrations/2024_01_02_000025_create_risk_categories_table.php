@@ -12,8 +12,8 @@ return new class extends Migration
         Schema::create('risk_categories', function (Blueprint $table) {
             $table->id();
             $table->foreignId('theme_id')
-                  ->constrained('risk_themes')
-                  ->onDelete('cascade');
+                ->constrained('risk_themes')
+                ->onDelete('cascade');
             $table->string('code', 20)->unique();          // P-REG-01, P-GOV-01, etc.
             $table->string('name');
             $table->text('description')->nullable();

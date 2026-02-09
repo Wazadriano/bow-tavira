@@ -13,8 +13,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('theme_id')
-                  ->constrained('risk_themes')
-                  ->onDelete('cascade');
+                ->constrained('risk_themes')
+                ->onDelete('cascade');
             $table->boolean('can_view')->default(true);
             $table->boolean('can_edit')->default(false);
             $table->boolean('can_create')->default(false);

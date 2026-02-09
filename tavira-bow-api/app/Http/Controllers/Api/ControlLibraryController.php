@@ -80,7 +80,7 @@ class ControlLibraryController extends Controller
     public function update(Request $request, ControlLibrary $control): JsonResponse
     {
         $request->validate([
-            'code' => 'sometimes|string|max:50|unique:control_library,code,' . $control->id,
+            'code' => 'sometimes|string|max:50|unique:control_library,code,'.$control->id,
             'name' => 'sometimes|string|max:200',
             'description' => 'nullable|string',
             'control_type' => 'nullable|string|max:50',
@@ -126,7 +126,7 @@ class ControlLibraryController extends Controller
             ->get();
 
         return response()->json([
-            'controls' => $controls->map(fn($c) => [
+            'controls' => $controls->map(fn ($c) => [
                 'id' => $c->id,
                 'code' => $c->code,
                 'name' => $c->name,

@@ -281,7 +281,7 @@ export default function SettingsPage() {
                   Parametres systeme
                 </CardTitle>
                 <CardDescription>
-                  Configuration globale de l'application
+                  Configuration globale de l&apos;application
                 </CardDescription>
               </CardHeader>
               <CardContent>

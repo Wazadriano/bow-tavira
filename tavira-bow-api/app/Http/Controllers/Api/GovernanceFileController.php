@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\GovernanceItem;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class GovernanceFileController extends Controller
@@ -13,6 +13,7 @@ class GovernanceFileController extends Controller
     public function index(GovernanceItem $item): JsonResponse
     {
         $files = $item->attachments()->get();
+
         return response()->json($files);
     }
 
@@ -42,7 +43,7 @@ class GovernanceFileController extends Controller
     {
         $path = "governance/{$item->id}/{$filename}";
 
-        if (!Storage::disk('local')->exists($path)) {
+        if (! Storage::disk('local')->exists($path)) {
             return response()->json(['message' => 'File not found'], 404);
         }
 

@@ -12,9 +12,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('supplier_id')->constrained()->onDelete('cascade');
             $table->foreignId('contract_id')
-                  ->nullable()
-                  ->constrained('supplier_contracts')
-                  ->nullOnDelete();
+                ->nullable()
+                ->constrained('supplier_contracts')
+                ->nullOnDelete();
             $table->string('invoice_number');
             $table->date('invoice_date');
             $table->date('due_date')->nullable();
@@ -24,14 +24,14 @@ return new class extends Migration
             $table->string('frequency')->default('One Time');          // InvoiceFrequency enum
             $table->string('description')->nullable();
             $table->foreignId('sage_category_id')
-                  ->nullable()
-                  ->constrained('sage_categories')
-                  ->nullOnDelete();
+                ->nullable()
+                ->constrained('sage_categories')
+                ->nullOnDelete();
             $table->text('notes')->nullable();
             $table->foreignId('approved_by_id')
-                  ->nullable()
-                  ->constrained('users')
-                  ->nullOnDelete();
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
             $table->timestamp('approved_at')->nullable();
             $table->timestamps();
 

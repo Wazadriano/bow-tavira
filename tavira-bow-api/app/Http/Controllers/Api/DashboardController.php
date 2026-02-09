@@ -9,7 +9,6 @@ use App\Models\SupplierContract;
 use App\Models\WorkItem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class DashboardController extends Controller
@@ -23,7 +22,7 @@ class DashboardController extends Controller
 
         // Get departments user has access to
         $departments = null;
-        if (!$user->isAdmin()) {
+        if (! $user->isAdmin()) {
             $departments = $user->departmentPermissions()
                 ->where('can_view', true)
                 ->pluck('department')
@@ -106,7 +105,7 @@ class DashboardController extends Controller
         $user = $request->user();
 
         $departments = null;
-        if (!$user->isAdmin()) {
+        if (! $user->isAdmin()) {
             $departments = $user->departmentPermissions()
                 ->where('can_view', true)
                 ->pluck('department')
@@ -119,7 +118,7 @@ class DashboardController extends Controller
             ->selectRaw('COUNT(*) as total_tasks')
             ->selectRaw("SUM(CASE WHEN current_status = 'Completed' THEN 1 ELSE 0 END) as completed")
             ->selectRaw("SUM(CASE WHEN current_status = 'In Progress' THEN 1 ELSE 0 END) as in_progress")
-            ->selectRaw("SUM(CASE WHEN deadline < NOW() AND completion_date IS NULL THEN 1 ELSE 0 END) as overdue")
+            ->selectRaw('SUM(CASE WHEN deadline < NOW() AND completion_date IS NULL THEN 1 ELSE 0 END) as overdue')
             ->selectRaw("SUM(CASE WHEN rag_status = 'Blue' THEN 1 ELSE 0 END) as rag_blue")
             ->selectRaw("SUM(CASE WHEN rag_status = 'Green' THEN 1 ELSE 0 END) as rag_green")
             ->selectRaw("SUM(CASE WHEN rag_status = 'Amber' THEN 1 ELSE 0 END) as rag_amber")
@@ -134,7 +133,7 @@ class DashboardController extends Controller
         $stats = $query->get();
 
         return response()->json([
-            'data' => $stats->map(fn($item) => [
+            'data' => $stats->map(fn ($item) => [
                 'department' => $item->department,
                 'total_tasks' => (int) $item->total_tasks,
                 'completed' => (int) $item->completed,
@@ -167,7 +166,7 @@ class DashboardController extends Controller
             ->whereNotNull('rag_status')
             ->groupBy('rag_status');
 
-        if (!$user->isAdmin()) {
+        if (! $user->isAdmin()) {
             $departments = $user->departmentPermissions()
                 ->where('can_view', true)
                 ->pluck('department')
@@ -197,7 +196,7 @@ class DashboardController extends Controller
 
         // Get departments user has access to
         $departments = null;
-        if (!$user->isAdmin()) {
+        if (! $user->isAdmin()) {
             $departments = $user->departmentPermissions()
                 ->where('can_view', true)
                 ->pluck('department')
@@ -222,7 +221,7 @@ class DashboardController extends Controller
                 'id' => $item->id,
                 'type' => 'overdue_task',
                 'title' => 'Tâche en retard',
-                'description' => "{$item->ref_no} - " . Str::limit($item->description, 50),
+                'description' => "{$item->ref_no} - ".Str::limit($item->description, 50),
                 'severity' => 'high',
                 'link' => "/tasks/{$item->id}",
                 'created_at' => $item->updated_at?->toIso8601String() ?? now()->toIso8601String(),
@@ -272,6 +271,7 @@ class DashboardController extends Controller
         // Sort by severity
         usort($alerts, function ($a, $b) {
             $severityOrder = ['high' => 0, 'medium' => 1, 'low' => 2];
+
             return ($severityOrder[$a['severity']] ?? 3) <=> ($severityOrder[$b['severity']] ?? 3);
         });
 
@@ -290,7 +290,7 @@ class DashboardController extends Controller
         $days = $request->get('days', 30);
 
         $departments = null;
-        if (!$user->isAdmin()) {
+        if (! $user->isAdmin()) {
             $departments = $user->departmentPermissions()
                 ->where('can_view', true)
                 ->pluck('department')
@@ -328,7 +328,7 @@ class DashboardController extends Controller
         $governanceItems = $governanceQuery->limit(20)->get();
 
         return response()->json([
-            'work_items' => $workItems->map(fn($item) => [
+            'work_items' => $workItems->map(fn ($item) => [
                 'id' => $item->id,
                 'type' => 'work_item',
                 'ref_no' => $item->ref_no,
@@ -339,7 +339,7 @@ class DashboardController extends Controller
                 'responsible_party' => $item->responsibleParty?->full_name,
                 'rag_status' => $item->rag_status?->value,
             ]),
-            'governance_items' => $governanceItems->map(fn($item) => [
+            'governance_items' => $governanceItems->map(fn ($item) => [
                 'id' => $item->id,
                 'type' => 'governance',
                 'ref_no' => $item->ref_no,
@@ -367,7 +367,7 @@ class DashboardController extends Controller
             ->whereNotNull('activity')
             ->groupBy('activity');
 
-        if (!$user->isAdmin()) {
+        if (! $user->isAdmin()) {
             $departments = $user->departmentPermissions()
                 ->where('can_view', true)
                 ->pluck('department')
@@ -378,7 +378,7 @@ class DashboardController extends Controller
         $stats = $query->get();
 
         return response()->json([
-            'data' => $stats->map(fn($item) => [
+            'data' => $stats->map(fn ($item) => [
                 'activity' => $item->activity,
                 'total' => $item->total,
                 'completed' => $item->completed,
@@ -399,7 +399,7 @@ class DashboardController extends Controller
         $end = $request->get('end', now()->endOfMonth()->toDateString());
 
         $departments = null;
-        if (!$user->isAdmin()) {
+        if (! $user->isAdmin()) {
             $departments = $user->departmentPermissions()
                 ->where('can_view', true)
                 ->pluck('department')
@@ -432,7 +432,7 @@ class DashboardController extends Controller
 
         foreach ($workItems as $item) {
             $events[] = [
-                'id' => 'wi_' . $item->id,
+                'id' => 'wi_'.$item->id,
                 'title' => $item->description ?? $item->ref_no,
                 'date' => $item->deadline?->toDateString(),
                 'type' => 'work_item',
@@ -443,7 +443,7 @@ class DashboardController extends Controller
 
         foreach ($governanceItems as $item) {
             $events[] = [
-                'id' => 'gov_' . $item->id,
+                'id' => 'gov_'.$item->id,
                 'title' => $item->name ?? $item->ref_no,
                 'date' => $item->deadline?->toDateString(),
                 'type' => 'governance',
@@ -465,7 +465,7 @@ class DashboardController extends Controller
         $user = $request->user();
 
         $departments = null;
-        if (!$user->isAdmin()) {
+        if (! $user->isAdmin()) {
             $departments = $user->departmentPermissions()
                 ->where('can_view', true)
                 ->pluck('department')
@@ -489,13 +489,13 @@ class DashboardController extends Controller
         $byDepartment = (clone $query)
             ->select('department')
             ->selectRaw('COUNT(*) as total')
-            ->selectRaw("SUM(CASE WHEN priority_item = true THEN 1 ELSE 0 END) as priority")
+            ->selectRaw('SUM(CASE WHEN priority_item = true THEN 1 ELSE 0 END) as priority')
             ->whereNotNull('department')
             ->groupBy('department')
             ->orderByDesc('total')
             ->limit(10)
             ->get()
-            ->map(fn($item) => [
+            ->map(fn ($item) => [
                 'name' => $item->department,
                 'total' => (int) $item->total,
                 'priority' => (int) $item->priority,
@@ -510,7 +510,7 @@ class DashboardController extends Controller
             ->orderByDesc('count')
             ->limit(10)
             ->get()
-            ->map(fn($item) => [
+            ->map(fn ($item) => [
                 'name' => $item->activity,
                 'count' => (int) $item->count,
             ]);
@@ -534,13 +534,13 @@ class DashboardController extends Controller
         $priorityByDept = (clone $query)
             ->select('department')
             ->selectRaw('COUNT(*) as total')
-            ->selectRaw("SUM(CASE WHEN priority_item = true THEN 1 ELSE 0 END) as priority")
+            ->selectRaw('SUM(CASE WHEN priority_item = true THEN 1 ELSE 0 END) as priority')
             ->whereNotNull('department')
             ->groupBy('department')
             ->orderByDesc('priority')
             ->limit(5)
             ->get()
-            ->map(fn($item) => [
+            ->map(fn ($item) => [
                 'department' => $item->department,
                 'total' => (int) $item->total,
                 'priority' => (int) $item->priority,

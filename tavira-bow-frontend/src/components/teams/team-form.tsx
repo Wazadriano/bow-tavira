@@ -63,11 +63,11 @@ export function TeamForm({ team, mode }: TeamFormProps) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Informations de l'equipe</CardTitle>
+          <CardTitle>Informations de l&apos;equipe</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Nom de l'equipe *</Label>
+            <Label htmlFor="name">Nom de l&apos;equipe *</Label>
             <Input
               id="name"
               {...register('name')}

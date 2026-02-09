@@ -4,14 +4,15 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Team;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class TeamController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
         $teams = Team::with(['members.user', 'owner'])->get();
+
         return response()->json($teams);
     }
 
@@ -24,6 +25,7 @@ class TeamController extends Controller
         ]);
 
         $team = Team::create($validated);
+
         return response()->json($team->load(['members.user', 'owner']), 201);
     }
 
@@ -41,12 +43,14 @@ class TeamController extends Controller
         ]);
 
         $team->update($validated);
+
         return response()->json($team->load(['members.user', 'owner']));
     }
 
     public function destroy(Team $team): JsonResponse
     {
         $team->delete();
+
         return response()->json(null, 204);
     }
 }

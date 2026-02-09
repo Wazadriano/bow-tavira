@@ -13,15 +13,15 @@ return new class extends Migration
             $table->id();
             $table->foreignId('risk_id')->constrained()->onDelete('cascade');
             $table->foreignId('control_id')
-                  ->constrained('control_library')
-                  ->onDelete('cascade');
+                ->constrained('control_library')
+                ->onDelete('cascade');
             $table->string('implementation_status')->default('Planned');  // ControlImplementationStatus
             $table->date('implementation_date')->nullable();
             $table->text('implementation_notes')->nullable();
             $table->foreignId('responsible_id')
-                  ->nullable()
-                  ->constrained('users')
-                  ->nullOnDelete();
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
             $table->timestamps();
 
             $table->unique(['risk_id', 'control_id']);

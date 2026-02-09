@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Supplier;
 use App\Models\SupplierAttachment;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class SupplierFileController extends Controller
@@ -14,6 +14,7 @@ class SupplierFileController extends Controller
     public function index(Supplier $supplier): JsonResponse
     {
         $files = $supplier->attachments()->get();
+
         return response()->json($files);
     }
 
@@ -46,6 +47,7 @@ class SupplierFileController extends Controller
         }
 
         $file->delete();
+
         return response()->json(null, 204);
     }
 }

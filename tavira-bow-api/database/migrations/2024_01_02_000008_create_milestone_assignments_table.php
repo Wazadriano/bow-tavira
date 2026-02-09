@@ -11,8 +11,8 @@ return new class extends Migration
         Schema::create('milestone_assignments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('milestone_id')
-                  ->constrained('task_milestones')
-                  ->onDelete('cascade');
+                ->constrained('task_milestones')
+                ->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
 

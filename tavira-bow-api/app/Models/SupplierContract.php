@@ -73,7 +73,7 @@ class SupplierContract extends Model
 
     public function getDaysUntilExpiryAttribute(): ?int
     {
-        if (!$this->end_date) {
+        if (! $this->end_date) {
             return null;
         }
 
@@ -87,6 +87,7 @@ class SupplierContract extends Model
         }
 
         $daysUntilExpiry = $this->days_until_expiry;
+
         return $daysUntilExpiry !== null && $daysUntilExpiry <= ($this->notice_period_days ?? 90);
     }
 }

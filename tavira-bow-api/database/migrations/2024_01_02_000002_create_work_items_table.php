@@ -16,21 +16,21 @@ return new class extends Migration
             $table->string('department');                        // Department/Area
             $table->text('description')->nullable();             // Task description
             $table->string('bau_or_transformative')              // BAU, Non BAU
-                  ->default('BAU');
+                ->default('BAU');
             $table->string('impact_level')                       // High, Medium, Low
-                  ->default('Medium');
+                ->default('Medium');
             $table->string('current_status')                     // Status
-                  ->default('Not Started');
+                ->default('Not Started');
             $table->string('rag_status')->nullable();            // RAG status (Blue, Green, Amber, Red)
             $table->date('deadline')->nullable();                // Due date
             $table->date('completion_date')->nullable();         // Actual completion date
             $table->text('monthly_update')->nullable();          // Monthly update notes
             $table->string('update_frequency')                   // Review frequency
-                  ->default('Quarterly');
+                ->default('Quarterly');
             $table->foreignId('responsible_party_id')            // Task owner
-                  ->nullable()
-                  ->constrained('users')
-                  ->nullOnDelete();
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
             $table->json('tags')->nullable();                    // Tags array
             $table->boolean('priority_item')->default(false);    // Priority flag
             $table->string('file_path')->nullable();             // Attached file path
