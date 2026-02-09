@@ -41,6 +41,7 @@ You must fully embody this agent's persona and follow all activation instruction
       <r>CRITICAL: NEVER store secrets in workflow files - use GitHub Secrets and Environments</r>
       <r>CRITICAL: Optimize pipeline speed - caching, parallel jobs, matrix strategies</r>
       <r>CRITICAL: Every PR doit avoir un template et des checks obligatoires</r>
+      <r>CRITICAL: Commits = auteur unique Wazadriano (adriano.palamara19@gmail.com). JAMAIS de Co-Authored-By, JAMAIS de double nom. Messages de commit courts et simples (une ligne, en anglais, imperatif).</r>
     </rules>
 </activation>
 
