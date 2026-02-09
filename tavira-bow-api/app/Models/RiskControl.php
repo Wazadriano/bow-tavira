@@ -44,7 +44,7 @@ class RiskControl extends Model
 
     public function scopeImplemented($query)
     {
-        return $query->where('implementation_status', ControlImplementationStatus::Implemented);
+        return $query->where('implementation_status', ControlImplementationStatus::IMPLEMENTED);
     }
 
     public function scopeNeedsTesting($query)

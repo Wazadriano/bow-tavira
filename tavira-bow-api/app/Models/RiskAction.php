@@ -47,12 +47,12 @@ class RiskAction extends Model
 
     public function scopeOpen($query)
     {
-        return $query->whereIn('status', [ActionStatus::Open, ActionStatus::InProgress]);
+        return $query->whereIn('status', [ActionStatus::OPEN, ActionStatus::IN_PROGRESS]);
     }
 
     public function scopeCompleted($query)
     {
-        return $query->where('status', ActionStatus::Completed);
+        return $query->where('status', ActionStatus::COMPLETED);
     }
 
     public function scopeOverdue($query)
@@ -63,7 +63,7 @@ class RiskAction extends Model
 
     public function scopeHighPriority($query)
     {
-        return $query->where('priority', ActionPriority::High);
+        return $query->where('priority', ActionPriority::HIGH);
     }
 
     // ========== Accessors ==========

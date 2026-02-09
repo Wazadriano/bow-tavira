@@ -16,6 +16,7 @@ class GovernanceMilestone extends Model
         'completion_date',
         'rag_status',
         'order',
+        'owner_id',
     ];
 
     protected function casts(): array
@@ -33,6 +34,11 @@ class GovernanceMilestone extends Model
     public function governanceItem(): BelongsTo
     {
         return $this->belongsTo(GovernanceItem::class);
+    }
+
+    public function owner(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'owner_id');
     }
 
     // ========== Scopes ==========

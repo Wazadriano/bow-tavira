@@ -72,6 +72,11 @@ class Risk extends Model
         return $this->hasMany(RiskControl::class);
     }
 
+    public function riskControls(): HasMany
+    {
+        return $this->hasMany(RiskControl::class);
+    }
+
     public function actions(): HasMany
     {
         return $this->hasMany(RiskAction::class);

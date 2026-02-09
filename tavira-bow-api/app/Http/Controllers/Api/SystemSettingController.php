@@ -11,7 +11,7 @@ class SystemSettingController extends Controller
 {
     public function index(): JsonResponse
     {
-        $settings = SystemSetting::all()->pluck('value', 'key');
+        $settings = SystemSetting::pluck('value', 'key');
 
         return response()->json($settings);
     }

@@ -1,10 +1,10 @@
 <?php
 
-use App\Services\RiskScoringService;
 use App\Enums\RAGStatus;
+use App\Services\RiskScoringService;
 
 beforeEach(function () {
-    $this->service = new RiskScoringService();
+    $this->service = new RiskScoringService;
 });
 
 // -------------------------------------------------------

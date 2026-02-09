@@ -43,6 +43,9 @@ jobs:
       - name: Run Pint (code style)
         run: vendor/bin/pint --test
 
+      - name: Run Larastan (static analysis)
+        run: vendor/bin/phpstan analyse --memory-limit=512M --no-progress
+
   backend-test:
     name: Backend Tests
     runs-on: ubuntu-latest

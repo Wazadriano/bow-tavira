@@ -46,17 +46,17 @@ class SupplierInvoice extends Model
 
     public function scopePending($query)
     {
-        return $query->where('status', InvoiceStatus::Pending);
+        return $query->where('status', InvoiceStatus::PENDING);
     }
 
     public function scopePaid($query)
     {
-        return $query->where('status', InvoiceStatus::Paid);
+        return $query->where('status', InvoiceStatus::PAID);
     }
 
     public function scopeOverdue($query)
     {
-        return $query->where('status', InvoiceStatus::Pending)
+        return $query->where('status', InvoiceStatus::PENDING)
             ->where('due_date', '<', now());
     }
 
@@ -64,7 +64,7 @@ class SupplierInvoice extends Model
 
     public function getIsOverdueAttribute(): bool
     {
-        return $this->status === InvoiceStatus::Pending
+        return $this->status === InvoiceStatus::PENDING
             && $this->due_date
             && $this->due_date->isPast();
     }

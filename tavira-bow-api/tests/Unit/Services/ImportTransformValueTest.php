@@ -3,7 +3,7 @@
 use App\Services\ImportNormalizationService;
 
 beforeEach(function () {
-    $this->service = new ImportNormalizationService();
+    $this->service = new ImportNormalizationService;
 });
 
 // 1. null
