@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Risk;
 use App\Enums\RiskAppetiteStatus;
+use App\Models\Risk;
 use App\Services\RiskScoringService;
 
 beforeEach(function () {

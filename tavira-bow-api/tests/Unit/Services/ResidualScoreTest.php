@@ -4,7 +4,7 @@ use App\Models\Risk;
 use App\Services\RiskScoringService;
 
 beforeEach(function () {
-    $this->service = new RiskScoringService();
+    $this->service = new RiskScoringService;
 });
 
 afterEach(function () {
@@ -24,6 +24,7 @@ function createRiskWithControls(array $attributes, array $controlEffectiveness =
     $controls = collect(array_map(function ($eff) {
         $control = new \stdClass();
         $control->effectiveness = (object) ['value' => $eff];
+
         return $control;
     }, $controlEffectiveness));
 
