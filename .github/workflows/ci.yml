@@ -133,8 +133,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: tavira-bow-frontend/package-lock.json
+
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ hashFiles('tavira-bow-frontend/package-lock.json') }}
+          restore-keys: npm-
 
       - name: Install dependencies
         run: npm ci
