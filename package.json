@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "create-byan-agent": "^2.1.1"
+  },
+  "scripts": {
+    "byan": "echo \"BYAN agent installed. Use: copilot and type /agent\""
+  }
+}

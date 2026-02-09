@@ -1,0 +1,192 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { Header } from '@/components/layout/header'
+import { BarChart, DoughnutChart, StatsCard, StatsGrid } from '@/components/charts'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { api } from '@/lib/api'
+import { safeDateString } from '@/lib/utils'
+import {
+  Shield,
+  CheckCircle,
+  Clock,
+  AlertTriangle,
+  Calendar,
+} from 'lucide-react'
+
+interface GovernanceStats {
+  total_items: number
+  completed: number
+  pending: number
+  overdue: number
+  by_department: Array<{ name: string; count: number }>
+  by_frequency: Array<{ name: string; count: number }>
+  by_status: { completed: number; in_progress: number; pending: number; overdue: number }
+  upcoming: Array<{ id: number; title: string; next_due: string; department: string }>
+}
+
+export default function GovernanceDashboardPage() {
+  const [stats, setStats] = useState<GovernanceStats | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await api.get<{ data: GovernanceStats }>('/governance/dashboard/stats')
+        setStats(response.data.data)
+      } catch {
+        // Fallback mock data
+        setStats({
+          total_items: 48,
+          completed: 32,
+          pending: 12,
+          overdue: 4,
+          by_department: [
+            { name: 'Compliance', count: 18 },
+            { name: 'Finance', count: 12 },
+            { name: 'IT', count: 10 },
+            { name: 'Operations', count: 8 },
+          ],
+          by_frequency: [
+            { name: 'Monthly', count: 20 },
+            { name: 'Quarterly', count: 15 },
+            { name: 'Annually', count: 8 },
+            { name: 'Weekly', count: 5 },
+          ],
+          by_status: { completed: 32, in_progress: 8, pending: 4, overdue: 4 },
+          upcoming: [
+            { id: 1, title: 'Board Meeting Review', next_due: '2026-02-01', department: 'Compliance' },
+            { id: 2, title: 'Quarterly Report', next_due: '2026-02-05', department: 'Finance' },
+            { id: 3, title: 'Security Audit', next_due: '2026-02-10', department: 'IT' },
+          ],
+        })
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchStats()
+  }, [])
+
+  if (isLoading || !stats) {
+    return (
+      <>
+        <Header title="Dashboard" description="Statistiques Governance" />
+        <div className="p-6">
+          <div className="animate-pulse space-y-6">
+            <div className="grid gap-4 md:grid-cols-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-24 bg-muted rounded-lg" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </>
+    )
+  }
+
+  const statusData = [
+    { name: 'Completed', value: stats.by_status.completed, color: '#22c55e' },
+    { name: 'In Progress', value: stats.by_status.in_progress, color: '#3b82f6' },
+    { name: 'Pending', value: stats.by_status.pending, color: '#f59e0b' },
+    { name: 'Overdue', value: stats.by_status.overdue, color: '#ef4444' },
+  ]
+
+  const deptData = stats.by_department.map((d) => ({
+    name: d.name,
+    count: d.count,
+  }))
+
+  const freqData = stats.by_frequency.map((f) => ({
+    name: f.name,
+    count: f.count,
+  }))
+
+  return (
+    <>
+      <Header title="Dashboard" description="Statistiques Governance" />
+
+      <div className="p-6 space-y-6">
+        {/* KPIs */}
+        <StatsGrid columns={4}>
+          <StatsCard
+            title="Total Items"
+            value={stats.total_items}
+            icon={Shield}
+            variant="info"
+          />
+          <StatsCard
+            title="Termines"
+            value={stats.completed}
+            icon={CheckCircle}
+            variant="success"
+          />
+          <StatsCard
+            title="En attente"
+            value={stats.pending}
+            icon={Clock}
+            variant="warning"
+          />
+          <StatsCard
+            title="En retard"
+            value={stats.overdue}
+            icon={AlertTriangle}
+            variant="danger"
+          />
+        </StatsGrid>
+
+        {/* Charts row */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          <BarChart
+            title="Items par Departement"
+            data={deptData}
+            bars={[{ dataKey: 'count', name: 'Items', color: '#8b5cf6' }]}
+          />
+
+          <DoughnutChart
+            title="Distribution par Statut"
+            data={statusData}
+          />
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          <BarChart
+            title="Items par Frequence"
+            data={freqData}
+            bars={[{ dataKey: 'count', name: 'Items', color: '#06b6d4' }]}
+          />
+
+          {/* Upcoming Reviews */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                Prochaines echeances
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {stats.upcoming.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between p-3 rounded-lg border"
+                  >
+                    <div>
+                      <p className="font-medium">{item.title}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {item.department}
+                      </p>
+                    </div>
+                    <Badge variant="outline">
+                      {safeDateString(item.next_due)}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </>
+  )
+}

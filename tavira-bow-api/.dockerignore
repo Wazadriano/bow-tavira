@@ -1,0 +1,16 @@
+vendor
+node_modules
+.git
+.gitignore
+*.md
+.env
+.env.local
+.env.*.local
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+bootstrap/cache/*
+docker-compose.yml
+Dockerfile
+.DS_Store

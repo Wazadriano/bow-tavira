@@ -1,0 +1,165 @@
+version: '3.8'
+
+services:
+  # Laravel API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tavira-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/var/www/html
+      - ./storage:/var/www/html/storage
+    environment:
+      - APP_NAME=TaviraBoW
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - APP_URL=http://localhost:8000
+      - APP_KEY=
+      - DB_CONNECTION=pgsql
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=tavira_bow
+      - DB_USERNAME=tavira
+      - DB_PASSWORD=secret
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=null
+      - CACHE_DRIVER=redis
+      - QUEUE_CONNECTION=redis
+      - SESSION_DRIVER=redis
+      - FILESYSTEM_DISK=local
+      - MAIL_MAILER=smtp
+      - MAIL_HOST=mailhog
+      - MAIL_PORT=1025
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - tavira-network
+
+  # PostgreSQL 16
+  postgres:
+    image: postgres:16-alpine
+    container_name: tavira-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=tavira_bow
+      - POSTGRES_USER=tavira
+      - POSTGRES_PASSWORD=secret
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tavira -d tavira_bow"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tavira-network
+
+  # Redis 7
+  redis:
+    image: redis:7-alpine
+    container_name: tavira-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - tavira-network
+
+  # Queue Worker
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tavira-queue
+    restart: unless-stopped
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    volumes:
+      - .:/var/www/html
+    environment:
+      - APP_ENV=local
+      - DB_CONNECTION=pgsql
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=tavira_bow
+      - DB_USERNAME=tavira
+      - DB_PASSWORD=secret
+      - REDIS_HOST=redis
+      - QUEUE_CONNECTION=redis
+    depends_on:
+      - api
+      - postgres
+      - redis
+    networks:
+      - tavira-network
+
+  # Scheduler (cron)
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tavira-scheduler
+    restart: unless-stopped
+    command: php artisan schedule:work
+    volumes:
+      - .:/var/www/html
+    environment:
+      - APP_ENV=local
+      - DB_CONNECTION=pgsql
+      - DB_HOST=postgres
+      - DB_DATABASE=tavira_bow
+      - DB_USERNAME=tavira
+      - DB_PASSWORD=secret
+      - REDIS_HOST=redis
+    depends_on:
+      - api
+    networks:
+      - tavira-network
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: tavira-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./public:/var/www/html/public:ro
+    depends_on:
+      - api
+    networks:
+      - tavira-network
+
+  # Mailhog (dev email)
+  mailhog:
+    image: mailhog/mailhog
+    container_name: tavira-mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - tavira-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  tavira-network:
+    driver: bridge

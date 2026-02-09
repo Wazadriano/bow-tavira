@@ -1,0 +1,191 @@
+# Version Production avec Traefik
+# Domains: bow.ohadja.com, api-bow.ohadja.com, webdb-bow.ohadja.com
+
+services:
+  database:
+    image: postgres:16-alpine
+    hostname: database_bow
+    container_name: bow_database
+    networks:
+      - bow
+    env_file: .env
+    restart: always
+    volumes:
+      - ./db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    hostname: redis_bow
+    container_name: bow_redis
+    networks:
+      - bow
+    restart: always
+    volumes:
+      - ./redis:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  webdb:
+    image: webdb/app
+    container_name: bow_webdb
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - bow
+      - admin_proxy
+    volumes:
+      - "/home/adriano/.ssh:/root/.ssh:ro"
+      - "/home/adriano/.webdb:/usr/src/app/static/version"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=admin_proxy"
+      - "traefik.http.routers.bow-webdb-secure.entrypoints=websecure"
+      - "traefik.http.routers.bow-webdb-secure.rule=Host(`webdb-bow.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.bow-webdb-secure.service=bow-webdb"
+      - "traefik.http.services.bow-webdb.loadbalancer.server.port=22071"
+
+  api:
+    build:
+      context: ./tavira-bow-api
+      dockerfile: Dockerfile
+    container_name: bow_api
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    hostname: api_bow
+    restart: always
+    networks:
+      - bow
+      - admin_proxy
+    volumes:
+      - ./tavira-bow-api:/var/www/html
+      - ./storage:/var/www/html/storage
+      - ./uploads.ini:/usr/local/etc/php/conf.d/99-uploads.ini:ro
+    env_file: .env
+    environment:
+      - APP_NAME="Book of Work"
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_URL=https://api-bow.${DOMAIN_NAME}
+      - DB_CONNECTION=pgsql
+      - DB_HOST=database_bow
+      - DB_PORT=5432
+      - DB_DATABASE=${DB_NAME}
+      - DB_USERNAME=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=redis_bow
+      - REDIS_PORT=6379
+      - CACHE_DRIVER=redis
+      - SESSION_DRIVER=redis
+      - QUEUE_CONNECTION=redis
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=admin_proxy"
+      - "traefik.http.routers.bow-api-secure.entrypoints=websecure"
+      - "traefik.http.routers.bow-api-secure.rule=Host(`api-bow.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.bow-api-secure.service=bow-api"
+      - "traefik.http.services.bow-api.loadbalancer.server.port=8000"
+      # CORS headers
+      - "traefik.http.middlewares.bow-api-cors.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE,PATCH"
+      - "traefik.http.middlewares.bow-api-cors.headers.accesscontrolalloworiginlist=https://bow.${DOMAIN_NAME}"
+      - "traefik.http.middlewares.bow-api-cors.headers.accesscontrolallowheaders=Content-Type,Authorization,Accept,X-Requested-With"
+      - "traefik.http.middlewares.bow-api-cors.headers.accesscontrolallowcredentials=true"
+      - "traefik.http.middlewares.bow-api-cors.headers.accesscontrolmaxage=100"
+      - "traefik.http.routers.bow-api-secure.middlewares=bow-api-cors"
+
+  queue:
+    build:
+      context: ./tavira-bow-api
+      dockerfile: Dockerfile
+    container_name: bow_queue
+    depends_on:
+      - api
+    hostname: queue_bow
+    restart: always
+    networks:
+      - bow
+    volumes:
+      - ./tavira-bow-api:/var/www/html
+      - ./storage:/var/www/html/storage
+    env_file: .env
+    environment:
+      - DB_CONNECTION=pgsql
+      - DB_HOST=database_bow
+      - DB_PORT=5432
+      - DB_DATABASE=${DB_NAME}
+      - DB_USERNAME=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=redis_bow
+      - REDIS_PORT=6379
+      - QUEUE_CONNECTION=redis
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+
+  scheduler:
+    build:
+      context: ./tavira-bow-api
+      dockerfile: Dockerfile
+    container_name: bow_scheduler
+    depends_on:
+      - api
+    hostname: scheduler_bow
+    restart: always
+    networks:
+      - bow
+    volumes:
+      - ./tavira-bow-api:/var/www/html
+      - ./storage:/var/www/html/storage
+    env_file: .env
+    environment:
+      - DB_CONNECTION=pgsql
+      - DB_HOST=database_bow
+      - DB_PORT=5432
+      - DB_DATABASE=${DB_NAME}
+      - DB_USERNAME=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=redis_bow
+      - REDIS_PORT=6379
+    command: sh -c "while true; do php artisan schedule:run --verbose --no-interaction; sleep 60; done"
+
+  frontend:
+    build:
+      context: ./tavira-bow-frontend
+      dockerfile: Dockerfile
+    container_name: bow_frontend
+    depends_on:
+      - api
+    hostname: frontend_bow
+    restart: always
+    networks:
+      - bow
+      - admin_proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=admin_proxy"
+      - "traefik.http.routers.bow-frontend-secure.entrypoints=websecure"
+      - "traefik.http.routers.bow-frontend-secure.rule=Host(`bow.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.bow-frontend-secure.service=bow-frontend"
+      - "traefik.http.services.bow-frontend.loadbalancer.server.port=3000"
+      - "traefik.http.routers.bow-frontend-secure.middlewares=bow-headers"
+      - "traefik.http.middlewares.bow-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.bow-headers.headers.customresponseheaders.Cache-Control=no-cache, no-store, must-revalidate"
+
+networks:
+  admin_proxy:
+    external: true
+  bow:

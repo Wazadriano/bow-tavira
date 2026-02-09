@@ -1,0 +1,59 @@
+# ===========================================
+# BOW-TAVIRA .gitignore
+# ===========================================
+
+# --- Dependencies ---
+node_modules/
+vendor/
+
+# --- Environment variables (SECRETS) ---
+.env
+.env.local
+.env.*.local
+.env.production
+tavira-bow-api/.env
+tavira-bow-frontend/.env.production
+
+# --- Database & Redis data ---
+/db/
+/redis/
+
+# --- Laravel storage (logs, cache, sessions, compiled views) ---
+storage/logs/
+storage/framework/cache/data/
+storage/framework/sessions/
+storage/framework/views/*.php
+tavira-bow-api/storage/logs/
+tavira-bow-api/storage/framework/cache/data/
+tavira-bow-api/storage/framework/sessions/
+tavira-bow-api/storage/framework/views/*.php
+tavira-bow-api/bootstrap/cache/*.php
+
+# --- Next.js build output ---
+.next/
+out/
+dist/
+
+# --- OS files ---
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# --- IDE ---
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# --- Logs ---
+*.log
+npm-debug.log*
+
+# --- Testing output ---
+coverage/
+.nyc_output/
+.phpunit.result.cache
+
+# --- Docker overrides ---
+docker-compose.override.yml
