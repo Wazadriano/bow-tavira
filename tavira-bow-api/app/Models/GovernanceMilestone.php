@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Enums\RAGStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\User;
 
 class GovernanceMilestone extends Model
 {

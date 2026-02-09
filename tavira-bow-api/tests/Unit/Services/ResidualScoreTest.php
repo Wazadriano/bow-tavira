@@ -22,7 +22,7 @@ function createRiskWithControls(array $attributes, array $controlEffectiveness =
 
     // Creer les controles mockes
     $controls = collect(array_map(function ($eff) {
-        $control = new \stdClass();
+        $control = new \stdClass;
         $control->effectiveness = (object) ['value' => $eff];
 
         return $control;
