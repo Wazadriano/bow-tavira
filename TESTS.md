@@ -229,13 +229,24 @@ Ce fichier illustre le principe du **TDD (Test-Driven Development)** :
 
 ## Comment lancer les tests
 
+Les tests se lancent depuis le container Docker `bow_api` ou le code est monte dans `/var/www/html`.
+
 ```bash
 # Tous les tests unitaires
-cd tavira-bow-api && vendor/bin/pest tests/Unit/
+docker exec bow_api php /var/www/html/vendor/bin/pest /var/www/html/tests/Unit/
 
 # Un fichier specifique
-cd tavira-bow-api && vendor/bin/pest tests/Unit/Enums/RiskTierTest.php
+docker exec bow_api php /var/www/html/vendor/bin/pest /var/www/html/tests/Unit/Enums/RiskTierTest.php
+docker exec bow_api php /var/www/html/vendor/bin/pest /var/www/html/tests/Unit/Services/RAGFromScoreTest.php
+docker exec bow_api php /var/www/html/vendor/bin/pest /var/www/html/tests/Unit/Services/ResidualScoreTest.php
+docker exec bow_api php /var/www/html/vendor/bin/pest /var/www/html/tests/Unit/Services/AppetiteStatusTest.php
+docker exec bow_api php /var/www/html/vendor/bin/pest /var/www/html/tests/Unit/Services/ImportTransformValueTest.php
+docker exec bow_api php /var/www/html/vendor/bin/pest /var/www/html/tests/Unit/Services/RAGGovernanceTest.php
+docker exec bow_api php /var/www/html/vendor/bin/pest /var/www/html/tests/Unit/Services/ImportDeduplicationTest.php
 
 # Avec details
-cd tavira-bow-api && vendor/bin/pest tests/Unit/ --verbose
+docker exec bow_api php /var/www/html/vendor/bin/pest /var/www/html/tests/Unit/ --verbose
+
+# Filtrer par nom de test
+docker exec bow_api php /var/www/html/vendor/bin/pest /var/www/html/tests/Unit/ --filter="returns TIER_A"
 ```
