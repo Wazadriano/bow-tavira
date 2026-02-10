@@ -10,8 +10,8 @@ export default function NewWorkItemPage() {
   return (
     <>
       <Header
-        title="Nouvelle tache"
-        description="Creer une nouvelle tache dans le Book of Work"
+        title="New Work Item"
+        description="Create a new work item in the Book of Work"
       />
 
       <div className="p-6">
@@ -19,7 +19,7 @@ export default function NewWorkItemPage() {
           <Button variant="ghost" asChild>
             <Link href="/tasks">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour a la liste
+              Back to list
             </Link>
           </Button>
         </div>

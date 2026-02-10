@@ -64,11 +64,11 @@ export function DependenciesPanel({
     setIsLoading(true)
     try {
       await addDependency(workItemId, Number(selectedId))
-      toast.success('Dependance ajoutee')
+      toast.success('Dependency added')
       setSelectedId('')
       setIsOpen(false)
     } catch {
-      toast.error('Erreur lors de l\'ajout de la dependance')
+      toast.error('Error adding dependency')
     } finally {
       setIsLoading(false)
     }
@@ -77,9 +77,9 @@ export function DependenciesPanel({
   const handleRemoveDependency = async (dependencyId: number) => {
     try {
       await removeDependency(workItemId, dependencyId)
-      toast.success('Dependance supprimee')
+      toast.success('Dependency removed')
     } catch {
-      toast.error('Erreur lors de la suppression')
+      toast.error('Error removing dependency')
     }
   }
 
@@ -88,7 +88,7 @@ export function DependenciesPanel({
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">
           <Link2 className="h-5 w-5" />
-          Dependances
+          Dependencies
           {currentDependencies.length > 0 && (
             <Badge variant="secondary" className="ml-2">
               {currentDependencies.length}
@@ -99,20 +99,20 @@ export function DependenciesPanel({
           <DialogTrigger asChild>
             <Button variant="outline" size="sm">
               <Plus className="h-4 w-4 mr-1" />
-              Ajouter
+              Add
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Ajouter une dependance</DialogTitle>
+              <DialogTitle>Add a dependency</DialogTitle>
               <DialogDescription>
-                Cette tache dependra de la tache selectionnee (doit etre terminee avant)
+                This work item will depend on the selected item (must be completed first)
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <Select value={selectedId} onValueChange={setSelectedId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selectionner une tache..." />
+                  <SelectValue placeholder="Select a work item..." />
                 </SelectTrigger>
                 <SelectContent>
                   {availableItems.map((item) => (
@@ -126,18 +126,18 @@ export function DependenciesPanel({
                   ))}
                   {availableItems.length === 0 && (
                     <div className="p-2 text-sm text-muted-foreground text-center">
-                      Aucune tache disponible
+                      No work items available
                     </div>
                   )}
                 </SelectContent>
               </Select>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setIsOpen(false)}>
-                  Annuler
+                  Cancel
                 </Button>
                 <Button onClick={handleAddDependency} disabled={!selectedId || isLoading}>
                   {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Ajouter
+                  Add
                 </Button>
               </div>
             </div>
@@ -147,7 +147,7 @@ export function DependenciesPanel({
       <CardContent>
         {currentDependencies.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-4">
-            Aucune dependance configuree
+            No dependencies configured
           </p>
         ) : (
           <div className="space-y-2">
@@ -171,9 +171,9 @@ export function DependenciesPanel({
                     </Link>
                     <p className="text-xs text-muted-foreground">
                       {dep.current_status === 'completed' ? (
-                        <span className="text-green-600">Terminee</span>
+                        <span className="text-green-600">Completed</span>
                       ) : (
-                        <span className="text-amber-600">En attente</span>
+                        <span className="text-amber-600">Pending</span>
                       )}
                     </p>
                   </div>

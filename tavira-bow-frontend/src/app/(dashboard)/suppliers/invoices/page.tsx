@@ -134,13 +134,13 @@ export default function InvoicesPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'paid':
-        return <Badge className="bg-green-100 text-green-800">Payee</Badge>
+        return <Badge className="bg-green-100 text-green-800">Paid</Badge>
       case 'pending':
-        return <Badge className="bg-amber-100 text-amber-800">En attente</Badge>
+        return <Badge className="bg-amber-100 text-amber-800">Pending</Badge>
       case 'overdue':
-        return <Badge className="bg-red-100 text-red-800">En retard</Badge>
+        return <Badge className="bg-red-100 text-red-800">Overdue</Badge>
       case 'cancelled':
-        return <Badge className="bg-gray-100 text-gray-800">Annulee</Badge>
+        return <Badge className="bg-gray-100 text-gray-800">Cancelled</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -164,8 +164,8 @@ export default function InvoicesPage() {
   return (
     <>
       <Header
-        title="Factures"
-        description="Gestion des factures fournisseurs"
+        title="Invoices"
+        description="Supplier invoices management"
         actions={
           <div className="flex gap-2">
             <Button variant="outline">
@@ -178,7 +178,7 @@ export default function InvoicesPage() {
             </Button>
             <Button onClick={() => router.push('/suppliers/invoices/new')}>
               <Plus className="h-4 w-4 mr-2" />
-              Nouvelle Facture
+              New Invoice
             </Button>
           </div>
         }
@@ -190,7 +190,7 @@ export default function InvoicesPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold">{filteredInvoices.length}</div>
-              <p className="text-sm text-muted-foreground">Total Factures</p>
+              <p className="text-sm text-muted-foreground">Total Invoices</p>
             </CardContent>
           </Card>
           <Card>
@@ -198,7 +198,7 @@ export default function InvoicesPage() {
               <div className="text-2xl font-bold text-amber-600">
                 {formatCurrency(totalPending, 'EUR')}
               </div>
-              <p className="text-sm text-muted-foreground">En attente</p>
+              <p className="text-sm text-muted-foreground">Pending</p>
             </CardContent>
           </Card>
           <Card>
@@ -206,7 +206,7 @@ export default function InvoicesPage() {
               <div className="text-2xl font-bold text-red-600">
                 {formatCurrency(totalOverdue, 'EUR')}
               </div>
-              <p className="text-sm text-muted-foreground">En retard</p>
+              <p className="text-sm text-muted-foreground">Overdue</p>
             </CardContent>
           </Card>
           <Card>
@@ -214,7 +214,7 @@ export default function InvoicesPage() {
               <div className="text-2xl font-bold text-green-600">
                 {filteredInvoices.filter((i) => i.status === 'paid').length}
               </div>
-              <p className="text-sm text-muted-foreground">Payees ce mois</p>
+              <p className="text-sm text-muted-foreground">Paid this month</p>
             </CardContent>
           </Card>
         </div>
@@ -226,7 +226,7 @@ export default function InvoicesPage() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher par numero ou fournisseur..."
+                  placeholder="Search by number or supplier..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-10"
@@ -234,14 +234,14 @@ export default function InvoicesPage() {
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Statut" />
+                  <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tous les statuts</SelectItem>
-                  <SelectItem value="pending">En attente</SelectItem>
-                  <SelectItem value="paid">Payee</SelectItem>
-                  <SelectItem value="overdue">En retard</SelectItem>
-                  <SelectItem value="cancelled">Annulee</SelectItem>
+                  <SelectItem value="all">All statuses</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="paid">Paid</SelectItem>
+                  <SelectItem value="overdue">Overdue</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -253,7 +253,7 @@ export default function InvoicesPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Receipt className="h-5 w-5" />
-              Liste des Factures
+              Invoices List
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -267,13 +267,13 @@ export default function InvoicesPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>N Facture</TableHead>
-                    <TableHead>Fournisseur</TableHead>
-                    <TableHead>Date Facture</TableHead>
-                    <TableHead>Echeance</TableHead>
-                    <TableHead>Montant</TableHead>
-                    <TableHead>Categorie Sage</TableHead>
-                    <TableHead>Statut</TableHead>
+                    <TableHead>Invoice #</TableHead>
+                    <TableHead>Supplier</TableHead>
+                    <TableHead>Invoice Date</TableHead>
+                    <TableHead>Due Date</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Sage Category</TableHead>
+                    <TableHead>Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

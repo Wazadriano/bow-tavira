@@ -23,14 +23,14 @@ export default function EditRiskPage() {
   }, [id, fetchById])
 
   if (isLoadingItem) {
-    return <PageLoading text="Chargement du risque..." />
+    return <PageLoading text="Loading risk..." />
   }
 
   if (error || !selectedItem) {
     return (
       <ErrorState
-        title="Risque introuvable"
-        description={error || "Ce risque n'existe pas."}
+        title="Risk not found"
+        description={error || "This risk does not exist."}
         onRetry={() => fetchById(id)}
       />
     )
@@ -39,8 +39,8 @@ export default function EditRiskPage() {
   return (
     <>
       <Header
-        title={`Modifier: ${selectedItem.ref_no}`}
-        description="Modifier les informations du risque"
+        title={`Edit: ${selectedItem.ref_no}`}
+        description="Edit risk information"
       />
 
       <div className="p-6">
@@ -48,7 +48,7 @@ export default function EditRiskPage() {
           <Button variant="ghost" asChild>
             <Link href={`/risks/${id}`}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour au detail
+              Back to details
             </Link>
           </Button>
         </div>

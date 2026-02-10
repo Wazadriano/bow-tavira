@@ -10,8 +10,8 @@ interface RiskHeatmapProps {
   onCellClick?: (impact: number, probability: number) => void
 }
 
-const IMPACT_LABELS = ['Negligeable', 'Mineur', 'Modere', 'Majeur', 'Critique']
-const PROBABILITY_LABELS = ['Rare', 'Peu probable', 'Possible', 'Probable', 'Quasi certain']
+const IMPACT_LABELS = ['Negligible', 'Minor', 'Moderate', 'Major', 'Critical']
+const PROBABILITY_LABELS = ['Rare', 'Unlikely', 'Possible', 'Likely', 'Almost Certain']
 
 function getCellColor(impact: number, probability: number): string {
   const score = impact * probability
@@ -42,7 +42,7 @@ export function RiskHeatmap({ data, type, onCellClick }: RiskHeatmapProps) {
     <Card>
       <CardHeader>
         <CardTitle>
-          Matrice des risques - {type === 'inherent' ? 'Inherent' : 'Residuel'}
+          Risk Matrix - {type === 'inherent' ? 'Inherent' : 'Residual'}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -68,7 +68,7 @@ export function RiskHeatmap({ data, type, onCellClick }: RiskHeatmapProps) {
               {/* Y-axis label */}
               <div className="flex w-6 items-center justify-center">
                 <span className="-rotate-90 whitespace-nowrap text-xs font-medium text-muted-foreground">
-                  Probabilite
+                  Probability
                 </span>
               </div>
 
@@ -122,19 +122,19 @@ export function RiskHeatmap({ data, type, onCellClick }: RiskHeatmapProps) {
         <div className="mt-6 flex items-center justify-center gap-6">
           <div className="flex items-center gap-2">
             <div className="h-4 w-4 rounded bg-green-500" />
-            <span className="text-xs">Faible (1-4)</span>
+            <span className="text-xs">Low (1-4)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="h-4 w-4 rounded bg-amber-400" />
-            <span className="text-xs">Modere (5-9)</span>
+            <span className="text-xs">Moderate (5-9)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="h-4 w-4 rounded bg-orange-500" />
-            <span className="text-xs">Eleve (10-15)</span>
+            <span className="text-xs">High (10-15)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="h-4 w-4 rounded bg-red-500" />
-            <span className="text-xs">Critique (16-25)</span>
+            <span className="text-xs">Critical (16-25)</span>
           </div>
         </div>
 
@@ -143,15 +143,15 @@ export function RiskHeatmap({ data, type, onCellClick }: RiskHeatmapProps) {
           <div className="mt-4 flex justify-center gap-8 border-t pt-4">
             <div className="text-center">
               <p className="text-2xl font-bold">{data.summary.total_risks || 0}</p>
-              <p className="text-xs text-muted-foreground">Risques total</p>
+              <p className="text-xs text-muted-foreground">Total Risks</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-red-600">{data.summary.by_rag?.red || 0}</p>
-              <p className="text-xs text-muted-foreground">Critiques</p>
+              <p className="text-xs text-muted-foreground">Critical</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-orange-600">{data.summary.by_rag?.amber || 0}</p>
-              <p className="text-xs text-muted-foreground">Eleves</p>
+              <p className="text-xs text-muted-foreground">High</p>
             </div>
           </div>
         )}

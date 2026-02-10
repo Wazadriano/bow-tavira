@@ -77,7 +77,7 @@ export default function TasksDashboardPage() {
   if (isLoading || !stats) {
     return (
       <>
-        <Header title="Dashboard" description="Statistiques Book of Work" />
+        <Header title="Dashboard" description="Book of Work Statistics" />
         <div className="p-6">
           <div className="animate-pulse space-y-6">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
@@ -111,38 +111,38 @@ export default function TasksDashboardPage() {
 
   return (
     <>
-      <Header title="Dashboard" description="Statistiques Book of Work" />
+      <Header title="Dashboard" description="Book of Work Statistics" />
 
       <div className="p-6 space-y-6">
         {/* KPIs */}
         <StatsGrid columns={5}>
           <StatsCard
-            title="Total Taches"
+            title="Total Work Items"
             value={stats.total_tasks}
             icon={ClipboardList}
             variant="info"
           />
           <StatsCard
-            title="Terminees"
+            title="Completed"
             value={stats.completed}
             icon={CheckCircle}
             variant="success"
             description={`${Math.round((stats.completed / stats.total_tasks) * 100)}%`}
           />
           <StatsCard
-            title="En cours"
+            title="In Progress"
             value={stats.in_progress}
             icon={Clock}
             variant="info"
           />
           <StatsCard
-            title="En retard"
+            title="Overdue"
             value={stats.overdue}
             icon={AlertTriangle}
             variant="danger"
           />
           <StatsCard
-            title="Prioritaires"
+            title="Priority"
             value={stats.priority_count}
             icon={Flag}
             variant="warning"
@@ -152,28 +152,28 @@ export default function TasksDashboardPage() {
         {/* Charts row */}
         <div className="grid gap-6 lg:grid-cols-2">
           <BarChart
-            title="Taches par Departement"
-            description="Distribution avec items prioritaires"
+            title="Work Items by Department"
+            description="Distribution with priority items"
             data={deptData}
             bars={[
               { dataKey: 'Total', name: 'Total', color: '#3b82f6' },
-              { dataKey: 'Priority', name: 'Prioritaires', color: '#ef4444' },
+              { dataKey: 'Priority', name: 'Priority', color: '#ef4444' },
             ]}
           />
 
           <DoughnutChart
-            title="Distribution RAG"
-            description="Statut RAG des taches"
+            title="RAG Distribution"
+            description="RAG status of work items"
             data={ragData}
           />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
           <BarChart
-            title="Taches par Activite"
-            description="Repartition par type d'activite"
+            title="Work Items by Activity"
+            description="Distribution by activity type"
             data={activityData}
-            bars={[{ dataKey: 'count', name: 'Taches', color: '#8b5cf6' }]}
+            bars={[{ dataKey: 'count', name: 'Work Items', color: '#8b5cf6' }]}
           />
 
           {/* Priority Items Table */}
@@ -181,7 +181,7 @@ export default function TasksDashboardPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Flag className="h-5 w-5 text-red-500" />
-                Items Prioritaires par Departement
+                Priority Items by Department
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -194,7 +194,7 @@ export default function TasksDashboardPage() {
                     <div>
                       <p className="font-medium">{item.department}</p>
                       <p className="text-sm text-muted-foreground">
-                        {item.total} taches au total
+                        {item.total} work items total
                       </p>
                     </div>
                     <Badge variant="destructive" className="text-lg px-3 py-1">

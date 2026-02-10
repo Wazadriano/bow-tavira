@@ -39,8 +39,8 @@ export default function TasksCalendarPage() {
   return (
     <>
       <Header
-        title="Calendrier"
-        description="Vue calendrier des echeances"
+        title="Calendar"
+        description="Calendar view of due dates"
       />
 
       <div className="p-6">
@@ -50,7 +50,7 @@ export default function TasksCalendarPage() {
           </div>
         ) : (
           <CalendarView
-            title="Echeances des taches"
+            title="Work Item Due Dates"
             events={events}
             onEventClick={handleEventClick}
           />

@@ -102,73 +102,73 @@ export const targetFields: Record<ImportType, Array<{ field: string; label: stri
   workitems: [
     { field: 'ref_no', label: 'Reference', required: true },
     { field: 'type', label: 'Type', required: false },
-    { field: 'activity', label: 'Activite', required: false },
-    { field: 'department', label: 'Departement', required: true },
+    { field: 'activity', label: 'Activity', required: false },
+    { field: 'department', label: 'Department', required: true },
     { field: 'description', label: 'Description', required: true },
-    { field: 'goal', label: 'Objectif', required: false },
-    { field: 'bau_or_transformative', label: 'BAU / Transformatif', required: false },
-    { field: 'impact_level', label: 'Niveau impact', required: false },
-    { field: 'current_status', label: 'Statut', required: false },
-    { field: 'rag_status', label: 'Statut RAG', required: false },
-    { field: 'deadline', label: 'Date echeance', required: false },
-    { field: 'completion_date', label: 'Date completion', required: false },
-    { field: 'monthly_update', label: 'Mise a jour mensuelle', required: false },
-    { field: 'comments', label: 'Commentaires', required: false },
-    { field: 'update_frequency', label: 'Frequence MAJ', required: false },
-    { field: 'responsible_party_id', label: 'Responsable', required: false },
-    { field: 'department_head_id', label: 'Chef de departement', required: false },
+    { field: 'goal', label: 'Goal', required: false },
+    { field: 'bau_or_transformative', label: 'BAU / Transformative', required: false },
+    { field: 'impact_level', label: 'Impact Level', required: false },
+    { field: 'current_status', label: 'Status', required: false },
+    { field: 'rag_status', label: 'RAG Status', required: false },
+    { field: 'deadline', label: 'Deadline', required: false },
+    { field: 'completion_date', label: 'Completion Date', required: false },
+    { field: 'monthly_update', label: 'Monthly Update', required: false },
+    { field: 'comments', label: 'Comments', required: false },
+    { field: 'update_frequency', label: 'Update Frequency', required: false },
+    { field: 'responsible_party_id', label: 'Responsible Party', required: false },
+    { field: 'department_head_id', label: 'Department Head', required: false },
     { field: 'tags', label: 'Tags', required: false },
-    { field: 'priority_item', label: 'Prioritaire', required: false },
-    { field: 'cost_savings', label: 'Economies', required: false },
-    { field: 'cost_efficiency_fte', label: 'Efficience FTE', required: false },
-    { field: 'expected_cost', label: 'Cout prevu', required: false },
-    { field: 'revenue_potential', label: 'Potentiel revenu', required: false },
+    { field: 'priority_item', label: 'Priority', required: false },
+    { field: 'cost_savings', label: 'Cost Savings', required: false },
+    { field: 'cost_efficiency_fte', label: 'FTE Efficiency', required: false },
+    { field: 'expected_cost', label: 'Expected Cost', required: false },
+    { field: 'revenue_potential', label: 'Revenue Potential', required: false },
   ],
   suppliers: [
     { field: 'ref_no', label: 'Reference', required: true },
-    { field: 'name', label: 'Nom', required: true },
-    { field: 'sage_category_id', label: 'Categorie Sage', required: false },
-    { field: 'location', label: 'Localisation', required: false },
-    { field: 'is_common_provider', label: 'Fournisseur commun', required: false },
-    { field: 'status', label: 'Statut', required: false },
-    { field: 'entities', label: 'Entites', required: false },
+    { field: 'name', label: 'Name', required: true },
+    { field: 'sage_category_id', label: 'Sage Category', required: false },
+    { field: 'location', label: 'Location', required: false },
+    { field: 'is_common_provider', label: 'Common Provider', required: false },
+    { field: 'status', label: 'Status', required: false },
+    { field: 'entities', label: 'Entities', required: false },
     { field: 'notes', label: 'Notes', required: false },
   ],
   invoices: [
-    { field: 'supplier_ref', label: 'Ref fournisseur', required: true },
-    { field: 'invoice_ref', label: 'Ref facture', required: true },
+    { field: 'supplier_ref', label: 'Supplier Ref', required: true },
+    { field: 'invoice_ref', label: 'Invoice Ref', required: true },
     { field: 'description', label: 'Description', required: false },
-    { field: 'amount', label: 'Montant', required: true },
-    { field: 'currency', label: 'Devise', required: false },
-    { field: 'invoice_date', label: 'Date facture', required: true },
-    { field: 'due_date', label: 'Date echeance', required: false },
-    { field: 'frequency', label: 'Frequence', required: false },
-    { field: 'status', label: 'Statut', required: false },
+    { field: 'amount', label: 'Amount', required: true },
+    { field: 'currency', label: 'Currency', required: false },
+    { field: 'invoice_date', label: 'Invoice Date', required: true },
+    { field: 'due_date', label: 'Due Date', required: false },
+    { field: 'frequency', label: 'Frequency', required: false },
+    { field: 'status', label: 'Status', required: false },
   ],
   risks: [
     { field: 'ref_no', label: 'Reference', required: true },
-    { field: 'theme_code', label: 'Code theme (L1)', required: true },
-    { field: 'category_code', label: 'Code categorie (L2)', required: true },
-    { field: 'name', label: 'Nom', required: true },
+    { field: 'theme_code', label: 'Theme Code (L1)', required: true },
+    { field: 'category_code', label: 'Category Code (L2)', required: true },
+    { field: 'name', label: 'Name', required: true },
     { field: 'description', label: 'Description', required: false },
     { field: 'tier', label: 'Tier', required: false },
-    { field: 'owner_id', label: 'Proprietaire', required: false },
-    { field: 'responsible_party_id', label: 'Responsable', required: false },
-    { field: 'financial_impact', label: 'Impact financier (1-5)', required: false },
-    { field: 'regulatory_impact', label: 'Impact reglementaire (1-5)', required: false },
-    { field: 'reputational_impact', label: 'Impact reputationnel (1-5)', required: false },
-    { field: 'inherent_probability', label: 'Probabilite inherente (1-5)', required: false },
+    { field: 'owner_id', label: 'Owner', required: false },
+    { field: 'responsible_party_id', label: 'Responsible Party', required: false },
+    { field: 'financial_impact', label: 'Financial Impact (1-5)', required: false },
+    { field: 'regulatory_impact', label: 'Regulatory Impact (1-5)', required: false },
+    { field: 'reputational_impact', label: 'Reputational Impact (1-5)', required: false },
+    { field: 'inherent_probability', label: 'Inherent Probability (1-5)', required: false },
   ],
   governance: [
     { field: 'ref_no', label: 'Reference', required: true },
-    { field: 'activity', label: 'Activite', required: false },
+    { field: 'activity', label: 'Activity', required: false },
     { field: 'description', label: 'Description', required: false },
-    { field: 'department', label: 'Departement', required: true },
-    { field: 'frequency', label: 'Frequence', required: false },
-    { field: 'location', label: 'Localisation', required: false },
-    { field: 'current_status', label: 'Statut', required: false },
-    { field: 'deadline', label: 'Date echeance', required: false },
-    { field: 'responsible_party_id', label: 'Responsable', required: false },
+    { field: 'department', label: 'Department', required: true },
+    { field: 'frequency', label: 'Frequency', required: false },
+    { field: 'location', label: 'Location', required: false },
+    { field: 'current_status', label: 'Status', required: false },
+    { field: 'deadline', label: 'Deadline', required: false },
+    { field: 'responsible_party_id', label: 'Responsible Party', required: false },
     { field: 'tags', label: 'Tags', required: false },
   ],
 }
@@ -224,7 +224,7 @@ export const useImportStore = create<ImportState>((set, get) => ({
       isUploading: true,
       isPreviewing: true,
       error: null,
-      progress: { ...initialProgress, status: 'uploading', message: 'Upload du fichier...' },
+      progress: { ...initialProgress, status: 'uploading', message: 'Uploading file...' },
     })
 
     try {
@@ -288,10 +288,10 @@ export const useImportStore = create<ImportState>((set, get) => ({
         selectedSheets: importableSheets.length > 0 ? importableSheets : (respSelectedSheet ? [respSelectedSheet] : []),
         isUploading: false,
         isPreviewing: false,
-        progress: { ...initialProgress, status: 'previewing', message: 'Apercu pret' },
+        progress: { ...initialProgress, status: 'previewing', message: 'Preview ready' },
       })
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Erreur lors du preview'
+      const message = error instanceof Error ? error.message : 'Error during preview'
       set({
         error: message,
         isUploading: false,
@@ -312,14 +312,14 @@ export const useImportStore = create<ImportState>((set, get) => ({
   confirmImport: async () => {
     const { tempFile, importType, mapping, selectedSheets, selectedSheet } = get()
     if (!tempFile || !importType) {
-      throw new Error('Fichier ou type manquant')
+      throw new Error('File or type missing')
     }
 
     set({
       isImporting: true,
       error: null,
       jobId: null,
-      progress: { ...initialProgress, status: 'importing', message: 'Lancement de l\'import...' },
+      progress: { ...initialProgress, status: 'importing', message: 'Starting import...' },
     })
 
     try {
@@ -350,7 +350,7 @@ export const useImportStore = create<ImportState>((set, get) => ({
       const { job_id } = response.data
 
       if (!job_id) {
-        throw new Error('Pas de job_id dans la reponse')
+        throw new Error('No job_id in response')
       }
 
       set({ jobId: job_id })
@@ -365,7 +365,7 @@ export const useImportStore = create<ImportState>((set, get) => ({
 
           if (pollCount > maxPolls) {
             clearInterval(poll)
-            const msg = 'Timeout: l\'import prend trop de temps'
+            const msg = 'Timeout: import is taking too long'
             set({
               error: msg,
               isImporting: false,
@@ -387,7 +387,7 @@ export const useImportStore = create<ImportState>((set, get) => ({
                   total: status.total || 0,
                   processed: status.processed || 0,
                   errors: 0,
-                  message: status.message || 'Import en cours...',
+                  message: status.message || 'Importing...',
                 },
               })
             } else if (status.status === 'completed') {
@@ -410,13 +410,13 @@ export const useImportStore = create<ImportState>((set, get) => ({
                   total: results.total || 0,
                   processed: (results.created || 0) + (results.updated || 0),
                   errors: results.errors?.length || 0,
-                  message: `Import termine: ${results.created || 0} crees, ${results.updated || 0} mis a jour, ${results.skipped || 0} ignores`,
+                  message: `Import completed: ${results.created || 0} created, ${results.updated || 0} updated, ${results.skipped || 0} skipped`,
                 },
               })
               resolve(importResult)
             } else if (status.status === 'failed') {
               clearInterval(poll)
-              const msg = status.message || 'L\'import a echoue'
+              const msg = status.message || 'Import failed'
               set({
                 error: msg,
                 isImporting: false,
@@ -431,7 +431,7 @@ export const useImportStore = create<ImportState>((set, get) => ({
         }, 2000)
       })
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Erreur lors de l\'import'
+      const message = error instanceof Error ? error.message : 'Error during import'
       set({
         error: message,
         isImporting: false,
@@ -457,7 +457,7 @@ export const useImportStore = create<ImportState>((set, get) => ({
       link.click()
       window.URL.revokeObjectURL(url)
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Erreur lors du telechargement'
+      const message = error instanceof Error ? error.message : 'Error downloading template'
       set({ error: message })
     }
   },
@@ -478,7 +478,7 @@ export const useImportStore = create<ImportState>((set, get) => ({
       link.click()
       window.URL.revokeObjectURL(url)
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Erreur lors de l\'export'
+      const message = error instanceof Error ? error.message : 'Error during export'
       set({ error: message })
     }
   },

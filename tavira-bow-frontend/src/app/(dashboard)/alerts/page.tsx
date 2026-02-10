@@ -49,10 +49,10 @@ const alertIcons: Record<Alert['type'], React.ElementType> = {
 }
 
 const alertTypeLabels: Record<Alert['type'], string> = {
-  overdue_task: 'Tache en retard',
-  expiring_contract: 'Contrat expirant',
-  high_risk: 'Risque eleve',
-  pending_review: 'En attente de revision',
+  overdue_task: 'Overdue Work Item',
+  expiring_contract: 'Expiring Contract',
+  high_risk: 'High Risk',
+  pending_review: 'Pending Review',
 }
 
 const severityColors: Record<Alert['severity'], string> = {
@@ -84,7 +84,7 @@ export default function AlertsPage() {
         setTotal(response.data.total)
         setError(null)
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erreur lors du chargement')
+        setError(err instanceof Error ? err.message : 'Error during loading')
         setAlerts([])
         setTotal(0)
       } finally {
@@ -103,7 +103,7 @@ export default function AlertsPage() {
   if (isLoading) {
     return (
       <div className="container mx-auto py-6 space-y-6">
-        <h1 className="text-3xl font-bold">Alertes</h1>
+        <h1 className="text-3xl font-bold">Alerts</h1>
         <Card>
           <CardContent className="p-6 space-y-4">
             {[1, 2, 3, 4, 5].map((i) => (
@@ -126,9 +126,9 @@ export default function AlertsPage() {
       <div className="flex items-center gap-3">
         <AlertCircle className="h-8 w-8 text-primary" />
         <div>
-          <h1 className="text-3xl font-bold">Alertes</h1>
+          <h1 className="text-3xl font-bold">Alerts</h1>
           <p className="text-muted-foreground">
-            {total} alerte{total > 1 ? 's' : ''} active{total > 1 ? 's' : ''}
+            {total} active alert{total !== 1 ? 's' : ''}
           </p>
         </div>
       </div>
@@ -137,22 +137,22 @@ export default function AlertsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
             <Filter className="h-4 w-4" />
-            Filtres
+            Filters
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-4">
             <div className="w-48">
-              <label className="text-sm font-medium mb-1 block">Severite</label>
+              <label className="text-sm font-medium mb-1 block">Severity</label>
               <Select value={severityFilter} onValueChange={setSeverityFilter}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Toutes" />
+                  <SelectValue placeholder="All" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Toutes</SelectItem>
-                  <SelectItem value="high">Haute</SelectItem>
-                  <SelectItem value="medium">Moyenne</SelectItem>
-                  <SelectItem value="low">Basse</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="low">Low</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -160,14 +160,14 @@ export default function AlertsPage() {
               <label className="text-sm font-medium mb-1 block">Type</label>
               <Select value={typeFilter} onValueChange={setTypeFilter}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Tous" />
+                  <SelectValue placeholder="All" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tous</SelectItem>
-                  <SelectItem value="overdue_task">Taches en retard</SelectItem>
-                  <SelectItem value="expiring_contract">Contrats expirants</SelectItem>
-                  <SelectItem value="high_risk">Risques eleves</SelectItem>
-                  <SelectItem value="pending_review">En attente</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="overdue_task">Overdue Work Items</SelectItem>
+                  <SelectItem value="expiring_contract">Expiring Contracts</SelectItem>
+                  <SelectItem value="high_risk">High Risks</SelectItem>
+                  <SelectItem value="pending_review">Pending</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -186,11 +186,11 @@ export default function AlertsPage() {
           {filteredAlerts.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="text-lg">Aucune alerte</p>
+              <p className="text-lg">No alerts</p>
               <p className="text-sm">
                 {alerts.length > 0
-                  ? 'Aucune alerte ne correspond aux filtres'
-                  : 'Tout est en ordre !'}
+                  ? 'No alerts match the filters'
+                  : 'Everything is in order!'}
               </p>
             </div>
           ) : (

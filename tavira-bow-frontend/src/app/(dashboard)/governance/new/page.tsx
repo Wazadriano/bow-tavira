@@ -10,8 +10,8 @@ export default function NewGovernancePage() {
   return (
     <>
       <Header
-        title="Nouvel element de gouvernance"
-        description="Ajouter un nouvel element de gouvernance"
+        title="New Governance Item"
+        description="Add a new governance item"
       />
 
       <div className="p-6">
@@ -19,7 +19,7 @@ export default function NewGovernancePage() {
           <Button variant="ghost" asChild>
             <Link href="/governance">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour a la liste
+              Back to list
             </Link>
           </Button>
         </div>

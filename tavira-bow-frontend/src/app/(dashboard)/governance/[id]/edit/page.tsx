@@ -23,14 +23,14 @@ export default function EditGovernancePage() {
   }, [id, fetchById])
 
   if (isLoadingItem) {
-    return <PageLoading text="Chargement..." />
+    return <PageLoading text="Loading..." />
   }
 
   if (error || !selectedItem) {
     return (
       <ErrorState
-        title="Element introuvable"
-        description={error || "Cet element n'existe pas."}
+        title="Item not found"
+        description={error || "This item does not exist."}
         onRetry={() => fetchById(id)}
       />
     )
@@ -39,8 +39,8 @@ export default function EditGovernancePage() {
   return (
     <>
       <Header
-        title={`Modifier: ${selectedItem.activity}`}
-        description="Modifier les informations de cet element"
+        title={`Edit: ${selectedItem.activity}`}
+        description="Edit item information"
       />
 
       <div className="p-6">
@@ -48,7 +48,7 @@ export default function EditGovernancePage() {
           <Button variant="ghost" asChild>
             <Link href={`/governance/${id}`}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour au detail
+              Back to details
             </Link>
           </Button>
         </div>

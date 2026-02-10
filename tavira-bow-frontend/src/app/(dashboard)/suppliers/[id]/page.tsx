@@ -25,9 +25,9 @@ import {
 import { toast } from 'sonner'
 
 const STATUS_LABELS: Record<string, string> = {
-  active: 'Actif',
-  inactive: 'Inactif',
-  pending: 'En attente',
+  active: 'Active',
+  inactive: 'Inactive',
+  pending: 'Pending',
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -65,30 +65,30 @@ export default function SupplierDetailPage() {
 
   const handleDelete = () => {
     showConfirm({
-      title: 'Supprimer ce fournisseur',
-      description: 'Cette action est irreversible. Tous les contrats et factures associes seront egalement supprimes.',
+      title: 'Delete this supplier',
+      description: 'This action is irreversible. All associated contracts and invoices will also be deleted.',
       variant: 'destructive',
       onConfirm: async () => {
         try {
           await remove(id)
-          toast.success('Fournisseur supprime')
+          toast.success('Supplier deleted')
           router.push('/suppliers')
         } catch {
-          toast.error('Erreur lors de la suppression')
+          toast.error('Error during deletion')
         }
       },
     })
   }
 
   if (isLoadingItem) {
-    return <PageLoading text="Chargement du fournisseur..." />
+    return <PageLoading text="Loading supplier..." />
   }
 
   if (error || !selectedItem) {
     return (
       <ErrorState
-        title="Fournisseur introuvable"
-        description={error || "Ce fournisseur n'existe pas ou a ete supprime."}
+        title="Supplier not found"
+        description={error || "This supplier does not exist or has been deleted."}
         onRetry={() => fetchById(id)}
       />
     )
@@ -103,7 +103,7 @@ export default function SupplierDetailPage() {
     <>
       <Header
         title={supplier.name}
-        description={`Fournisseur ${supplier.status ? (STATUS_LABELS[supplier.status.toLowerCase()] || supplier.status) : '-'}`}
+        description={`Supplier ${supplier.status ? (STATUS_LABELS[supplier.status.toLowerCase()] || supplier.status) : '-'}`}
       />
 
       <div className="p-6">
@@ -111,19 +111,19 @@ export default function SupplierDetailPage() {
           <Button variant="ghost" asChild>
             <Link href="/suppliers">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour a la liste
+              Back to list
             </Link>
           </Button>
           <div className="flex gap-2">
             <Button variant="outline" asChild>
               <Link href={`/suppliers/${id}/edit`}>
                 <Edit className="mr-2 h-4 w-4" />
-                Modifier
+                Edit
               </Link>
             </Button>
             <Button variant="destructive" onClick={handleDelete}>
               <Trash2 className="mr-2 h-4 w-4" />
-              Supprimer
+              Delete
             </Button>
           </div>
         </div>
@@ -137,7 +137,7 @@ export default function SupplierDetailPage() {
                   <FileText className="h-6 w-6 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Contrats</p>
+                  <p className="text-sm text-muted-foreground">Contracts</p>
                   <p className="text-2xl font-bold">{totalContracts}</p>
                 </div>
               </div>
@@ -150,7 +150,7 @@ export default function SupplierDetailPage() {
                   <FileText className="h-6 w-6 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Contrats actifs</p>
+                  <p className="text-sm text-muted-foreground">Active Contracts</p>
                   <p className="text-2xl font-bold">{activeContracts}</p>
                 </div>
               </div>
@@ -163,7 +163,7 @@ export default function SupplierDetailPage() {
                   <Receipt className="h-6 w-6 text-purple-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Factures</p>
+                  <p className="text-sm text-muted-foreground">Invoices</p>
                   <p className="text-2xl font-bold">{invoices.length}</p>
                 </div>
               </div>
@@ -176,7 +176,7 @@ export default function SupplierDetailPage() {
                   <Receipt className="h-6 w-6 text-amber-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Total facture</p>
+                  <p className="text-sm text-muted-foreground">Total Invoice</p>
                   <p className="text-2xl font-bold">{formatCurrency(totalInvoicesAmount)}</p>
                 </div>
               </div>
@@ -186,9 +186,9 @@ export default function SupplierDetailPage() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
-            <TabsTrigger value="info">Informations</TabsTrigger>
-            <TabsTrigger value="contracts">Contrats ({totalContracts})</TabsTrigger>
-            <TabsTrigger value="invoices">Factures ({invoices.length})</TabsTrigger>
+            <TabsTrigger value="info">Information</TabsTrigger>
+            <TabsTrigger value="contracts">Contracts ({totalContracts})</TabsTrigger>
+            <TabsTrigger value="invoices">Invoices ({invoices.length})</TabsTrigger>
             <TabsTrigger value="access">Acces</TabsTrigger>
           </TabsList>
 
@@ -198,7 +198,7 @@ export default function SupplierDetailPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Building2 className="h-5 w-5" />
-                    Informations generales
+                    General Information
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -232,20 +232,20 @@ export default function SupplierDetailPage() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Informations supplementaires</CardTitle>
+                  <CardTitle>Additional Information</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {supplier.responsible_party && (
                     <div>
-                      <h4 className="text-sm font-medium text-muted-foreground">Responsable</h4>
+                      <h4 className="text-sm font-medium text-muted-foreground">Responsible Party</h4>
                       <p className="mt-1">{supplier.responsible_party.full_name}</p>
                     </div>
                   )}
 
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Fournisseur commun</span>
+                    <span className="text-sm text-muted-foreground">Common Supplier</span>
                     <Badge variant={supplier.is_common_provider ? 'default' : 'secondary'}>
-                      {supplier.is_common_provider ? 'Oui' : 'Non'}
+                      {supplier.is_common_provider ? 'Yes' : 'No'}
                     </Badge>
                   </div>
 
@@ -268,16 +268,16 @@ export default function SupplierDetailPage() {
           <TabsContent value="contracts" className="mt-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Contrats</CardTitle>
+                <CardTitle>Contracts</CardTitle>
                 <Button size="sm">
                   <Plus className="mr-2 h-4 w-4" />
-                  Nouveau contrat
+                  New Contract
                 </Button>
               </CardHeader>
               <CardContent>
                 {contracts.length === 0 ? (
                   <p className="py-8 text-center text-muted-foreground">
-                    Aucun contrat pour ce fournisseur
+                    No contracts for this supplier
                   </p>
                 ) : (
                   <div className="space-y-4">
@@ -313,16 +313,16 @@ export default function SupplierDetailPage() {
           <TabsContent value="invoices" className="mt-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Factures</CardTitle>
+                <CardTitle>Invoices</CardTitle>
                 <Button size="sm">
                   <Plus className="mr-2 h-4 w-4" />
-                  Nouvelle facture
+                  New Invoice
                 </Button>
               </CardHeader>
               <CardContent>
                 {invoices.length === 0 ? (
                   <p className="py-8 text-center text-muted-foreground">
-                    Aucune facture pour ce fournisseur
+                    No invoices for this supplier
                   </p>
                 ) : (
                   <div className="space-y-4">

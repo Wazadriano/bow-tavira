@@ -29,21 +29,21 @@ interface WorkItemFormProps {
 }
 
 const STATUS_OPTIONS = [
-  { value: 'not_started', label: 'Non commence' },
-  { value: 'in_progress', label: 'En cours' },
-  { value: 'on_hold', label: 'En pause' },
-  { value: 'completed', label: 'Termine' },
+  { value: 'not_started', label: 'Not Started' },
+  { value: 'in_progress', label: 'In Progress' },
+  { value: 'on_hold', label: 'On Hold' },
+  { value: 'completed', label: 'Completed' },
 ]
 
 const IMPACT_LEVEL_OPTIONS = [
-  { value: 'low', label: 'Faible' },
-  { value: 'medium', label: 'Moyen' },
-  { value: 'high', label: 'Eleve' },
+  { value: 'low', label: 'Low' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'high', label: 'High' },
 ]
 
 const BAU_OPTIONS = [
   { value: 'bau', label: 'BAU' },
-  { value: 'transformative', label: 'Transformatif' },
+  { value: 'transformative', label: 'Transformative' },
 ]
 
 export function WorkItemForm({ workItem, mode }: WorkItemFormProps) {
@@ -97,14 +97,14 @@ export function WorkItemForm({ workItem, mode }: WorkItemFormProps) {
     try {
       if (mode === 'create') {
         await create(data)
-        toast.success('Tache creee avec succes')
+        toast.success('Work item created successfully')
       } else if (workItem) {
         await update(workItem.id, data)
-        toast.success('Tache mise a jour avec succes')
+        toast.success('Work item updated successfully')
       }
       router.push('/tasks')
     } catch {
-      toast.error('Une erreur est survenue')
+      toast.error('An error occurred')
     }
   }
 
@@ -114,7 +114,7 @@ export function WorkItemForm({ workItem, mode }: WorkItemFormProps) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Informations generales</CardTitle>
+          <CardTitle>General Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
@@ -123,7 +123,7 @@ export function WorkItemForm({ workItem, mode }: WorkItemFormProps) {
               <Input
                 id="ref_no"
                 {...register('ref_no')}
-                placeholder="Reference de la tache"
+                placeholder="Work item reference"
               />
               {errors.ref_no && (
                 <p className="text-sm text-destructive">{errors.ref_no.message}</p>
@@ -131,13 +131,13 @@ export function WorkItemForm({ workItem, mode }: WorkItemFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="department">Departement *</Label>
+              <Label htmlFor="department">Department *</Label>
               <Select
                 value={watch('department')}
                 onValueChange={(value) => setValue('department', value)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selectionner un departement" />
+                  <SelectValue placeholder="Select a department" />
                 </SelectTrigger>
                 <SelectContent>
                   {departments?.data?.map((dept) => (
@@ -160,7 +160,7 @@ export function WorkItemForm({ workItem, mode }: WorkItemFormProps) {
               {...register('description')}
               rows={3}
               className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              placeholder="Description detaillee de la tache"
+              placeholder="Detailed description of the work item"
             />
             {errors.description && (
               <p className="text-sm text-destructive">{errors.description.message}</p>
@@ -173,16 +173,16 @@ export function WorkItemForm({ workItem, mode }: WorkItemFormProps) {
               <Input
                 id="type"
                 {...register('type')}
-                placeholder="Type de tache"
+                placeholder="Work item type"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="activity">Activite</Label>
+              <Label htmlFor="activity">Activity</Label>
               <Input
                 id="activity"
                 {...register('activity')}
-                placeholder="Activite"
+                placeholder="Activity"
               />
             </div>
           </div>
@@ -191,18 +191,18 @@ export function WorkItemForm({ workItem, mode }: WorkItemFormProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Statut et planification</CardTitle>
+          <CardTitle>Status and Planning</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
-              <Label htmlFor="current_status">Statut</Label>
+              <Label htmlFor="current_status">Status</Label>
               <Select
                 value={watchStatus}
                 onValueChange={(value) => setValue('current_status', value as WorkItemFormData['current_status'])}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selectionner un statut" />
+                  <SelectValue placeholder="Select a status" />
                 </SelectTrigger>
                 <SelectContent>
                   {STATUS_OPTIONS.map((option) => (
@@ -215,13 +215,13 @@ export function WorkItemForm({ workItem, mode }: WorkItemFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="impact_level">Niveau d&apos;impact</Label>
+              <Label htmlFor="impact_level">Impact Level</Label>
               <Select
                 value={watch('impact_level') || ''}
                 onValueChange={(value) => setValue('impact_level', value as WorkItemFormData['impact_level'])}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selectionner un niveau" />
+                  <SelectValue placeholder="Select a level" />
                 </SelectTrigger>
                 <SelectContent>
                   {IMPACT_LEVEL_OPTIONS.map((option) => (
@@ -234,13 +234,13 @@ export function WorkItemForm({ workItem, mode }: WorkItemFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="bau_or_transformative">BAU / Transformatif</Label>
+              <Label htmlFor="bau_or_transformative">BAU / Transformative</Label>
               <Select
                 value={watch('bau_or_transformative') || ''}
                 onValueChange={(value) => setValue('bau_or_transformative', value as WorkItemFormData['bau_or_transformative'])}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selectionner" />
+                  <SelectValue placeholder="Select" />
                 </SelectTrigger>
                 <SelectContent>
                   {BAU_OPTIONS.map((option) => (
@@ -255,7 +255,7 @@ export function WorkItemForm({ workItem, mode }: WorkItemFormProps) {
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="responsible_party_id">Responsable</Label>
+              <Label htmlFor="responsible_party_id">Responsible Party</Label>
               <Select
                 value={watch('responsible_party_id')?.toString() || ''}
                 onValueChange={(value) =>
@@ -263,7 +263,7 @@ export function WorkItemForm({ workItem, mode }: WorkItemFormProps) {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selectionner un responsable" />
+                  <SelectValue placeholder="Select responsible party" />
                 </SelectTrigger>
                 <SelectContent>
                   {users?.data?.map((user) => (
@@ -276,7 +276,7 @@ export function WorkItemForm({ workItem, mode }: WorkItemFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="deadline">Date limite</Label>
+              <Label htmlFor="deadline">Deadline</Label>
               <Input
                 id="deadline"
                 type="date"
@@ -292,7 +292,7 @@ export function WorkItemForm({ workItem, mode }: WorkItemFormProps) {
                 {...register('priority_item')}
                 className="h-4 w-4 rounded border-gray-300"
               />
-              <span className="text-sm font-medium">Prioritaire</span>
+              <span className="text-sm font-medium">Priority Item</span>
             </label>
           </div>
         </CardContent>
@@ -304,11 +304,11 @@ export function WorkItemForm({ workItem, mode }: WorkItemFormProps) {
           variant="outline"
           onClick={() => router.push('/tasks')}
         >
-          Annuler
+          Cancel
         </Button>
         <Button type="submit" disabled={isSaving}>
           {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {mode === 'create' ? 'Creer' : 'Enregistrer'}
+          {mode === 'create' ? 'Create' : 'Save'}
         </Button>
       </div>
     </form>

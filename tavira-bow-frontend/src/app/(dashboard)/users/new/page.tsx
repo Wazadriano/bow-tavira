@@ -16,18 +16,18 @@ export default function NewUserPage() {
   const handleSubmit = async (data: UserFormData) => {
     try {
       await create(data)
-      toast.success('Utilisateur cree avec succes')
+      toast.success('User created successfully')
       router.push('/users')
     } catch {
-      toast.error('Erreur lors de la creation')
+      toast.error('Error during creation')
     }
   }
 
   return (
     <>
       <Header
-        title="Nouvel utilisateur"
-        description="Creer un nouveau compte utilisateur"
+        title="New User"
+        description="Create a new user account"
       />
 
       <div className="p-6">
@@ -35,7 +35,7 @@ export default function NewUserPage() {
           <Button variant="ghost" asChild>
             <Link href="/users">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour a la liste
+              Back to list
             </Link>
           </Button>
         </div>

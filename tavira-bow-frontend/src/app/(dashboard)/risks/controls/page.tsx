@@ -146,9 +146,9 @@ export default function ControlLibraryPage() {
       corrective: 'bg-orange-100 text-orange-800',
     }
     const labels: Record<string, string> = {
-      preventive: 'Preventif',
-      detective: 'Detectif',
-      corrective: 'Correctif',
+      preventive: 'Preventive',
+      detective: 'Detective',
+      corrective: 'Corrective',
     }
     return <Badge className={colors[type]}>{labels[type]}</Badge>
   }
@@ -160,21 +160,21 @@ export default function ControlLibraryPage() {
       low: 'bg-red-100 text-red-800',
     }
     const labels: Record<string, string> = {
-      high: 'Haute',
-      medium: 'Moyenne',
-      low: 'Faible',
+      high: 'High',
+      medium: 'Medium',
+      low: 'Low',
     }
     return <Badge className={colors[effectiveness]}>{labels[effectiveness]}</Badge>
   }
 
   const getFrequencyLabel = (frequency: string) => {
     const labels: Record<string, string> = {
-      continuous: 'Continu',
-      daily: 'Quotidien',
-      weekly: 'Hebdomadaire',
-      monthly: 'Mensuel',
-      quarterly: 'Trimestriel',
-      annually: 'Annuel',
+      continuous: 'Continuous',
+      daily: 'Daily',
+      weekly: 'Weekly',
+      monthly: 'Monthly',
+      quarterly: 'Quarterly',
+      annually: 'Annually',
     }
     return labels[frequency] || frequency
   }
@@ -189,12 +189,12 @@ export default function ControlLibraryPage() {
   return (
     <>
       <Header
-        title="Bibliotheque de Controles"
-        description="Gestion des controles de risque"
+        title="Control Library"
+        description="Risk controls management"
         actions={
           <Button onClick={() => router.push('/risks/controls/new')}>
             <Plus className="h-4 w-4 mr-2" />
-            Nouveau Controle
+            New Control
           </Button>
         }
       />
@@ -205,25 +205,25 @@ export default function ControlLibraryPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold">{summaryStats.total}</div>
-              <p className="text-sm text-muted-foreground">Total Controles</p>
+              <p className="text-sm text-muted-foreground">Total Controls</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold text-blue-600">{summaryStats.preventive}</div>
-              <p className="text-sm text-muted-foreground">Preventifs</p>
+              <p className="text-sm text-muted-foreground">Preventive</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold text-purple-600">{summaryStats.detective}</div>
-              <p className="text-sm text-muted-foreground">Detectifs</p>
+              <p className="text-sm text-muted-foreground">Detective</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold text-orange-600">{summaryStats.corrective}</div>
-              <p className="text-sm text-muted-foreground">Correctifs</p>
+              <p className="text-sm text-muted-foreground">Corrective</p>
             </CardContent>
           </Card>
         </div>
@@ -235,7 +235,7 @@ export default function ControlLibraryPage() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher par code, nom ou description..."
+                  placeholder="Search by code, name or description..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-10"
@@ -246,21 +246,21 @@ export default function ControlLibraryPage() {
                   <SelectValue placeholder="Type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tous les types</SelectItem>
-                  <SelectItem value="preventive">Preventif</SelectItem>
-                  <SelectItem value="detective">Detectif</SelectItem>
-                  <SelectItem value="corrective">Correctif</SelectItem>
+                  <SelectItem value="all">All types</SelectItem>
+                  <SelectItem value="preventive">Preventive</SelectItem>
+                  <SelectItem value="detective">Detective</SelectItem>
+                  <SelectItem value="corrective">Corrective</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={effectivenessFilter} onValueChange={setEffectivenessFilter}>
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Efficacite" />
+                  <SelectValue placeholder="Effectiveness" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Toutes efficacites</SelectItem>
-                  <SelectItem value="high">Haute</SelectItem>
-                  <SelectItem value="medium">Moyenne</SelectItem>
-                  <SelectItem value="low">Faible</SelectItem>
+                  <SelectItem value="all">All effectiveness</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="low">Low</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -272,7 +272,7 @@ export default function ControlLibraryPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ShieldCheck className="h-5 w-5" />
-              Bibliotheque de Controles ({filteredControls.length})
+              Control Library ({filteredControls.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -287,15 +287,15 @@ export default function ControlLibraryPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Code</TableHead>
-                    <TableHead>Nom</TableHead>
+                    <TableHead>Name</TableHead>
                     <TableHead>Type</TableHead>
-                    <TableHead>Frequence</TableHead>
-                    <TableHead>Responsable</TableHead>
-                    <TableHead>Efficacite</TableHead>
+                    <TableHead>Frequency</TableHead>
+                    <TableHead>Owner</TableHead>
+                    <TableHead>Effectiveness</TableHead>
                     <TableHead>
                       <div className="flex items-center gap-1">
                         <Link className="h-4 w-4" />
-                        Risques
+                        Risks
                       </div>
                     </TableHead>
                   </TableRow>

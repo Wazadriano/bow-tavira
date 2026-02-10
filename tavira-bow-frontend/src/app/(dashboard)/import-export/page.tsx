@@ -22,27 +22,27 @@ const importTypes: Array<{ value: ImportType; label: string; description: string
   {
     value: 'workitems',
     label: 'Work Items',
-    description: 'Taches et projets du Book of Work',
+    description: 'Tasks and projects from the Book of Work',
   },
   {
     value: 'suppliers',
-    label: 'Fournisseurs',
-    description: 'Liste des fournisseurs',
+    label: 'Suppliers',
+    description: 'Supplier list',
   },
   {
     value: 'invoices',
-    label: 'Factures',
-    description: 'Factures fournisseurs (import bulk)',
+    label: 'Invoices',
+    description: 'Supplier invoices (bulk import)',
   },
   {
     value: 'risks',
-    label: 'Risques',
-    description: 'Registre des risques (L3)',
+    label: 'Risks',
+    description: 'Risk register (L3)',
   },
   {
     value: 'governance',
     label: 'Governance',
-    description: 'Items de gouvernance',
+    description: 'Governance items',
   },
 ]
 
@@ -79,28 +79,28 @@ export default function ImportExportPage() {
     try {
       const result = await confirmImport()
       if (result.success) {
-        toast.success(`Import termine: ${result.imported} elements importes`)
+        toast.success(`Import completed: ${result.imported} items imported`)
       }
     } catch {
-      toast.error('Erreur lors de l\'import')
+      toast.error('Error during import')
     }
   }
 
   const handleExport = async (type: ImportType) => {
     try {
       await exportData(type)
-      toast.success(`Export ${type} telecharge`)
+      toast.success(`Export ${type} downloaded`)
     } catch {
-      toast.error('Erreur lors de l\'export')
+      toast.error('Error during export')
     }
   }
 
   const handleDownloadTemplate = async (type: ImportType) => {
     try {
       await downloadTemplate(type)
-      toast.success('Template telecharge')
+      toast.success('Template downloaded')
     } catch {
-      toast.error('Erreur lors du telechargement du template')
+      toast.error('Error downloading template')
     }
   }
 

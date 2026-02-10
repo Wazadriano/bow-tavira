@@ -17,7 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { api } from '@/lib/api'
 import { safeParseDate } from '@/lib/utils'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { enUS } from 'date-fns/locale'
 
 interface Alert {
   id: number
@@ -61,14 +61,14 @@ export function AlertsPanel() {
         setAlerts(response.data.data)
         setTotal(response.data.total)
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erreur lors du chargement')
+        setError(err instanceof Error ? err.message : 'Error loading alerts')
         // Fallback to mock data for demo
         setAlerts([
           {
             id: 1,
             type: 'overdue_task',
-            title: 'Tache en retard',
-            description: 'Migration base de donnees - 3 jours de retard',
+            title: 'Overdue Work Item',
+            description: 'Database migration - 3 days overdue',
             severity: 'high',
             link: '/tasks/1',
             created_at: new Date().toISOString(),
@@ -76,8 +76,8 @@ export function AlertsPanel() {
           {
             id: 2,
             type: 'expiring_contract',
-            title: 'Contrat expirant',
-            description: 'Contrat AWS expire dans 15 jours',
+            title: 'Expiring Contract',
+            description: 'AWS contract expires in 15 days',
             severity: 'medium',
             link: '/suppliers/2',
             created_at: new Date().toISOString(),
@@ -85,8 +85,8 @@ export function AlertsPanel() {
           {
             id: 3,
             type: 'high_risk',
-            title: 'Risque eleve',
-            description: 'RSK-001: Risque cyber-securite non traite',
+            title: 'High Risk',
+            description: 'RSK-001: Unaddressed cybersecurity risk',
             severity: 'high',
             link: '/risks/3',
             created_at: new Date().toISOString(),
@@ -107,7 +107,7 @@ export function AlertsPanel() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <AlertCircle className="h-5 w-5" />
-            Alertes
+            Alerts
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -142,7 +142,7 @@ export function AlertsPanel() {
         {alerts.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p>Aucune alerte active</p>
+            <p>No active alerts</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -172,7 +172,7 @@ export function AlertsPanel() {
                       {(() => {
                         const date = safeParseDate(alert.created_at)
                         return date
-                          ? formatDistanceToNow(date, { addSuffix: true, locale: fr })
+                          ? formatDistanceToNow(date, { addSuffix: true, locale: enUS })
                           : '-'
                       })()}
                     </p>
@@ -208,7 +208,7 @@ export function AlertsPanel() {
             {total > 5 && (
               <Button variant="ghost" className="w-full" asChild>
                 <Link href="/alerts">
-                  Voir toutes les alertes ({total})
+                  View all alerts ({total})
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </Link>
               </Button>

@@ -32,7 +32,7 @@ interface PageLoadingProps {
   text?: string
 }
 
-export function PageLoading({ text = 'Chargement...' }: PageLoadingProps) {
+export function PageLoading({ text = 'Loading...' }: PageLoadingProps) {
   return (
     <div className="flex h-[50vh] items-center justify-center">
       <LoadingSpinner size="lg" text={text} />

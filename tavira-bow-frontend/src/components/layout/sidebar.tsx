@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import {
+  Home,
   LayoutDashboard,
   CheckSquare,
   Calendar,
@@ -148,6 +149,24 @@ export function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-2">
+        {/* Home link */}
+        <div className="mb-1 px-2">
+          <Link
+            href="/dashboard"
+            className={cn(
+              'flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
+              pathname === '/dashboard'
+                ? 'bg-accent text-accent-foreground font-medium'
+                : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
+              collapsed && 'justify-center px-2'
+            )}
+            title={collapsed ? 'Home' : undefined}
+          >
+            <Home className="h-4 w-4 shrink-0" />
+            {!collapsed && <span>Home</span>}
+          </Link>
+        </div>
+
         {navSections.map((section) => {
           const isExpanded = expandedSections.includes(section.title)
           const sectionActive = isSectionActive(section)

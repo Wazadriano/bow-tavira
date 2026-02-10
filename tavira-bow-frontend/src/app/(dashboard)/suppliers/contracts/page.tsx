@@ -134,11 +134,11 @@ export default function ContractsPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-100 text-green-800">Actif</Badge>
+        return <Badge className="bg-green-100 text-green-800">Active</Badge>
       case 'expired':
-        return <Badge className="bg-red-100 text-red-800">Expire</Badge>
+        return <Badge className="bg-red-100 text-red-800">Expired</Badge>
       case 'pending':
-        return <Badge className="bg-blue-100 text-blue-800">En attente</Badge>
+        return <Badge className="bg-blue-100 text-blue-800">Pending</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -179,12 +179,12 @@ export default function ContractsPage() {
   return (
     <>
       <Header
-        title="Contrats"
-        description="Gestion des contrats fournisseurs"
+        title="Contracts"
+        description="Supplier contracts management"
         actions={
           <Button onClick={() => router.push('/suppliers/contracts/new')}>
             <Plus className="h-4 w-4 mr-2" />
-            Nouveau Contrat
+            New Contract
           </Button>
         }
       />
@@ -197,7 +197,7 @@ export default function ContractsPage() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher par nom ou fournisseur..."
+                  placeholder="Search by name or supplier..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-10"
@@ -205,13 +205,13 @@ export default function ContractsPage() {
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Statut" />
+                  <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tous les statuts</SelectItem>
-                  <SelectItem value="active">Actif</SelectItem>
-                  <SelectItem value="expired">Expire</SelectItem>
-                  <SelectItem value="pending">En attente</SelectItem>
+                  <SelectItem value="all">All statuses</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="expired">Expired</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -223,7 +223,7 @@ export default function ContractsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              Liste des Contrats ({filteredContracts.length})
+              Contracts List ({filteredContracts.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -238,13 +238,13 @@ export default function ContractsPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>RAG</TableHead>
-                    <TableHead>Nom du Contrat</TableHead>
-                    <TableHead>Fournisseur</TableHead>
-                    <TableHead>Debut</TableHead>
-                    <TableHead>Fin</TableHead>
-                    <TableHead>Jours restants</TableHead>
-                    <TableHead>Valeur</TableHead>
-                    <TableHead>Statut</TableHead>
+                    <TableHead>Contract Name</TableHead>
+                    <TableHead>Supplier</TableHead>
+                    <TableHead>Start</TableHead>
+                    <TableHead>End</TableHead>
+                    <TableHead>Days Remaining</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -283,11 +283,11 @@ export default function ContractsPage() {
                               {daysLeft <= 30 && (
                                 <AlertTriangle className="inline h-4 w-4 mr-1" />
                               )}
-                              {daysLeft} jours
+                              {daysLeft} days
                             </span>
                           ) : (
                             <span className="text-red-600 font-medium">
-                              Expire
+                              Expired
                             </span>
                           )}
                         </TableCell>

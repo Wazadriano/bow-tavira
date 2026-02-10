@@ -23,14 +23,14 @@ export default function EditWorkItemPage() {
   }, [id, fetchById])
 
   if (isLoadingItem) {
-    return <PageLoading text="Chargement de la tache..." />
+    return <PageLoading text="Loading work item..." />
   }
 
   if (error || !selectedItem) {
     return (
       <ErrorState
-        title="Tache introuvable"
-        description={error || "Cette tache n'existe pas ou a ete supprimee."}
+        title="Work item not found"
+        description={error || "This work item does not exist or has been deleted."}
         onRetry={() => fetchById(id)}
       />
     )
@@ -39,8 +39,8 @@ export default function EditWorkItemPage() {
   return (
     <>
       <Header
-        title={`Modifier: ${selectedItem.ref_no || `Tache #${selectedItem.id}`}`}
-        description="Modifier les informations de cette tache"
+        title={`Edit: ${selectedItem.ref_no || `Work Item #${selectedItem.id}`}`}
+        description="Edit work item information"
       />
 
       <div className="p-6">
@@ -48,7 +48,7 @@ export default function EditWorkItemPage() {
           <Button variant="ghost" asChild>
             <Link href={`/tasks/${id}`}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour au detail
+              Back to details
             </Link>
           </Button>
         </div>

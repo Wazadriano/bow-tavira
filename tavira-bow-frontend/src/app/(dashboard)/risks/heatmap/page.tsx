@@ -104,8 +104,8 @@ export default function RiskHeatmapPage() {
   return (
     <>
       <Header
-        title="Heatmap"
-        description="Matrice des risques 5x5"
+        title="Heat Map"
+        description="5x5 Risk Matrix"
         actions={
           <Select
             value={heatmapType}
@@ -115,8 +115,8 @@ export default function RiskHeatmapPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="inherent">Risque Inherent</SelectItem>
-              <SelectItem value="residual">Risque Residuel</SelectItem>
+              <SelectItem value="inherent">Inherent Risk</SelectItem>
+              <SelectItem value="residual">Residual Risk</SelectItem>
             </SelectContent>
           </Select>
         }
@@ -129,7 +129,7 @@ export default function RiskHeatmapPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Grid3X3 className="h-5 w-5" />
-                Matrice {heatmapType === 'inherent' ? 'Inherente' : 'Residuelle'}
+                {heatmapType === 'inherent' ? 'Inherent' : 'Residual'} Matrix
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -190,7 +190,7 @@ export default function RiskHeatmapPage() {
 
                     {/* X-axis label */}
                     <div className="text-center mt-2 text-sm font-medium text-muted-foreground">
-                      PROBABILITE
+                      PROBABILITY
                     </div>
                   </div>
                 </div>
@@ -200,23 +200,23 @@ export default function RiskHeatmapPage() {
               <div className="mt-6 flex items-center justify-center gap-4">
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 rounded bg-green-400" />
-                  <span className="text-sm">Faible (1-3)</span>
+                  <span className="text-sm">Low (1-3)</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 rounded bg-yellow-300" />
-                  <span className="text-sm">Modere (4-7)</span>
+                  <span className="text-sm">Moderate (4-7)</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 rounded bg-amber-400" />
-                  <span className="text-sm">Eleve (8-11)</span>
+                  <span className="text-sm">High (8-11)</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 rounded bg-orange-500" />
-                  <span className="text-sm">Tres Eleve (12-19)</span>
+                  <span className="text-sm">Very High (12-19)</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 rounded bg-red-500" />
-                  <span className="text-sm">Critique (20-25)</span>
+                  <span className="text-sm">Critical (20-25)</span>
                 </div>
               </div>
             </CardContent>
@@ -242,7 +242,7 @@ export default function RiskHeatmapPage() {
                         </p>
                       </div>
                       <div>
-                        <span className="text-muted-foreground">Probabilite:</span>
+                        <span className="text-muted-foreground">Probability:</span>
                         <p className="font-medium">
                           {selectedCell.probability} - {probabilityLabels[selectedCell.probability - 1]}
                         </p>
@@ -258,7 +258,7 @@ export default function RiskHeatmapPage() {
 
                   <div>
                     <h4 className="font-medium mb-2">
-                      Risques ({selectedCell.risks.length})
+                      Risks ({selectedCell.risks.length})
                     </h4>
                     {selectedCell.risks.length > 0 ? (
                       <div className="space-y-2">
@@ -280,7 +280,7 @@ export default function RiskHeatmapPage() {
                       </div>
                     ) : (
                       <p className="text-sm text-muted-foreground">
-                        Aucun risque dans cette cellule
+                        No risks in this cell
                       </p>
                     )}
                   </div>
@@ -288,7 +288,7 @@ export default function RiskHeatmapPage() {
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   <Info className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p>Cliquez sur une cellule pour voir les details</p>
+                  <p>Click on a cell to see details</p>
                 </div>
               )}
             </CardContent>
@@ -299,7 +299,7 @@ export default function RiskHeatmapPage() {
         <div className="grid gap-6 lg:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>Echelle d&apos;Impact</CardTitle>
+              <CardTitle>Impact Scale</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
@@ -315,7 +315,7 @@ export default function RiskHeatmapPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Echelle de Probabilite</CardTitle>
+              <CardTitle>Probability Scale</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">

@@ -53,8 +53,8 @@ export default function SuppliersCalendarPage() {
   return (
     <>
       <Header
-        title="Calendrier"
-        description="Vue calendrier des echeances contrats"
+        title="Calendar"
+        description="Calendar view of contract due dates"
       />
 
       <div className="p-6">
@@ -64,7 +64,7 @@ export default function SuppliersCalendarPage() {
           </div>
         ) : (
           <CalendarView
-            title="Echeances Contrats"
+            title="Contract Due Dates"
             events={events}
             onEventClick={handleEventClick}
           />

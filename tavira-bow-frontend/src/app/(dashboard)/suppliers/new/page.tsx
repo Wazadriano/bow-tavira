@@ -10,8 +10,8 @@ export default function NewSupplierPage() {
   return (
     <>
       <Header
-        title="Nouveau fournisseur"
-        description="Ajouter un nouveau fournisseur"
+        title="New Supplier"
+        description="Add a new supplier"
       />
 
       <div className="p-6">
@@ -19,7 +19,7 @@ export default function NewSupplierPage() {
           <Button variant="ghost" asChild>
             <Link href="/suppliers">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour a la liste
+              Back to list
             </Link>
           </Button>
         </div>

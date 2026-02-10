@@ -84,7 +84,7 @@ export default function SuppliersDashboardPage() {
   if (isLoading || !stats) {
     return (
       <>
-        <Header title="Dashboard" description="Statistiques Fournisseurs" />
+        <Header title="Dashboard" description="Suppliers Statistics" />
         <div className="p-6">
           <div className="animate-pulse space-y-6">
             <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
@@ -124,43 +124,43 @@ export default function SuppliersDashboardPage() {
 
   return (
     <>
-      <Header title="Dashboard" description="Statistiques Fournisseurs" />
+      <Header title="Dashboard" description="Supplier Statistics" />
 
       <div className="p-6 space-y-6">
         {/* KPIs */}
         <StatsGrid columns={6}>
           <StatsCard
-            title="Total Fournisseurs"
+            title="Total Suppliers"
             value={stats.total_suppliers}
             icon={Truck}
             variant="info"
           />
           <StatsCard
-            title="Actifs"
+            title="Active"
             value={stats.active_suppliers}
             icon={TrendingUp}
             variant="success"
           />
           <StatsCard
-            title="Contrats"
+            title="Contracts"
             value={stats.total_contracts}
             icon={FileText}
             variant="info"
           />
           <StatsCard
-            title="Expirent bientot"
+            title="Expiring Soon"
             value={stats.expiring_soon}
             icon={AlertTriangle}
             variant="warning"
           />
           <StatsCard
-            title="Factures"
+            title="Invoices"
             value={stats.total_invoices}
             icon={Receipt}
             variant="info"
           />
           <StatsCard
-            title="En attente"
+            title="Pending"
             value={stats.pending_invoices}
             icon={Calendar}
             variant="warning"
@@ -170,13 +170,13 @@ export default function SuppliersDashboardPage() {
         {/* Charts row */}
         <div className="grid gap-6 lg:grid-cols-2">
           <BarChart
-            title="Fournisseurs par Localisation"
+            title="Suppliers by Location"
             data={locationData}
-            bars={[{ dataKey: 'count', name: 'Fournisseurs', color: '#8b5cf6' }]}
+            bars={[{ dataKey: 'count', name: 'Suppliers', color: '#8b5cf6' }]}
           />
 
           <DoughnutChart
-            title="Distribution par Statut"
+            title="Distribution by Status"
             data={statusData}
           />
         </div>
@@ -184,7 +184,7 @@ export default function SuppliersDashboardPage() {
         <div className="grid gap-6 lg:grid-cols-2">
           <DoughnutChart
             title="Top Categories"
-            description="Repartition par type de service"
+            description="Distribution by service type"
             data={categoryData}
           />
 
@@ -193,7 +193,7 @@ export default function SuppliersDashboardPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5 text-amber-500" />
-                Contrats expirant bientot
+                Expiring Soon Contracts
               </CardTitle>
             </CardHeader>
             <CardContent>

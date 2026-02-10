@@ -15,7 +15,7 @@ import {
   isToday,
   isValid,
 } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { enUS } from 'date-fns/locale'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -50,7 +50,7 @@ const statusColors: Record<string, string> = {
   red: 'bg-red-500',
 }
 
-const weekDays = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
+const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 export function CalendarView({ title, events, onEventClick }: CalendarViewProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -91,13 +91,13 @@ export function CalendarView({ title, events, onEventClick }: CalendarViewProps)
         <CardTitle>{title}</CardTitle>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={goToToday}>
-            Aujourd&apos;hui
+            Today
           </Button>
           <Button variant="ghost" size="icon" onClick={goToPrevMonth}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <span className="min-w-[150px] text-center font-medium">
-            {format(currentDate, 'MMMM yyyy', { locale: fr })}
+            {format(currentDate, 'MMMM yyyy', { locale: enUS })}
           </span>
           <Button variant="ghost" size="icon" onClick={goToNextMonth}>
             <ChevronRight className="h-4 w-4" />
@@ -144,22 +144,25 @@ export function CalendarView({ title, events, onEventClick }: CalendarViewProps)
                   {format(day, 'd')}
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   {dayEvents.slice(0, 3).map((event) => (
                     <TooltipProvider key={event.id}>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <button
                             onClick={() => onEventClick?.(event)}
-                            className={cn(
-                              'w-full text-left text-xs px-1 py-0.5 rounded truncate',
-                              'hover:opacity-80 transition-opacity',
-                              event.status
-                                ? `${statusColors[event.status]} text-white`
-                                : 'bg-primary text-primary-foreground'
-                            )}
+                            className="flex items-center gap-1.5 w-full text-left text-xs px-1 py-0.5 rounded hover:bg-muted/50 transition-colors truncate"
                           >
-                            {event.title}
+                            <span
+                              className={cn(
+                                'h-2 w-2 shrink-0 rounded-full',
+                                event.status
+                                  ? statusColors[event.status]
+                                  : 'bg-primary',
+                                (event.status === 'red' || event.status === 'amber') && 'animate-pulse'
+                              )}
+                            />
+                            <span className="truncate">{event.title}</span>
                           </button>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -174,7 +177,7 @@ export function CalendarView({ title, events, onEventClick }: CalendarViewProps)
 
                   {dayEvents.length > 3 && (
                     <div className="text-xs text-muted-foreground px-1">
-                      +{dayEvents.length - 3} autres
+                      +{dayEvents.length - 3} more
                     </div>
                   )}
                 </div>
@@ -185,7 +188,7 @@ export function CalendarView({ title, events, onEventClick }: CalendarViewProps)
 
         {/* Legend */}
         <div className="mt-4 flex items-center gap-4 text-sm">
-          <span className="text-muted-foreground">Legende:</span>
+          <span className="text-muted-foreground">Legend:</span>
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 rounded-full bg-sky-500" />
             <span>Blue</span>

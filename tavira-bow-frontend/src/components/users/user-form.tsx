@@ -20,13 +20,13 @@ import type { User } from '@/types'
 import type { UserFormData } from '@/stores/users'
 
 const userSchema = z.object({
-  username: z.string().min(3, 'Minimum 3 caracteres'),
-  email: z.string().email('Email invalide'),
-  full_name: z.string().min(2, 'Minimum 2 caracteres'),
+  username: z.string().min(3, 'Minimum 3 characters'),
+  email: z.string().email('Invalid email'),
+  full_name: z.string().min(2, 'Minimum 2 characters'),
   role: z.enum(['admin', 'member']),
   department: z.string().optional(),
   is_active: z.boolean(),
-  password: z.string().min(8, 'Minimum 8 caracteres').optional().or(z.literal('')),
+  password: z.string().min(8, 'Minimum 8 characters').optional().or(z.literal('')),
   password_confirmation: z.string().optional().or(z.literal('')),
 }).refine((data) => {
   if (data.password && data.password !== data.password_confirmation) {
@@ -34,7 +34,7 @@ const userSchema = z.object({
   }
   return true
 }, {
-  message: 'Les mots de passe ne correspondent pas',
+  message: 'Passwords do not match',
   path: ['password_confirmation'],
 })
 
@@ -94,12 +94,12 @@ export function UserForm({ user, onSubmit, isLoading }: UserFormProps) {
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Informations de base</CardTitle>
+          <CardTitle>Basic Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="username">Nom d&apos;utilisateur *</Label>
+              <Label htmlFor="username">Username *</Label>
               <Input
                 id="username"
                 {...register('username')}
@@ -126,7 +126,7 @@ export function UserForm({ user, onSubmit, isLoading }: UserFormProps) {
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="full_name">Nom complet *</Label>
+              <Label htmlFor="full_name">Full Name *</Label>
               <Input
                 id="full_name"
                 {...register('full_name')}
@@ -143,7 +143,7 @@ export function UserForm({ user, onSubmit, isLoading }: UserFormProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Role et departement</CardTitle>
+          <CardTitle>Role and Department</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
@@ -154,23 +154,23 @@ export function UserForm({ user, onSubmit, isLoading }: UserFormProps) {
                 onValueChange={(value) => setValue('role', value as 'admin' | 'member')}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selectionner un role" />
+                  <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="admin">Administrateur</SelectItem>
-                  <SelectItem value="member">Membre</SelectItem>
+                  <SelectItem value="admin">Administrator</SelectItem>
+                  <SelectItem value="member">Member</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="department">Departement</Label>
+              <Label htmlFor="department">Department</Label>
               <Select
                 value={watch('department') || ''}
                 onValueChange={(value) => setValue('department', value)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selectionner un departement" />
+                  <SelectValue placeholder="Select a department" />
                 </SelectTrigger>
                 <SelectContent>
                   {departments.map((dept) => (
@@ -191,7 +191,7 @@ export function UserForm({ user, onSubmit, isLoading }: UserFormProps) {
               onChange={(e) => setValue('is_active', e.target.checked)}
               className="h-4 w-4 rounded border-gray-300"
             />
-            <Label htmlFor="is_active">Utilisateur actif</Label>
+            <Label htmlFor="is_active">Active User</Label>
           </div>
         </CardContent>
       </Card>
@@ -199,20 +199,20 @@ export function UserForm({ user, onSubmit, isLoading }: UserFormProps) {
       <Card>
         <CardHeader>
           <CardTitle>
-            {user ? 'Changer le mot de passe' : 'Mot de passe'}
+            {user ? 'Change Password' : 'Password'}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="password">
-                Mot de passe {!user && '*'}
+                Password {!user && '*'}
               </Label>
               <Input
                 id="password"
                 type="password"
                 {...register('password')}
-                placeholder={user ? 'Laisser vide pour ne pas changer' : '••••••••'}
+                placeholder={user ? 'Leave empty to keep current' : '••••••••'}
               />
               {errors.password && (
                 <p className="text-sm text-destructive">{errors.password.message}</p>
@@ -220,7 +220,7 @@ export function UserForm({ user, onSubmit, isLoading }: UserFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password_confirmation">Confirmer le mot de passe</Label>
+              <Label htmlFor="password_confirmation">Confirm Password</Label>
               <Input
                 id="password_confirmation"
                 type="password"
@@ -240,7 +240,7 @@ export function UserForm({ user, onSubmit, isLoading }: UserFormProps) {
       <div className="flex justify-end gap-4">
         <Button type="submit" disabled={isLoading}>
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {user ? 'Mettre a jour' : 'Creer l\'utilisateur'}
+          {user ? 'Update' : 'Create User'}
         </Button>
       </div>
     </form>
