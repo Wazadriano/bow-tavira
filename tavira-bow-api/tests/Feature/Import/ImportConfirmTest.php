@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Jobs\ProcessImportFile;
 use App\Models\User;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
@@ -84,6 +86,8 @@ it('returns 404 for non-existent temp file', function () {
 });
 
 it('dispatches import job for valid request', function () {
+    Queue::fake();
+
     Storage::disk('local')->put('imports/temp/test.csv', "ref_no,department,description\nBOW-001,IT,Test");
 
     $response = $this->actingAs($this->user)
@@ -101,6 +105,8 @@ it('dispatches import job for valid request', function () {
         ]);
 
     expect($response->json('job_status'))->toBe('queued');
+
+    Queue::assertPushed(ProcessImportFile::class);
 });
 
 it('requires authentication', function () {
