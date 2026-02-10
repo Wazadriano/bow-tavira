@@ -10,8 +10,8 @@ export default function NewTeamPage() {
   return (
     <>
       <Header
-        title="Nouvelle equipe"
-        description="Creer une nouvelle equipe"
+        title="New Team"
+        description="Create a new team"
       />
 
       <div className="p-6">
@@ -19,7 +19,7 @@ export default function NewTeamPage() {
           <Button variant="ghost" asChild>
             <Link href="/teams">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour a la liste
+              Back to list
             </Link>
           </Button>
         </div>

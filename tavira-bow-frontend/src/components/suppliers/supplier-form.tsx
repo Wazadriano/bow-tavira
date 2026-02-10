@@ -29,14 +29,14 @@ interface SupplierFormProps {
 }
 
 const STATUS_OPTIONS = [
-  { value: 'active', label: 'Actif' },
-  { value: 'inactive', label: 'Inactif' },
-  { value: 'pending', label: 'En attente' },
+  { value: 'active', label: 'Active' },
+  { value: 'inactive', label: 'Inactive' },
+  { value: 'pending', label: 'Pending' },
 ]
 
 const LOCATION_OPTIONS = [
   { value: 'local', label: 'Local' },
-  { value: 'overseas', label: 'International' },
+  { value: 'overseas', label: 'Overseas' },
 ]
 
 export function SupplierForm({ supplier, mode }: SupplierFormProps) {
@@ -85,14 +85,14 @@ export function SupplierForm({ supplier, mode }: SupplierFormProps) {
     try {
       if (mode === 'create') {
         await create(data)
-        toast.success('Fournisseur cree')
+        toast.success('Supplier created')
       } else if (supplier) {
         await update(supplier.id, data)
-        toast.success('Fournisseur mis a jour')
+        toast.success('Supplier updated')
       }
       router.push('/suppliers')
     } catch {
-      toast.error('Une erreur est survenue')
+      toast.error('An error occurred')
     }
   }
 
@@ -100,16 +100,16 @@ export function SupplierForm({ supplier, mode }: SupplierFormProps) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Informations generales</CardTitle>
+          <CardTitle>General Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="name">Nom du fournisseur *</Label>
+              <Label htmlFor="name">Supplier Name *</Label>
               <Input
                 id="name"
                 {...register('name')}
-                placeholder="Nom du fournisseur"
+                placeholder="Supplier name"
               />
               {errors.name && (
                 <p className="text-sm text-destructive">{errors.name.message}</p>
@@ -117,13 +117,13 @@ export function SupplierForm({ supplier, mode }: SupplierFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="status">Statut *</Label>
+              <Label htmlFor="status">Status *</Label>
               <Select
                 value={watch('status')}
                 onValueChange={(value) => setValue('status', value as SupplierFormData['status'])}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selectionner un statut" />
+                  <SelectValue placeholder="Select a status" />
                 </SelectTrigger>
                 <SelectContent>
                   {STATUS_OPTIONS.map((option) => (
@@ -138,13 +138,13 @@ export function SupplierForm({ supplier, mode }: SupplierFormProps) {
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="location">Localisation *</Label>
+              <Label htmlFor="location">Location *</Label>
               <Select
                 value={watch('location') || ''}
                 onValueChange={(value) => setValue('location', value as 'local' | 'overseas')}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selectionner une localisation" />
+                  <SelectValue placeholder="Select a location" />
                 </SelectTrigger>
                 <SelectContent>
                   {LOCATION_OPTIONS.map((option) => (
@@ -160,7 +160,7 @@ export function SupplierForm({ supplier, mode }: SupplierFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="sage_category_id">Categorie SAGE</Label>
+              <Label htmlFor="sage_category_id">SAGE Category</Label>
               <Select
                 value={watch('sage_category_id')?.toString() || ''}
                 onValueChange={(value) =>
@@ -168,7 +168,7 @@ export function SupplierForm({ supplier, mode }: SupplierFormProps) {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selectionner une categorie" />
+                  <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
                   {sageCategories?.data?.map((cat) => (
@@ -182,7 +182,7 @@ export function SupplierForm({ supplier, mode }: SupplierFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="responsible_party_id">Responsable</Label>
+            <Label htmlFor="responsible_party_id">Responsible Party</Label>
             <Select
               value={watch('responsible_party_id')?.toString() || ''}
               onValueChange={(value) =>
@@ -190,7 +190,7 @@ export function SupplierForm({ supplier, mode }: SupplierFormProps) {
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selectionner un responsable" />
+                <SelectValue placeholder="Select responsible party" />
               </SelectTrigger>
               <SelectContent>
                 {users?.data?.map((user) => (
@@ -209,7 +209,7 @@ export function SupplierForm({ supplier, mode }: SupplierFormProps) {
               {...register('is_common_provider')}
               className="h-4 w-4 rounded border-gray-300"
             />
-            <Label htmlFor="is_common_provider">Fournisseur commun</Label>
+            <Label htmlFor="is_common_provider">Common Provider</Label>
           </div>
         </CardContent>
       </Card>
@@ -220,13 +220,13 @@ export function SupplierForm({ supplier, mode }: SupplierFormProps) {
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            <Label htmlFor="notes">Notes additionnelles</Label>
+            <Label htmlFor="notes">Additional Notes</Label>
             <textarea
               id="notes"
               {...register('notes')}
               rows={4}
               className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              placeholder="Notes et commentaires"
+              placeholder="Notes and comments"
             />
           </div>
         </CardContent>
@@ -238,11 +238,11 @@ export function SupplierForm({ supplier, mode }: SupplierFormProps) {
           variant="outline"
           onClick={() => router.push('/suppliers')}
         >
-          Annuler
+          Cancel
         </Button>
         <Button type="submit" disabled={isSaving}>
           {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {mode === 'create' ? 'Creer' : 'Enregistrer'}
+          {mode === 'create' ? 'Create' : 'Save'}
         </Button>
       </div>
     </form>

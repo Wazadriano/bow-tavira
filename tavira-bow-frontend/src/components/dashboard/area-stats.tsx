@@ -108,7 +108,7 @@ export function AreaStats() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BarChart3 className="h-5 w-5" />
-            Performance par Departement
+            Performance by Department
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -132,7 +132,7 @@ export function AreaStats() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <BarChart3 className="h-5 w-5" />
-          Performance par Departement
+          Performance by Department
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -189,16 +189,16 @@ export function AreaStats() {
 
                 {/* Stats row */}
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                  <span>{stat.total_tasks} taches</span>
+                  <span>{stat.total_tasks} tasks</span>
                   <span className="text-green-600">
-                    {stat.completed} terminees
+                    {stat.completed} completed
                   </span>
                   <span className="text-blue-600">
-                    {stat.in_progress} en cours
+                    {stat.in_progress} in progress
                   </span>
                   {stat.overdue > 0 && (
                     <span className="text-red-600">
-                      {stat.overdue} en retard
+                      {stat.overdue} overdue
                     </span>
                   )}
                 </div>

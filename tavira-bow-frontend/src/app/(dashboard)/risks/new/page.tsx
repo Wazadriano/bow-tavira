@@ -10,8 +10,8 @@ export default function NewRiskPage() {
   return (
     <>
       <Header
-        title="Nouveau risque"
-        description="Enregistrer un nouveau risque"
+        title="New Risk"
+        description="Register a new risk"
       />
 
       <div className="p-6">
@@ -19,7 +19,7 @@ export default function NewRiskPage() {
           <Button variant="ghost" asChild>
             <Link href="/risks">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour a la liste
+              Back to list
             </Link>
           </Button>
         </div>

@@ -26,9 +26,9 @@ import {
 import { toast } from 'sonner'
 
 const TIER_LABELS: Record<string, string> = {
-  tier_1: 'Tier 1 - Critique',
+  tier_1: 'Tier 1 - Critical',
   tier_2: 'Tier 2 - Important',
-  tier_3: 'Tier 3 - Modere',
+  tier_3: 'Tier 3 - Moderate',
 }
 
 const TIER_COLORS: Record<string, string> = {
@@ -72,30 +72,30 @@ export default function RiskDetailPage() {
 
   const handleDelete = () => {
     showConfirm({
-      title: 'Supprimer ce risque',
-      description: 'Cette action est irreversible. Tous les controles et actions associes seront egalement supprimes.',
+      title: 'Delete this risk',
+      description: 'This action is irreversible. All associated controls and actions will also be deleted.',
       variant: 'destructive',
       onConfirm: async () => {
         try {
           await remove(id)
-          toast.success('Risque supprime')
+          toast.success('Risk deleted')
           router.push('/risks')
         } catch {
-          toast.error('Erreur lors de la suppression')
+          toast.error('Error during deletion')
         }
       },
     })
   }
 
   if (isLoadingItem) {
-    return <PageLoading text="Chargement du risque..." />
+    return <PageLoading text="Loading risk..." />
   }
 
   if (error || !selectedItem) {
     return (
       <ErrorState
-        title="Risque introuvable"
-        description={error || "Ce risque n'existe pas ou a ete supprime."}
+        title="Risk not found"
+        description={error || "This risk does not exist or has been deleted."}
         onRetry={() => fetchById(id)}
       />
     )
@@ -111,7 +111,7 @@ export default function RiskDetailPage() {
     <>
       <Header
         title={`${risk.ref_no} - ${risk.name}`}
-        description={risk.category?.name || 'Risque'}
+        description={risk.category?.name || 'Risk'}
       />
 
       <div className="p-6">
@@ -119,19 +119,19 @@ export default function RiskDetailPage() {
           <Button variant="ghost" asChild>
             <Link href="/risks">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour a la liste
+              Back to list
             </Link>
           </Button>
           <div className="flex gap-2">
             <Button variant="outline" asChild>
               <Link href={`/risks/${id}/edit`}>
                 <Edit className="mr-2 h-4 w-4" />
-                Modifier
+                Edit
               </Link>
             </Button>
             <Button variant="destructive" onClick={handleDelete}>
               <Trash2 className="mr-2 h-4 w-4" />
-              Supprimer
+              Delete
             </Button>
           </div>
         </div>
@@ -156,13 +156,13 @@ export default function RiskDetailPage() {
                     </Badge>
                   </div>
                   <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Categorie (L2)</h4>
+                    <h4 className="text-sm font-medium text-muted-foreground">Category (L2)</h4>
                     <Badge variant="outline" className="mt-1">
                       {risk.category?.code} - {risk.category?.name}
                     </Badge>
                   </div>
                   <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Reference risque</h4>
+                    <h4 className="text-sm font-medium text-muted-foreground">Risk Reference</h4>
                     <p className="mt-1 font-mono font-semibold">{risk.ref_no}</p>
                   </div>
                 </div>
@@ -182,29 +182,29 @@ export default function RiskDetailPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <AlertTriangle className="h-5 w-5" />
-                  Evaluation des risques
+                  Risk Assessment
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-6 sm:grid-cols-2">
                   {/* Inherent risk */}
                   <div className="rounded-lg border p-4">
-                    <h4 className="mb-4 font-semibold">Risque inherent</h4>
+                    <h4 className="mb-4 font-semibold">Inherent Risk</h4>
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Impact Financier</span>
+                        <span className="text-sm text-muted-foreground">Financial Impact</span>
                         <Badge variant="outline">{risk.financial_impact} / 5</Badge>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Impact Reglementaire</span>
+                        <span className="text-sm text-muted-foreground">Regulatory Impact</span>
                         <Badge variant="outline">{risk.regulatory_impact} / 5</Badge>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Impact Reputationnel</span>
+                        <span className="text-sm text-muted-foreground">Reputational Impact</span>
                         <Badge variant="outline">{risk.reputational_impact} / 5</Badge>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Probabilite</span>
+                        <span className="text-sm text-muted-foreground">Probability</span>
                         <Badge variant="outline">{risk.inherent_probability} / 5</Badge>
                       </div>
                       <Separator />
@@ -223,7 +223,7 @@ export default function RiskDetailPage() {
 
                   {/* Residual risk */}
                   <div className="rounded-lg border p-4">
-                    <h4 className="mb-4 font-semibold">Risque residuel</h4>
+                    <h4 className="mb-4 font-semibold">Residual Risk</h4>
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-muted-foreground">RAG Status</span>
@@ -259,14 +259,14 @@ export default function RiskDetailPage() {
                 {risk.appetite_status && (
                   <div className="mt-4 rounded-lg bg-muted p-4">
                     <div className="flex items-center justify-between">
-                      <span className="font-medium">Statut d&apos;appetence</span>
+                      <span className="font-medium">Appetite Status</span>
                       <Badge variant={risk.appetite_status === 'exceeded' ? 'destructive' : risk.appetite_status === 'approaching' ? 'secondary' : 'default'}>
-                        {risk.appetite_status === 'within' ? 'Dans les limites' : risk.appetite_status === 'approaching' ? 'Approche' : 'Depasse'}
+                        {risk.appetite_status === 'within' ? 'Within Limits' : risk.appetite_status === 'approaching' ? 'Approaching' : 'Exceeded'}
                       </Badge>
                     </div>
                     {risk.appetite_status === 'exceeded' && (
                       <p className="mt-2 text-sm text-destructive">
-                        Le risque residuel depasse l&apos;appetence definie
+                        Residual risk exceeds the defined appetite
                       </p>
                     )}
                   </div>
@@ -279,17 +279,17 @@ export default function RiskDetailPage() {
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <Target className="h-5 w-5" />
-                  Controles ({controls.length})
+                  Controls ({controls.length})
                 </CardTitle>
                 <Button size="sm">
                   <Plus className="mr-2 h-4 w-4" />
-                  Ajouter
+                  Add
                 </Button>
               </CardHeader>
               <CardContent>
                 {controls.length === 0 ? (
                   <p className="py-4 text-center text-muted-foreground">
-                    Aucun controle defini pour ce risque
+                    No controls defined for this risk
                   </p>
                 ) : (
                   <div className="space-y-3">
@@ -331,13 +331,13 @@ export default function RiskDetailPage() {
                 </CardTitle>
                 <Button size="sm">
                   <Plus className="mr-2 h-4 w-4" />
-                  Ajouter
+                  Add
                 </Button>
               </CardHeader>
               <CardContent>
                 {actions.length === 0 ? (
                   <p className="py-4 text-center text-muted-foreground">
-                    Aucune action definie pour ce risque
+                    No actions defined for this risk
                   </p>
                 ) : (
                   <div className="space-y-3">
@@ -347,7 +347,7 @@ export default function RiskDetailPage() {
                           <div>
                             <p className="font-medium">{action.title}</p>
                             <p className="text-sm text-muted-foreground">
-                              Echeance: {formatDate(action.due_date)}
+                              Due Date: {formatDate(action.due_date)}
                             </p>
                           </div>
                           <div className="flex gap-2">
@@ -377,7 +377,7 @@ export default function RiskDetailPage() {
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Statut</CardTitle>
+                <CardTitle>Status</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {risk.tier && (
@@ -391,7 +391,7 @@ export default function RiskDetailPage() {
 
                 {risk.inherent_rag && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">RAG Inherent</span>
+                    <span className="text-sm text-muted-foreground">Inherent RAG</span>
                     <Badge
                       className={
                         risk.inherent_rag === 'green'
@@ -408,9 +408,9 @@ export default function RiskDetailPage() {
 
                 {risk.appetite_status && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Statut appetence</span>
+                    <span className="text-sm text-muted-foreground">Appetite Status</span>
                     <Badge variant={risk.appetite_status === 'within' ? 'default' : risk.appetite_status === 'exceeded' ? 'destructive' : 'secondary'}>
-                      {risk.appetite_status === 'within' ? 'Dans les limites' : risk.appetite_status === 'approaching' ? 'Approche' : 'Depasse'}
+                      {risk.appetite_status === 'within' ? 'Within Limits' : risk.appetite_status === 'approaching' ? 'Approaching' : 'Exceeded'}
                     </Badge>
                   </div>
                 )}
@@ -423,7 +423,7 @@ export default function RiskDetailPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground">Proprietaire</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground">Owner</h4>
                   <p className="mt-1 flex items-center gap-2">
                     <User className="h-4 w-4 text-muted-foreground" />
                     {risk.owner?.full_name || '-'}
@@ -433,12 +433,12 @@ export default function RiskDetailPage() {
                 <Separator />
 
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground">Cree le</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground">Created</h4>
                   <p className="mt-1 text-sm">{formatDate(risk.created_at)}</p>
                 </div>
 
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground">Modifie le</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground">Modified</h4>
                   <p className="mt-1 text-sm">{formatDate(risk.updated_at)}</p>
                 </div>
               </CardContent>

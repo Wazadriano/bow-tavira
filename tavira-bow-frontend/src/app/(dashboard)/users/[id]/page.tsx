@@ -75,17 +75,17 @@ export default function UserDetailPage() {
 
   const handleDelete = () => {
     showConfirm({
-      title: 'Supprimer cet utilisateur',
+      title: 'Delete this user',
       description:
-        'Cette action est irreversible. Voulez-vous vraiment supprimer cet utilisateur?',
+        'This action is irreversible. Do you really want to delete this user?',
       variant: 'destructive',
       onConfirm: async () => {
         try {
           await remove(id)
-          toast.success('Utilisateur supprime')
+          toast.success('User deleted')
           router.push('/users')
         } catch {
-          toast.error('Erreur lors de la suppression')
+          toast.error('Error during deletion')
         }
       },
     })
@@ -94,9 +94,9 @@ export default function UserDetailPage() {
   const handleToggleActive = async () => {
     try {
       await toggleActive(id)
-      toast.success('Statut mis a jour')
+      toast.success('Status updated')
     } catch {
-      toast.error('Erreur lors de la mise a jour')
+      toast.error('Error during update')
     }
   }
 
@@ -104,33 +104,33 @@ export default function UserDetailPage() {
     if (!selectedDept) return
     try {
       await addPermission(id, selectedDept, selectedLevel)
-      toast.success('Permission ajoutee')
+      toast.success('Permission added')
       setIsAddingPermission(false)
       setSelectedDept('')
       setSelectedLevel('read')
     } catch {
-      toast.error('Erreur lors de l\'ajout')
+      toast.error('Error during addition')
     }
   }
 
   const handleRemovePermission = async (permissionId: number) => {
     try {
       await removePermission(permissionId)
-      toast.success('Permission supprimee')
+      toast.success('Permission deleted')
     } catch {
-      toast.error('Erreur lors de la suppression')
+      toast.error('Error during deletion')
     }
   }
 
   if (isLoadingUser) {
-    return <PageLoading text="Chargement de l'utilisateur..." />
+    return <PageLoading text="Loading user..." />
   }
 
   if (error || !selectedUser) {
     return (
       <ErrorState
-        title="Utilisateur introuvable"
-        description={error || "Cet utilisateur n'existe pas ou a ete supprime."}
+        title="User not found"
+        description={error || "This user does not exist or has been deleted."}
         onRetry={() => fetchById(id)}
       />
     )
@@ -152,7 +152,7 @@ export default function UserDetailPage() {
           <Button variant="ghost" asChild>
             <Link href="/users">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour a la liste
+              Back to list
             </Link>
           </Button>
           <div className="flex gap-2">
@@ -172,12 +172,12 @@ export default function UserDetailPage() {
             <Button variant="outline" asChild>
               <Link href={`/users/${id}/edit`}>
                 <Edit className="mr-2 h-4 w-4" />
-                Modifier
+                Edit
               </Link>
             </Button>
             <Button variant="destructive" onClick={handleDelete}>
               <Trash2 className="mr-2 h-4 w-4" />
-              Supprimer
+              Delete
             </Button>
           </div>
         </div>
@@ -189,7 +189,7 @@ export default function UserDetailPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <User className="h-5 w-5" />
-                  Informations
+                  Information
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -222,7 +222,7 @@ export default function UserDetailPage() {
                   </div>
 
                   <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Departement</h4>
+                    <h4 className="text-sm font-medium text-muted-foreground">Department</h4>
                     <p className="mt-1 flex items-center gap-2">
                       <Building2 className="h-4 w-4 text-muted-foreground" />
                       {user.department || '-'}
@@ -253,25 +253,25 @@ export default function UserDetailPage() {
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <Shield className="h-5 w-5" />
-                  Permissions par departement
+                  Permissions by Department
                 </CardTitle>
                 <Dialog open={isAddingPermission} onOpenChange={setIsAddingPermission}>
                   <DialogTrigger asChild>
                     <Button variant="outline" size="sm" disabled={availableDepts.length === 0}>
                       <Plus className="h-4 w-4 mr-1" />
-                      Ajouter
+                      Add
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Ajouter une permission</DialogTitle>
+                      <DialogTitle>Add Permission</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Departement</label>
+                        <label className="text-sm font-medium">Department</label>
                         <Select value={selectedDept} onValueChange={setSelectedDept}>
                           <SelectTrigger>
-                            <SelectValue placeholder="Selectionner..." />
+                            <SelectValue placeholder="Select..." />
                           </SelectTrigger>
                           <SelectContent>
                             {availableDepts.map((dept) => (
@@ -297,10 +297,10 @@ export default function UserDetailPage() {
                       </div>
                       <div className="flex justify-end gap-2">
                         <Button variant="outline" onClick={() => setIsAddingPermission(false)}>
-                          Annuler
+                          Cancel
                         </Button>
                         <Button onClick={handleAddPermission} disabled={!selectedDept}>
-                          Ajouter
+                          Add
                         </Button>
                       </div>
                     </div>
@@ -310,7 +310,7 @@ export default function UserDetailPage() {
               <CardContent>
                 {permissions.length === 0 ? (
                   <p className="py-4 text-center text-muted-foreground">
-                    Aucune permission specifique configuree
+                    No specific permissions configured
                   </p>
                 ) : (
                   <div className="space-y-2">

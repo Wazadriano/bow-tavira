@@ -23,14 +23,14 @@ export default function EditSupplierPage() {
   }, [id, fetchById])
 
   if (isLoadingItem) {
-    return <PageLoading text="Chargement du fournisseur..." />
+    return <PageLoading text="Loading supplier..." />
   }
 
   if (error || !selectedItem) {
     return (
       <ErrorState
-        title="Fournisseur introuvable"
-        description={error || "Ce fournisseur n'existe pas."}
+        title="Supplier not found"
+        description={error || "This supplier does not exist."}
         onRetry={() => fetchById(id)}
       />
     )
@@ -39,8 +39,8 @@ export default function EditSupplierPage() {
   return (
     <>
       <Header
-        title={`Modifier: ${selectedItem.name}`}
-        description="Modifier les informations du fournisseur"
+        title={`Edit: ${selectedItem.name}`}
+        description="Edit supplier information"
       />
 
       <div className="p-6">
@@ -48,7 +48,7 @@ export default function EditSupplierPage() {
           <Button variant="ghost" asChild>
             <Link href={`/suppliers/${id}`}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour au detail
+              Back to details
             </Link>
           </Button>
         </div>

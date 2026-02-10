@@ -46,13 +46,13 @@ export function ConfirmDialog() {
         </DialogHeader>
         <DialogFooter className="gap-2 sm:gap-0">
           <Button variant="outline" onClick={hideConfirm}>
-            Annuler
+            Cancel
           </Button>
           <Button
             variant={isDestructive ? 'destructive' : 'default'}
             onClick={handleConfirm}
           >
-            Confirmer
+            Confirm
           </Button>
         </DialogFooter>
       </DialogContent>

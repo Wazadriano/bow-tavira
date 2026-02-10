@@ -117,14 +117,14 @@ export function AccessManagementPanel({
           : { entity: value, access_level: selectedLevel }
 
       await api.post(endpoint, payload)
-      toast.success('Acces ajoute')
+      toast.success('Access added')
       setIsOpen(false)
       setSelectedDepartment('')
       setSelectedEntity('')
       setSelectedLevel('read')
       onAccessUpdated?.()
     } catch {
-      toast.error('Erreur lors de l\'ajout de l\'acces')
+      toast.error('Error adding access')
     } finally {
       setIsLoading(false)
     }
@@ -138,10 +138,10 @@ export function AccessManagementPanel({
           : `/suppliers/${resourceId}/access/${accessId}`
 
       await api.delete(endpoint)
-      toast.success('Acces supprime')
+      toast.success('Access removed')
       onAccessUpdated?.()
     } catch {
-      toast.error('Erreur lors de la suppression')
+      toast.error('Error removing access')
     }
   }
 
@@ -158,7 +158,7 @@ export function AccessManagementPanel({
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">
           <Shield className="h-5 w-5" />
-          Gestion des acces
+          Access Management
           {currentAccess.length > 0 && (
             <Badge variant="secondary" className="ml-2">
               {currentAccess.length}
@@ -169,22 +169,22 @@ export function AccessManagementPanel({
           <DialogTrigger asChild>
             <Button variant="outline" size="sm">
               <Plus className="h-4 w-4 mr-1" />
-              Ajouter
+              Add
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Ajouter un acces</DialogTitle>
+              <DialogTitle>Add Access</DialogTitle>
               <DialogDescription>
                 {resourceType === 'governance'
-                  ? 'Autoriser un departement a acceder a cet element de gouvernance'
-                  : 'Autoriser une entite a acceder a ce fournisseur'}
+                  ? 'Allow a department to access this governance item'
+                  : 'Allow an entity to access this supplier'}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">
-                  {resourceType === 'governance' ? 'Departement' : 'Entite'}
+                  {resourceType === 'governance' ? 'Department' : 'Entity'}
                 </label>
                 <Select
                   value={resourceType === 'governance' ? selectedDepartment : selectedEntity}
@@ -196,8 +196,8 @@ export function AccessManagementPanel({
                 >
                   <SelectTrigger>
                     <SelectValue
-                      placeholder={`Selectionner ${
-                        resourceType === 'governance' ? 'un departement' : 'une entite'
+                      placeholder={`Select ${
+                        resourceType === 'governance' ? 'a department' : 'an entity'
                       }...`}
                     />
                   </SelectTrigger>
@@ -216,7 +216,7 @@ export function AccessManagementPanel({
                     ))}
                     {availableOptions.length === 0 && (
                       <div className="p-2 text-sm text-muted-foreground text-center">
-                        Aucune option disponible
+                        No options available
                       </div>
                     )}
                   </SelectContent>
@@ -224,7 +224,7 @@ export function AccessManagementPanel({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Niveau d&apos;acces</label>
+                <label className="text-sm font-medium">Access Level</label>
                 <Select value={selectedLevel} onValueChange={setSelectedLevel}>
                   <SelectTrigger>
                     <SelectValue />
@@ -233,13 +233,13 @@ export function AccessManagementPanel({
                     <SelectItem value="read">
                       <div className="flex items-center gap-2">
                         <div className="h-2 w-2 rounded-full bg-blue-500" />
-                        Lecture seule
+                        Read Only
                       </div>
                     </SelectItem>
                     <SelectItem value="write">
                       <div className="flex items-center gap-2">
                         <div className="h-2 w-2 rounded-full bg-green-500" />
-                        Lecture et ecriture
+                        Read and Write
                       </div>
                     </SelectItem>
                     <SelectItem value="admin">
@@ -254,7 +254,7 @@ export function AccessManagementPanel({
 
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setIsOpen(false)}>
-                  Annuler
+                  Cancel
                 </Button>
                 <Button
                   onClick={handleAddAccess}
@@ -264,7 +264,7 @@ export function AccessManagementPanel({
                   }
                 >
                   {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Ajouter
+                  Add
                 </Button>
               </div>
             </div>
@@ -274,7 +274,7 @@ export function AccessManagementPanel({
       <CardContent>
         {currentAccess.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-4">
-            Aucun acces configure - acces limite au createur
+            No access configured - access limited to creator
           </p>
         ) : (
           <div className="space-y-2">

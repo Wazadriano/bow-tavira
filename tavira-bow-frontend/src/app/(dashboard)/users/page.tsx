@@ -47,8 +47,8 @@ import {
 import { toast } from 'sonner'
 
 const ROLE_LABELS: Record<string, string> = {
-  admin: 'Administrateur',
-  member: 'Membre',
+  admin: 'Administrator',
+  member: 'Member',
 }
 
 const ROLE_COLORS: Record<string, string> = {
@@ -79,15 +79,15 @@ export default function UsersPage() {
 
   const handleDelete = (id: number, name: string) => {
     showConfirm({
-      title: 'Supprimer cet utilisateur',
-      description: `Etes-vous sur de vouloir supprimer ${name}? Cette action est irreversible.`,
+      title: 'Delete this user',
+      description: `Are you sure you want to delete ${name}? This action is irreversible.`,
       variant: 'destructive',
       onConfirm: async () => {
         try {
           await remove(id)
-          toast.success('Utilisateur supprime')
+          toast.success('User deleted successfully')
         } catch {
-          toast.error('Erreur lors de la suppression')
+          toast.error('An error occurred during deletion')
         }
       },
     })
@@ -96,22 +96,22 @@ export default function UsersPage() {
   const handleToggleActive = async (id: number) => {
     try {
       await toggleActive(id)
-      toast.success('Statut mis a jour')
+      toast.success('Status updated')
     } catch {
-      toast.error('Erreur lors de la mise a jour')
+      toast.error('An error occurred during update')
     }
   }
 
   return (
     <>
       <Header
-        title="Utilisateurs"
-        description="Gestion des utilisateurs et de leurs permissions"
+        title="Users"
+        description="Manage users and their permissions"
         actions={
           <Button asChild>
             <Link href="/users/new">
               <Plus className="mr-2 h-4 w-4" />
-              Nouvel utilisateur
+              New User
             </Link>
           </Button>
         }
@@ -123,7 +123,7 @@ export default function UsersPage() {
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Rechercher..."
+              placeholder="Search..."
               className="pl-10"
               value={filters.search || ''}
               onChange={(e) => setFilters({ search: e.target.value })}
@@ -140,9 +140,9 @@ export default function UsersPage() {
               <SelectValue placeholder="Role" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tous les roles</SelectItem>
-              <SelectItem value="admin">Administrateur</SelectItem>
-              <SelectItem value="member">Membre</SelectItem>
+              <SelectItem value="all">All Roles</SelectItem>
+              <SelectItem value="admin">Administrator</SelectItem>
+              <SelectItem value="member">Member</SelectItem>
             </SelectContent>
           </Select>
 
@@ -162,17 +162,17 @@ export default function UsersPage() {
             }
           >
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Statut" />
+              <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tous les statuts</SelectItem>
-              <SelectItem value="active">Actifs</SelectItem>
-              <SelectItem value="inactive">Inactifs</SelectItem>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
             </SelectContent>
           </Select>
 
           <Button variant="outline" onClick={resetFilters}>
-            Reinitialiser
+            Reset
           </Button>
         </div>
 
@@ -182,9 +182,9 @@ export default function UsersPage() {
         ) : users.length === 0 ? (
           <EmptyState
             icon={User}
-            title="Aucun utilisateur"
-            description="Commencez par creer un utilisateur"
-            actionLabel="Nouvel utilisateur"
+            title="No users found"
+            description="Start by creating a user"
+            actionLabel="New User"
             onAction={() => router.push('/users/new')}
           />
         ) : (
@@ -193,12 +193,12 @@ export default function UsersPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Utilisateur</TableHead>
+                    <TableHead>User</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Role</TableHead>
-                    <TableHead>Departement</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead>Cree le</TableHead>
+                    <TableHead>Department</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Created</TableHead>
                     <TableHead className="w-[50px]" />
                   </TableRow>
                 </TableHeader>
@@ -246,12 +246,12 @@ export default function UsersPage() {
                           {user.is_active ? (
                             <>
                               <UserCheck className="mr-1 h-3 w-3" />
-                              Actif
+                              Active
                             </>
                           ) : (
                             <>
                               <UserX className="mr-1 h-3 w-3" />
-                              Inactif
+                              Inactive
                             </>
                           )}
                         </Badge>
@@ -268,13 +268,13 @@ export default function UsersPage() {
                             <DropdownMenuItem asChild>
                               <Link href={`/users/${user.id}`}>
                                 <Eye className="mr-2 h-4 w-4" />
-                                Voir
+                                View
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
                               <Link href={`/users/${user.id}/edit`}>
                                 <Edit className="mr-2 h-4 w-4" />
-                                Modifier
+                                Edit
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem
@@ -283,12 +283,12 @@ export default function UsersPage() {
                               {user.is_active ? (
                                 <>
                                   <UserX className="mr-2 h-4 w-4" />
-                                  Desactiver
+                                  Deactivate
                                 </>
                               ) : (
                                 <>
                                   <UserCheck className="mr-2 h-4 w-4" />
-                                  Activer
+                                  Activate
                                 </>
                               )}
                             </DropdownMenuItem>
@@ -299,7 +299,7 @@ export default function UsersPage() {
                               }
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
-                              Supprimer
+                              Delete
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -313,7 +313,7 @@ export default function UsersPage() {
             {/* Pagination */}
             <div className="mt-4 flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
-                {total} utilisateur{total > 1 ? 's' : ''} au total
+                {total} user{total > 1 ? 's' : ''} total
               </p>
               <div className="flex gap-2">
                 <Button
@@ -322,7 +322,7 @@ export default function UsersPage() {
                   onClick={() => fetchUsers(currentPage - 1)}
                   disabled={currentPage <= 1}
                 >
-                  Precedent
+                  Previous
                 </Button>
                 <Button
                   variant="outline"
@@ -330,7 +330,7 @@ export default function UsersPage() {
                   onClick={() => fetchUsers(currentPage + 1)}
                   disabled={currentPage >= lastPage}
                 >
-                  Suivant
+                  Next
                 </Button>
               </div>
             </div>

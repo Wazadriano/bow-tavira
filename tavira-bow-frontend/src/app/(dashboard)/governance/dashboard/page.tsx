@@ -71,7 +71,7 @@ export default function GovernanceDashboardPage() {
   if (isLoading || !stats) {
     return (
       <>
-        <Header title="Dashboard" description="Statistiques Governance" />
+        <Header title="Dashboard" description="Governance Statistics" />
         <div className="p-6">
           <div className="animate-pulse space-y-6">
             <div className="grid gap-4 md:grid-cols-4">
@@ -116,19 +116,19 @@ export default function GovernanceDashboardPage() {
             variant="info"
           />
           <StatsCard
-            title="Termines"
+            title="Completed"
             value={stats.completed}
             icon={CheckCircle}
             variant="success"
           />
           <StatsCard
-            title="En attente"
+            title="Pending"
             value={stats.pending}
             icon={Clock}
             variant="warning"
           />
           <StatsCard
-            title="En retard"
+            title="Overdue"
             value={stats.overdue}
             icon={AlertTriangle}
             variant="danger"
@@ -138,20 +138,20 @@ export default function GovernanceDashboardPage() {
         {/* Charts row */}
         <div className="grid gap-6 lg:grid-cols-2">
           <BarChart
-            title="Items par Departement"
+            title="Items by Department"
             data={deptData}
             bars={[{ dataKey: 'count', name: 'Items', color: '#8b5cf6' }]}
           />
 
           <DoughnutChart
-            title="Distribution par Statut"
+            title="Distribution by Status"
             data={statusData}
           />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
           <BarChart
-            title="Items par Frequence"
+            title="Items by Frequency"
             data={freqData}
             bars={[{ dataKey: 'count', name: 'Items', color: '#06b6d4' }]}
           />
@@ -161,7 +161,7 @@ export default function GovernanceDashboardPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Calendar className="h-5 w-5" />
-                Prochaines echeances
+                Upcoming Due Dates
               </CardTitle>
             </CardHeader>
             <CardContent>

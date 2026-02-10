@@ -25,21 +25,22 @@ import {
   CheckCircle,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { GovernanceMilestonesPanel } from '@/components/governance/governance-milestones-panel'
 
 const STATUS_LABELS: Record<string, string> = {
-  not_started: 'Non commence',
-  in_progress: 'En cours',
-  on_hold: 'En pause',
-  completed: 'Termine',
-  cancelled: 'Annule',
+  not_started: 'Not Started',
+  in_progress: 'In Progress',
+  on_hold: 'On Hold',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
 }
 
 const FREQUENCY_LABELS: Record<string, string> = {
-  daily: 'Quotidien',
-  weekly: 'Hebdomadaire',
-  monthly: 'Mensuel',
-  quarterly: 'Trimestriel',
-  annually: 'Annuel',
+  daily: 'Daily',
+  weekly: 'Weekly',
+  monthly: 'Monthly',
+  quarterly: 'Quarterly',
+  annually: 'Annually',
   ad_hoc: 'Ad Hoc',
 }
 
@@ -59,30 +60,30 @@ export default function GovernanceDetailPage() {
 
   const handleDelete = () => {
     showConfirm({
-      title: 'Supprimer cet element',
-      description: 'Cette action est irreversible. Voulez-vous vraiment supprimer cet element de gouvernance?',
+      title: 'Delete this item',
+      description: 'This action is irreversible. Are you sure you want to delete this governance item?',
       variant: 'destructive',
       onConfirm: async () => {
         try {
           await remove(id)
-          toast.success('Element supprime')
+          toast.success('Item deleted')
           router.push('/governance')
         } catch {
-          toast.error('Erreur lors de la suppression')
+          toast.error('Error during deletion')
         }
       },
     })
   }
 
   if (isLoadingItem) {
-    return <PageLoading text="Chargement..." />
+    return <PageLoading text="Loading..." />
   }
 
   if (error || !selectedItem) {
     return (
       <ErrorState
-        title="Element introuvable"
-        description={error || "Cet element n'existe pas ou a ete supprime."}
+        title="Item not found"
+        description={error || "This item does not exist or has been deleted."}
         onRetry={() => fetchById(id)}
       />
     )
@@ -102,19 +103,19 @@ export default function GovernanceDetailPage() {
           <Button variant="ghost" asChild>
             <Link href="/governance">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour a la liste
+              Back to list
             </Link>
           </Button>
           <div className="flex gap-2">
             <Button variant="outline" asChild>
               <Link href={`/governance/${id}/edit`}>
                 <Edit className="mr-2 h-4 w-4" />
-                Modifier
+                Edit
               </Link>
             </Button>
             <Button variant="destructive" onClick={handleDelete}>
               <Trash2 className="mr-2 h-4 w-4" />
-              Supprimer
+              Delete
             </Button>
           </div>
         </div>
@@ -125,7 +126,7 @@ export default function GovernanceDetailPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="h-5 w-5" />
-                  Informations
+                  Information
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -136,7 +137,7 @@ export default function GovernanceDetailPage() {
 
                 {item.monthly_update && (
                   <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Mise a jour</h4>
+                    <h4 className="text-sm font-medium text-muted-foreground">Update</h4>
                     <p className="mt-1 whitespace-pre-wrap">{item.monthly_update}</p>
                   </div>
                 )}
@@ -147,27 +148,27 @@ export default function GovernanceDetailPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Calendar className="h-5 w-5" />
-                  Planification
+                  Schedule
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4 sm:grid-cols-3">
                   <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Frequence</h4>
+                    <h4 className="text-sm font-medium text-muted-foreground">Frequency</h4>
                     <p className="mt-1 flex items-center gap-2">
                       <RefreshCw className="h-4 w-4 text-muted-foreground" />
                       {item.frequency ? (FREQUENCY_LABELS[item.frequency] || item.frequency) : '-'}
                     </p>
                   </div>
                   <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Prochaine echeance</h4>
+                    <h4 className="text-sm font-medium text-muted-foreground">Next Deadline</h4>
                     <p className="mt-1 flex items-center gap-2">
                       <Clock className="h-4 w-4 text-muted-foreground" />
                       {formatDate(item.deadline)}
                     </p>
                   </div>
                   <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Derniere completion</h4>
+                    <h4 className="text-sm font-medium text-muted-foreground">Last Completion</h4>
                     <p className="mt-1 flex items-center gap-2">
                       <CheckCircle className="h-4 w-4 text-muted-foreground" />
                       {formatDate(item.completion_date)}
@@ -176,6 +177,9 @@ export default function GovernanceDetailPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Milestones */}
+            <GovernanceMilestonesPanel itemId={item.id} />
 
             {/* Access Management */}
             <AccessManagementPanel
@@ -189,7 +193,7 @@ export default function GovernanceDetailPage() {
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Statut</CardTitle>
+                <CardTitle>Status</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -198,7 +202,7 @@ export default function GovernanceDetailPage() {
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Statut</span>
+                  <span className="text-sm text-muted-foreground">Status</span>
                   <Badge variant="outline">
                     {item.current_status ? (STATUS_LABELS[item.current_status] || item.current_status) : '-'}
                   </Badge>
@@ -212,14 +216,14 @@ export default function GovernanceDetailPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground">Departement</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground">Department</h4>
                   <Badge variant="secondary" className="mt-1">
                     {item.department}
                   </Badge>
                 </div>
 
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground">Responsable</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground">Responsible Party</h4>
                   <p className="mt-1 flex items-center gap-2">
                     <User className="h-4 w-4 text-muted-foreground" />
                     {item.responsible_party?.full_name || '-'}
@@ -229,12 +233,12 @@ export default function GovernanceDetailPage() {
                 <Separator />
 
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground">Cree le</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground">Created</h4>
                   <p className="mt-1 text-sm">{formatDate(item.created_at)}</p>
                 </div>
 
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground">Modifie le</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground">Modified</h4>
                   <p className="mt-1 text-sm">{formatDate(item.updated_at)}</p>
                 </div>
               </CardContent>

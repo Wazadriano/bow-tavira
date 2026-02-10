@@ -60,16 +60,16 @@ export default function TeamDetailPage() {
 
   const handleDelete = () => {
     showConfirm({
-      title: 'Supprimer cette equipe',
-      description: 'Cette action est irreversible. Tous les membres seront retires de l\'equipe.',
+      title: 'Delete this team',
+      description: 'This action is irreversible. All members will be removed from the team.',
       variant: 'destructive',
       onConfirm: async () => {
         try {
           await remove(id)
-          toast.success('Equipe supprimee')
+          toast.success('Team deleted')
           router.push('/teams')
         } catch {
-          toast.error('Erreur lors de la suppression')
+          toast.error('Error during deletion')
         }
       },
     })
@@ -77,15 +77,15 @@ export default function TeamDetailPage() {
 
   const handleRemoveMember = (memberId: number, memberName: string) => {
     showConfirm({
-      title: 'Retirer ce membre',
-      description: `Voulez-vous retirer ${memberName} de l'equipe?`,
+      title: 'Remove this member',
+      description: `Do you want to remove ${memberName} from the team?`,
       variant: 'destructive',
       onConfirm: async () => {
         try {
           await removeMember(id, memberId)
-          toast.success('Membre retire')
+          toast.success('Member removed')
         } catch {
-          toast.error('Erreur lors du retrait')
+          toast.error('Error during removal')
         }
       },
     })
@@ -94,21 +94,21 @@ export default function TeamDetailPage() {
   const handleToggleLead = async (memberId: number, currentIsLead: boolean) => {
     try {
       await updateMember(id, memberId, !currentIsLead)
-      toast.success(currentIsLead ? 'Role de lead retire' : 'Promu chef d\'equipe')
+      toast.success(currentIsLead ? 'Lead role removed' : 'Promoted to team lead')
     } catch {
-      toast.error('Erreur lors de la modification')
+      toast.error('Error during modification')
     }
   }
 
   if (isLoadingItem) {
-    return <PageLoading text="Chargement de l'equipe..." />
+    return <PageLoading text="Loading team..." />
   }
 
   if (error || !selectedItem) {
     return (
       <ErrorState
-        title="Equipe introuvable"
-        description={error || "Cette equipe n'existe pas ou a ete supprimee."}
+        title="Team not found"
+        description={error || "This team does not exist or has been deleted."}
         onRetry={() => fetchById(id)}
       />
     )
@@ -122,7 +122,7 @@ export default function TeamDetailPage() {
     <>
       <Header
         title={team.name}
-        description={team.description || 'Equipe'}
+        description={team.description || 'Team'}
       />
 
       <div className="p-6">
@@ -130,19 +130,19 @@ export default function TeamDetailPage() {
           <Button variant="ghost" asChild>
             <Link href="/teams">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour a la liste
+              Back to list
             </Link>
           </Button>
           <div className="flex gap-2">
             <Button variant="outline" asChild>
               <Link href={`/teams/${id}/edit`}>
                 <Edit className="mr-2 h-4 w-4" />
-                Modifier
+                Edit
               </Link>
             </Button>
             <Button variant="destructive" onClick={handleDelete}>
               <Trash2 className="mr-2 h-4 w-4" />
-              Supprimer
+              Delete
             </Button>
           </div>
         </div>
@@ -154,13 +154,13 @@ export default function TeamDetailPage() {
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <Users className="h-5 w-5" />
-                  Membres ({members.length})
+                  Members ({members.length})
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {members.length === 0 ? (
                   <p className="py-8 text-center text-muted-foreground">
-                    Aucun membre dans cette equipe
+                    No members in this team
                   </p>
                 ) : (
                   <div className="space-y-3">
@@ -194,7 +194,7 @@ export default function TeamDetailPage() {
                             size="sm"
                             onClick={() => handleToggleLead(member.id, member.is_lead)}
                           >
-                            {member.is_lead ? 'Retirer lead' : 'Promouvoir lead'}
+                            {member.is_lead ? 'Remove lead' : 'Promote to lead'}
                           </Button>
                           <Button
                             variant="ghost"
@@ -219,7 +219,7 @@ export default function TeamDetailPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <UserPlus className="h-5 w-5" />
-                    Ajouter un membre
+                    Add Member
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -232,9 +232,9 @@ export default function TeamDetailPage() {
                         onClick={async () => {
                           try {
                             await addMember(id, user.id)
-                            toast.success(`${user.full_name} ajoute a l'equipe`)
+                            toast.success(`${user.full_name} added to team`)
                           } catch {
-                            toast.error('Erreur lors de l\'ajout')
+                            toast.error('Error during addition')
                           }
                         }}
                       >
@@ -260,26 +260,26 @@ export default function TeamDetailPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Statut</span>
+                  <span className="text-sm text-muted-foreground">Status</span>
                   <Badge variant={team.is_active ? 'default' : 'secondary'}>
                     {team.is_active ? 'Active' : 'Inactive'}
                   </Badge>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Membres</span>
+                  <span className="text-sm text-muted-foreground">Members</span>
                   <span className="font-medium">{members.length}</span>
                 </div>
 
                 <Separator />
 
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground">Creee le</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground">Created</h4>
                   <p className="mt-1 text-sm">{formatDate(team.created_at)}</p>
                 </div>
 
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground">Modifiee le</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground">Modified</h4>
                   <p className="mt-1 text-sm">{formatDate(team.updated_at)}</p>
                 </div>
               </CardContent>

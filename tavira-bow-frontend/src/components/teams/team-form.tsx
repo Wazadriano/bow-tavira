@@ -48,14 +48,14 @@ export function TeamForm({ team, mode }: TeamFormProps) {
     try {
       if (mode === 'create') {
         await create(data)
-        toast.success('Equipe creee')
+        toast.success('Team created')
       } else if (team) {
         await update(team.id, data)
-        toast.success('Equipe mise a jour')
+        toast.success('Team updated')
       }
       router.push('/teams')
     } catch {
-      toast.error('Une erreur est survenue')
+      toast.error('An error occurred')
     }
   }
 
@@ -63,15 +63,15 @@ export function TeamForm({ team, mode }: TeamFormProps) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Informations de l&apos;equipe</CardTitle>
+          <CardTitle>Team Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Nom de l&apos;equipe *</Label>
+            <Label htmlFor="name">Team Name *</Label>
             <Input
               id="name"
               {...register('name')}
-              placeholder="Nom de l'equipe"
+              placeholder="Team name"
             />
             {errors.name && (
               <p className="text-sm text-destructive">{errors.name.message}</p>
@@ -85,7 +85,7 @@ export function TeamForm({ team, mode }: TeamFormProps) {
               {...register('description')}
               rows={3}
               className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              placeholder="Description de l'equipe et de ses responsabilites"
+              placeholder="Team description and responsibilities"
             />
           </div>
 
@@ -96,7 +96,7 @@ export function TeamForm({ team, mode }: TeamFormProps) {
               {...register('is_active')}
               className="h-4 w-4 rounded border-gray-300"
             />
-            <Label htmlFor="is_active">Equipe active</Label>
+            <Label htmlFor="is_active">Active Team</Label>
           </div>
         </CardContent>
       </Card>
@@ -107,11 +107,11 @@ export function TeamForm({ team, mode }: TeamFormProps) {
           variant="outline"
           onClick={() => router.push('/teams')}
         >
-          Annuler
+          Cancel
         </Button>
         <Button type="submit" disabled={isSaving}>
           {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {mode === 'create' ? 'Creer' : 'Enregistrer'}
+          {mode === 'create' ? 'Create' : 'Save'}
         </Button>
       </div>
     </form>

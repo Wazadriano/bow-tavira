@@ -28,11 +28,11 @@ interface GovernanceFormProps {
 }
 
 const FREQUENCY_OPTIONS = [
-  { value: 'daily', label: 'Quotidien' },
-  { value: 'weekly', label: 'Hebdomadaire' },
-  { value: 'monthly', label: 'Mensuel' },
-  { value: 'quarterly', label: 'Trimestriel' },
-  { value: 'annually', label: 'Annuel' },
+  { value: 'daily', label: 'Daily' },
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'monthly', label: 'Monthly' },
+  { value: 'quarterly', label: 'Quarterly' },
+  { value: 'annually', label: 'Annually' },
 ]
 
 export function GovernanceForm({ item, mode }: GovernanceFormProps) {
@@ -77,14 +77,14 @@ export function GovernanceForm({ item, mode }: GovernanceFormProps) {
     try {
       if (mode === 'create') {
         await create(data)
-        toast.success('Element de gouvernance cree')
+        toast.success('Governance item created')
       } else if (item) {
         await update(item.id, data)
-        toast.success('Element de gouvernance mis a jour')
+        toast.success('Governance item updated')
       }
       router.push('/governance')
     } catch {
-      toast.error('Une erreur est survenue')
+      toast.error('An error occurred')
     }
   }
 
@@ -92,16 +92,16 @@ export function GovernanceForm({ item, mode }: GovernanceFormProps) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Informations generales</CardTitle>
+          <CardTitle>General Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="activity">Activite *</Label>
+              <Label htmlFor="activity">Activity *</Label>
               <Input
                 id="activity"
                 {...register('activity')}
-                placeholder="Nom de l'element"
+                placeholder="Item name"
               />
               {errors.activity && (
                 <p className="text-sm text-destructive">{errors.activity.message}</p>
@@ -109,13 +109,13 @@ export function GovernanceForm({ item, mode }: GovernanceFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="department">Departement *</Label>
+              <Label htmlFor="department">Department *</Label>
               <Select
                 value={watch('department')}
                 onValueChange={(value) => setValue('department', value)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selectionner un departement" />
+                  <SelectValue placeholder="Select a department" />
                 </SelectTrigger>
                 <SelectContent>
                   {departments?.data?.map((dept) => (
@@ -138,7 +138,7 @@ export function GovernanceForm({ item, mode }: GovernanceFormProps) {
               {...register('description')}
               rows={3}
               className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              placeholder="Description detaillee"
+              placeholder="Detailed description"
             />
           </div>
         </CardContent>
@@ -146,18 +146,18 @@ export function GovernanceForm({ item, mode }: GovernanceFormProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Planification</CardTitle>
+          <CardTitle>Planning</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
-              <Label htmlFor="frequency">Frequence</Label>
+              <Label htmlFor="frequency">Frequency</Label>
               <Select
                 value={watch('frequency') || ''}
                 onValueChange={(value) => setValue('frequency', value as GovernanceFormData['frequency'])}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selectionner une frequence" />
+                  <SelectValue placeholder="Select a frequency" />
                 </SelectTrigger>
                 <SelectContent>
                   {FREQUENCY_OPTIONS.map((option) => (
@@ -170,7 +170,7 @@ export function GovernanceForm({ item, mode }: GovernanceFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="deadline">Echeance</Label>
+              <Label htmlFor="deadline">Deadline</Label>
               <Input
                 id="deadline"
                 type="date"
@@ -179,7 +179,7 @@ export function GovernanceForm({ item, mode }: GovernanceFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="responsible_party_id">Responsable</Label>
+              <Label htmlFor="responsible_party_id">Responsible Party</Label>
               <Select
                 value={watch('responsible_party_id')?.toString() || ''}
                 onValueChange={(value) =>
@@ -187,7 +187,7 @@ export function GovernanceForm({ item, mode }: GovernanceFormProps) {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selectionner un responsable" />
+                  <SelectValue placeholder="Select responsible party" />
                 </SelectTrigger>
                 <SelectContent>
                   {users?.data?.map((user) => (
@@ -208,11 +208,11 @@ export function GovernanceForm({ item, mode }: GovernanceFormProps) {
           variant="outline"
           onClick={() => router.push('/governance')}
         >
-          Annuler
+          Cancel
         </Button>
         <Button type="submit" disabled={isSaving}>
           {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {mode === 'create' ? 'Creer' : 'Enregistrer'}
+          {mode === 'create' ? 'Create' : 'Save'}
         </Button>
       </div>
     </form>

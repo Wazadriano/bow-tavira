@@ -28,22 +28,22 @@ export default function EditUserPage() {
   const handleSubmit = async (data: UserFormData) => {
     try {
       await update(id, data)
-      toast.success('Utilisateur mis a jour')
+      toast.success('User updated successfully')
       router.push(`/users/${id}`)
     } catch {
-      toast.error('Erreur lors de la mise a jour')
+      toast.error('Error during update')
     }
   }
 
   if (isLoadingUser) {
-    return <PageLoading text="Chargement..." />
+    return <PageLoading text="Loading..." />
   }
 
   if (error || !selectedUser) {
     return (
       <ErrorState
-        title="Utilisateur introuvable"
-        description={error || "Cet utilisateur n'existe pas."}
+        title="User not found"
+        description={error || "This user does not exist."}
         onRetry={() => fetchById(id)}
       />
     )
@@ -52,8 +52,8 @@ export default function EditUserPage() {
   return (
     <>
       <Header
-        title={`Modifier ${selectedUser.full_name || selectedUser.email}`}
-        description="Modifier les informations de l'utilisateur"
+        title={`Edit ${selectedUser.full_name || selectedUser.email}`}
+        description="Edit user information"
       />
 
       <div className="p-6">
@@ -61,7 +61,7 @@ export default function EditUserPage() {
           <Button variant="ghost" asChild>
             <Link href={`/users/${id}`}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour au detail
+              Back to details
             </Link>
           </Button>
         </div>

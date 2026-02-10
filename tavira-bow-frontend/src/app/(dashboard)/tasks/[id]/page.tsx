@@ -27,13 +27,14 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { DependenciesPanel } from '@/components/workitems/dependencies-panel'
+import { MilestonesPanel } from '@/components/workitems/milestones-panel'
 
 const STATUS_LABELS: Record<string, string> = {
-  not_started: 'Non commence',
-  in_progress: 'En cours',
-  on_hold: 'En pause',
-  completed: 'Termine',
-  cancelled: 'Annule',
+  not_started: 'Not Started',
+  in_progress: 'In Progress',
+  on_hold: 'On Hold',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
 }
 
 export default function WorkItemDetailPage() {
@@ -52,30 +53,30 @@ export default function WorkItemDetailPage() {
 
   const handleDelete = () => {
     showConfirm({
-      title: 'Supprimer cette tache',
-      description: 'Cette action est irreversible. Voulez-vous vraiment supprimer cette tache?',
+      title: 'Delete this work item',
+      description: 'This action is irreversible. Do you really want to delete this work item?',
       variant: 'destructive',
       onConfirm: async () => {
         try {
           await remove(id)
-          toast.success('Tache supprimee')
+          toast.success('Work item deleted')
           router.push('/tasks')
         } catch {
-          toast.error('Erreur lors de la suppression')
+          toast.error('Error during deletion')
         }
       },
     })
   }
 
   if (isLoadingItem) {
-    return <PageLoading text="Chargement de la tache..." />
+    return <PageLoading text="Loading work item..." />
   }
 
   if (error || !selectedItem) {
     return (
       <ErrorState
-        title="Tache introuvable"
-        description={error || "Cette tache n'existe pas ou a ete supprimee."}
+        title="Work item not found"
+        description={error || "This work item does not exist or has been deleted."}
         onRetry={() => fetchById(id)}
       />
     )
@@ -86,7 +87,7 @@ export default function WorkItemDetailPage() {
   return (
     <>
       <Header
-        title={item.ref_no || `Tache #${item.id}`}
+        title={item.ref_no || `Work Item #${item.id}`}
         description={item.description}
       />
 
@@ -96,19 +97,19 @@ export default function WorkItemDetailPage() {
           <Button variant="ghost" asChild>
             <Link href="/tasks">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour a la liste
+              Back to list
             </Link>
           </Button>
           <div className="flex gap-2">
             <Button variant="outline" asChild>
               <Link href={`/tasks/${id}/edit`}>
                 <Edit className="mr-2 h-4 w-4" />
-                Modifier
+                Edit
               </Link>
             </Button>
             <Button variant="destructive" onClick={handleDelete}>
               <Trash2 className="mr-2 h-4 w-4" />
-              Supprimer
+              Delete
             </Button>
           </div>
         </div>
@@ -116,12 +117,12 @@ export default function WorkItemDetailPage() {
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Colonne principale */}
           <div className="space-y-6 lg:col-span-2">
-            {/* Informations generales */}
+            {/* General information */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="h-5 w-5" />
-                  Informations generales
+                  General Information
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -138,20 +139,20 @@ export default function WorkItemDetailPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Target className="h-5 w-5" />
-                  Echeances
+                  Deadlines
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Date cible</h4>
+                    <h4 className="text-sm font-medium text-muted-foreground">Target Date</h4>
                     <p className="mt-1 flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                       {formatDate(item.deadline)}
                     </p>
                   </div>
                   <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Date de completion</h4>
+                    <h4 className="text-sm font-medium text-muted-foreground">Completion Date</h4>
                     <p className="mt-1 flex items-center gap-2">
                       <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
                       {formatDate(item.completion_date)}
@@ -166,6 +167,9 @@ export default function WorkItemDetailPage() {
               workItemId={item.id}
               currentDependencies={[]}
             />
+
+            {/* Milestones */}
+            <MilestonesPanel workItemId={item.id} />
           </div>
 
           {/* Colonne laterale */}
@@ -173,7 +177,7 @@ export default function WorkItemDetailPage() {
             {/* Statut */}
             <Card>
               <CardHeader>
-                <CardTitle>Statut</CardTitle>
+                <CardTitle>Status</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -182,7 +186,7 @@ export default function WorkItemDetailPage() {
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Statut</span>
+                  <span className="text-sm text-muted-foreground">Status</span>
                   <Badge variant="outline">
                     {item.current_status ? (STATUS_LABELS[item.current_status] || item.current_status) : '-'}
                   </Badge>
@@ -190,10 +194,10 @@ export default function WorkItemDetailPage() {
 
                 {item.priority_item && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Priorite</span>
+                    <span className="text-sm text-muted-foreground">Priority</span>
                     <Badge variant="destructive">
                       <Flag className="mr-1 h-3 w-3" />
-                      Prioritaire
+                      Priority
                     </Badge>
                   </div>
                 )}
@@ -217,14 +221,14 @@ export default function WorkItemDetailPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground">Departement</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground">Department</h4>
                   <Badge variant="secondary" className="mt-1">
                     {item.department}
                   </Badge>
                 </div>
 
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground">Responsable</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground">Responsible Party</h4>
                   <p className="mt-1 flex items-center gap-2">
                     <User className="h-4 w-4 text-muted-foreground" />
                     {item.responsible_party?.full_name || '-'}
@@ -239,12 +243,12 @@ export default function WorkItemDetailPage() {
                 <Separator />
 
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground">Cree le</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground">Created</h4>
                   <p className="mt-1 text-sm">{formatDate(item.created_at)}</p>
                 </div>
 
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground">Modifie le</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground">Modified</h4>
                   <p className="mt-1 text-sm">{formatDate(item.updated_at)}</p>
                 </div>
               </CardContent>

@@ -29,8 +29,8 @@ interface RiskFormProps {
   mode: 'create' | 'edit'
 }
 
-const IMPACT_LABELS = ['', 'Negligeable', 'Mineur', 'Modere', 'Majeur', 'Critique']
-const PROBABILITY_LABELS = ['', 'Rare', 'Peu probable', 'Possible', 'Probable', 'Quasi certain']
+const IMPACT_LABELS = ['', 'Negligible', 'Minor', 'Moderate', 'Major', 'Critical']
+const PROBABILITY_LABELS = ['', 'Rare', 'Unlikely', 'Possible', 'Likely', 'Almost Certain']
 
 export function RiskForm({ risk, mode }: RiskFormProps) {
   const router = useRouter()
@@ -104,14 +104,14 @@ export function RiskForm({ risk, mode }: RiskFormProps) {
     try {
       if (mode === 'create') {
         await create(data)
-        toast.success('Risque cree')
+        toast.success('Risk created')
       } else if (risk) {
         await update(risk.id, data)
-        toast.success('Risque mis a jour')
+        toast.success('Risk updated')
       }
       router.push('/risks')
     } catch {
-      toast.error('Une erreur est survenue')
+      toast.error('An error occurred')
     }
   }
 
@@ -124,7 +124,7 @@ export function RiskForm({ risk, mode }: RiskFormProps) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Identification du risque</CardTitle>
+          <CardTitle>Risk Identification</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-3">
@@ -135,7 +135,7 @@ export function RiskForm({ risk, mode }: RiskFormProps) {
                 onValueChange={handleThemeChange}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selectionner un theme" />
+                  <SelectValue placeholder="Select a theme" />
                 </SelectTrigger>
                 <SelectContent>
                   {themes.map((theme) => (
@@ -148,13 +148,13 @@ export function RiskForm({ risk, mode }: RiskFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="category_id">Categorie (L2) *</Label>
+              <Label htmlFor="category_id">Category (L2) *</Label>
               <Select
                 value={watch('category_id')?.toString() || ''}
                 onValueChange={(value) => setValue('category_id', parseInt(value))}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selectionner une categorie" />
+                  <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((cat) => (
@@ -172,11 +172,11 @@ export function RiskForm({ risk, mode }: RiskFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="name">Nom du risque *</Label>
+            <Label htmlFor="name">Risk Name *</Label>
             <Input
               id="name"
               {...register('name')}
-              placeholder="Nom du risque"
+              placeholder="Risk name"
             />
             {errors.name && (
               <p className="text-sm text-destructive">{errors.name.message}</p>
@@ -184,19 +184,19 @@ export function RiskForm({ risk, mode }: RiskFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description detaillee</Label>
+            <Label htmlFor="description">Detailed Description</Label>
             <textarea
               id="description"
               {...register('description')}
               rows={3}
               className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              placeholder="Description complete du risque, ses causes et consequences potentielles"
+              placeholder="Complete description of the risk, its causes and potential consequences"
             />
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="owner_id">Proprietaire du risque</Label>
+              <Label htmlFor="owner_id">Risk Owner</Label>
               <Select
                 value={watch('owner_id')?.toString() || ''}
                 onValueChange={(value) =>
@@ -204,7 +204,7 @@ export function RiskForm({ risk, mode }: RiskFormProps) {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selectionner un proprietaire" />
+                  <SelectValue placeholder="Select an owner" />
                 </SelectTrigger>
                 <SelectContent>
                   {users?.data?.map((user) => (
@@ -217,7 +217,7 @@ export function RiskForm({ risk, mode }: RiskFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="responsible_party_id">Responsable</Label>
+              <Label htmlFor="responsible_party_id">Responsible Party</Label>
               <Select
                 value={watch('responsible_party_id')?.toString() || ''}
                 onValueChange={(value) =>
@@ -225,7 +225,7 @@ export function RiskForm({ risk, mode }: RiskFormProps) {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selectionner un responsable" />
+                  <SelectValue placeholder="Select responsible party" />
                 </SelectTrigger>
                 <SelectContent>
                   {users?.data?.map((user) => (
@@ -244,13 +244,13 @@ export function RiskForm({ risk, mode }: RiskFormProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5" />
-            Evaluation du risque inherent
+            Inherent Risk Assessment
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             <div className="space-y-4">
-              <Label>Impact financier (1-5)</Label>
+              <Label>Financial Impact (1-5)</Label>
               <div className="flex items-center gap-2">
                 {[1, 2, 3, 4, 5].map((value) => (
                   <button
@@ -273,7 +273,7 @@ export function RiskForm({ risk, mode }: RiskFormProps) {
             </div>
 
             <div className="space-y-4">
-              <Label>Impact reglementaire (1-5)</Label>
+              <Label>Regulatory Impact (1-5)</Label>
               <div className="flex items-center gap-2">
                 {[1, 2, 3, 4, 5].map((value) => (
                   <button
@@ -296,7 +296,7 @@ export function RiskForm({ risk, mode }: RiskFormProps) {
             </div>
 
             <div className="space-y-4">
-              <Label>Impact reputationnel (1-5)</Label>
+              <Label>Reputational Impact (1-5)</Label>
               <div className="flex items-center gap-2">
                 {[1, 2, 3, 4, 5].map((value) => (
                   <button
@@ -319,7 +319,7 @@ export function RiskForm({ risk, mode }: RiskFormProps) {
             </div>
 
             <div className="space-y-4">
-              <Label>Probabilite (1-5)</Label>
+              <Label>Probability (1-5)</Label>
               <div className="flex items-center gap-2">
                 {[1, 2, 3, 4, 5].map((value) => (
                   <button
@@ -343,7 +343,7 @@ export function RiskForm({ risk, mode }: RiskFormProps) {
           </div>
 
           <div className="flex items-center justify-center gap-4 rounded-lg border p-4">
-            <span className="text-sm font-medium">Score inherent:</span>
+            <span className="text-sm font-medium">Inherent Score:</span>
             <div
               className={`flex h-12 w-12 items-center justify-center rounded-full text-lg font-bold text-white ${getScoreColor(
                 inherentScore
@@ -362,11 +362,11 @@ export function RiskForm({ risk, mode }: RiskFormProps) {
           variant="outline"
           onClick={() => router.push('/risks')}
         >
-          Annuler
+          Cancel
         </Button>
         <Button type="submit" disabled={isSaving}>
           {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {mode === 'create' ? 'Creer' : 'Enregistrer'}
+          {mode === 'create' ? 'Create' : 'Save'}
         </Button>
       </div>
     </form>

@@ -86,10 +86,10 @@ export function ColumnMapper({
                   }
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Selectionner un champ" />
+                    <SelectValue placeholder="Select a field" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">-- Ignorer --</SelectItem>
+                    <SelectItem value="none">-- Skip --</SelectItem>
                     {fields.map((field) => (
                       <SelectItem
                         key={field.field}

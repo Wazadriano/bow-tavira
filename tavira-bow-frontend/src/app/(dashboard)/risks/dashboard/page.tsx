@@ -121,37 +121,37 @@ export default function RisksDashboardPage() {
         {/* KPIs */}
         <StatsGrid columns={6}>
           <StatsCard
-            title="Total Risques"
+            title="Total Risks"
             value={stats.total_risks}
             icon={Shield}
             variant="info"
           />
           <StatsCard
-            title="Risques Eleves"
+            title="High Risks"
             value={stats.high_risks}
             icon={AlertTriangle}
             variant="danger"
           />
           <StatsCard
-            title="Risques Moyens"
+            title="Medium Risks"
             value={stats.medium_risks}
             icon={Target}
             variant="warning"
           />
           <StatsCard
-            title="Risques Faibles"
+            title="Low Risks"
             value={stats.low_risks}
             icon={CheckCircle}
             variant="success"
           />
           <StatsCard
-            title="Actions Ouvertes"
+            title="Open Actions"
             value={stats.open_actions}
             icon={Clock}
             variant="info"
           />
           <StatsCard
-            title="Actions en Retard"
+            title="Overdue Actions"
             value={stats.overdue_actions}
             icon={TrendingUp}
             variant="danger"
@@ -161,23 +161,23 @@ export default function RisksDashboardPage() {
         {/* Charts row */}
         <div className="grid gap-6 lg:grid-cols-2">
           <BarChart
-            title="Risques par Theme"
-            description="Distribution L1"
+            title="Risks by Theme"
+            description="L1 Distribution"
             data={themeData}
-            bars={[{ dataKey: 'count', name: 'Risques', color: '#8b5cf6' }]}
+            bars={[{ dataKey: 'count', name: 'Risks', color: '#8b5cf6' }]}
           />
 
           <DoughnutChart
-            title="Distribution RAG"
-            description="Statut RAG des risques"
+            title="RAG Distribution"
+            description="RAG status of risks"
             data={ragData}
           />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
           <DoughnutChart
-            title="Distribution par Tier"
-            description="Niveau de criticite"
+            title="Distribution by Tier"
+            description="Criticality level"
             data={tierData}
           />
 
@@ -186,7 +186,7 @@ export default function RisksDashboardPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5 text-red-500" />
-                Depassements d&apos;Appetit
+                Appetite Breaches
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -207,7 +207,7 @@ export default function RisksDashboardPage() {
                         {risk.score}
                       </Badge>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Appetit: {risk.appetite}
+                        Appetite: {risk.appetite}
                       </p>
                     </div>
                   </div>

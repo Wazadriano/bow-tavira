@@ -33,7 +33,7 @@ export default function DashboardPage() {
     <>
       <Header
         title="Dashboard"
-        description="Vue d'ensemble du Book of Work"
+        description="Book of Work Overview"
       />
 
       <div className="p-6 space-y-6">
@@ -41,7 +41,7 @@ export default function DashboardPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Taches</CardTitle>
+              <CardTitle className="text-sm font-medium">Work Items</CardTitle>
               <ClipboardList className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -49,14 +49,14 @@ export default function DashboardPage() {
                 {isLoading ? '-' : stats?.total_tasks || 0}
               </div>
               <p className="text-xs text-muted-foreground">
-                Work items actifs
+                Active work items
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Terminees</CardTitle>
+              <CardTitle className="text-sm font-medium">Completed</CardTitle>
               <CheckCircle className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
@@ -64,14 +64,14 @@ export default function DashboardPage() {
                 {isLoading ? '-' : stats?.completed_tasks || 0}
               </div>
               <p className="text-xs text-muted-foreground">
-                Taches completees
+                Completed work items
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">En retard</CardTitle>
+              <CardTitle className="text-sm font-medium">Overdue</CardTitle>
               <AlertTriangle className="h-4 w-4 text-destructive" />
             </CardHeader>
             <CardContent>
@@ -79,14 +79,14 @@ export default function DashboardPage() {
                 {isLoading ? '-' : stats?.overdue_tasks || 0}
               </div>
               <p className="text-xs text-muted-foreground">
-                Attention requise
+                Attention required
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Fournisseurs</CardTitle>
+              <CardTitle className="text-sm font-medium">Suppliers</CardTitle>
               <Truck className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -94,14 +94,14 @@ export default function DashboardPage() {
                 {isLoading ? '-' : stats?.total_suppliers || 0}
               </div>
               <p className="text-xs text-muted-foreground">
-                Fournisseurs actifs
+                Active suppliers
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Risques</CardTitle>
+              <CardTitle className="text-sm font-medium">Risks</CardTitle>
               <Shield className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -109,7 +109,7 @@ export default function DashboardPage() {
                 {isLoading ? '-' : stats?.total_risks || 0}
               </div>
               <p className="text-xs text-muted-foreground">
-                Risques identifies
+                Identified risks
               </p>
             </CardContent>
           </Card>
@@ -120,7 +120,7 @@ export default function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle>Distribution RAG</CardTitle>
-              <CardDescription>Statut actuel des taches</CardDescription>
+              <CardDescription>Current status of work items</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -190,8 +190,8 @@ export default function DashboardPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Apercu Risques</CardTitle>
-              <CardDescription>Resume de la gestion des risques</CardDescription>
+              <CardTitle>Risk Overview</CardTitle>
+              <CardDescription>Risk management summary</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
@@ -207,7 +207,7 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-3 p-3 rounded-lg bg-red-50">
                   <TrendingUp className="h-8 w-8 text-destructive" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Eleves</p>
+                    <p className="text-sm text-muted-foreground">High</p>
                     <p className="text-2xl font-bold text-destructive">
                       {stats?.high_risks || 0}
                     </p>

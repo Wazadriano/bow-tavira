@@ -63,8 +63,8 @@ export function EmptySearchResults() {
   return (
     <EmptyState
       icon={Search}
-      title="Aucun resultat"
-      description="Aucun element ne correspond a votre recherche. Essayez avec d'autres termes."
+      title="No results"
+      description="No items match your search. Try different terms."
     />
   )
 }
@@ -73,9 +73,9 @@ export function EmptyWorkItems({ onAdd }: { onAdd?: () => void }) {
   return (
     <EmptyState
       icon={FileText}
-      title="Aucune tache"
-      description="Commencez par creer votre premiere tache pour suivre vos projets."
-      actionLabel="Nouvelle tache"
+      title="No work items"
+      description="Start by creating your first work item to track your projects."
+      actionLabel="New Work Item"
       onAction={onAdd}
     />
   )
@@ -85,9 +85,9 @@ export function EmptyGovernance({ onAdd }: { onAdd?: () => void }) {
   return (
     <EmptyState
       icon={FolderOpen}
-      title="Aucun element de gouvernance"
-      description="Ajoutez des elements de gouvernance pour suivre vos processus."
-      actionLabel="Nouvel element"
+      title="No governance items"
+      description="Add governance items to track your processes."
+      actionLabel="New Item"
       onAction={onAdd}
     />
   )
@@ -97,9 +97,9 @@ export function EmptySuppliers({ onAdd }: { onAdd?: () => void }) {
   return (
     <EmptyState
       icon={Building2}
-      title="Aucun fournisseur"
-      description="Ajoutez vos fournisseurs pour gerer vos contrats et factures."
-      actionLabel="Nouveau fournisseur"
+      title="No suppliers"
+      description="Add your suppliers to manage contracts and invoices."
+      actionLabel="New Supplier"
       onAction={onAdd}
     />
   )
@@ -109,9 +109,9 @@ export function EmptyRisks({ onAdd }: { onAdd?: () => void }) {
   return (
     <EmptyState
       icon={Shield}
-      title="Aucun risque"
-      description="Identifiez et enregistrez les risques pour mieux les gerer."
-      actionLabel="Nouveau risque"
+      title="No risks"
+      description="Identify and register risks to better manage them."
+      actionLabel="New Risk"
       onAction={onAdd}
     />
   )
@@ -121,16 +121,16 @@ export function EmptyTeams({ onAdd }: { onAdd?: () => void }) {
   return (
     <EmptyState
       icon={Users}
-      title="Aucune equipe"
-      description="Creez des equipes pour organiser vos collaborateurs."
-      actionLabel="Nouvelle equipe"
+      title="No teams"
+      description="Create teams to organize your collaborators."
+      actionLabel="New Team"
       onAction={onAdd}
     />
   )
 }
 
 export function ErrorState({
-  title = 'Une erreur est survenue',
+  title = 'An error occurred',
   description,
   onRetry,
 }: {
@@ -151,7 +151,7 @@ export function ErrorState({
       )}
       {onRetry && (
         <Button variant="outline" onClick={onRetry} className="mt-6">
-          Reessayer
+          Retry
         </Button>
       )}
     </div>

@@ -137,27 +137,27 @@ export default function RiskActionsPage() {
         return (
           <Badge className="bg-green-100 text-green-800">
             <CheckCircle className="h-3 w-3 mr-1" />
-            Termine
+            Completed
           </Badge>
         )
       case 'in_progress':
         return (
           <Badge className="bg-blue-100 text-blue-800">
             <Clock className="h-3 w-3 mr-1" />
-            En cours
+            In Progress
           </Badge>
         )
       case 'overdue':
         return (
           <Badge className="bg-red-100 text-red-800">
             <AlertTriangle className="h-3 w-3 mr-1" />
-            En retard
+            Overdue
           </Badge>
         )
       case 'open':
         return (
           <Badge className="bg-gray-100 text-gray-800">
-            Ouvert
+            Open
           </Badge>
         )
       default:
@@ -187,11 +187,11 @@ export default function RiskActionsPage() {
     <>
       <Header
         title="Actions"
-        description="Gestion des actions de remediation"
+        description="Remediation actions management"
         actions={
           <Button onClick={() => router.push('/risks/actions/new')}>
             <Plus className="h-4 w-4 mr-2" />
-            Nouvelle Action
+            New Action
           </Button>
         }
       />
@@ -208,25 +208,25 @@ export default function RiskActionsPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold text-gray-600">{summaryStats.open}</div>
-              <p className="text-sm text-muted-foreground">Ouvertes</p>
+              <p className="text-sm text-muted-foreground">Open</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold text-blue-600">{summaryStats.inProgress}</div>
-              <p className="text-sm text-muted-foreground">En cours</p>
+              <p className="text-sm text-muted-foreground">In Progress</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold text-red-600">{summaryStats.overdue}</div>
-              <p className="text-sm text-muted-foreground">En retard</p>
+              <p className="text-sm text-muted-foreground">Overdue</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold text-green-600">{summaryStats.completed}</div>
-              <p className="text-sm text-muted-foreground">Terminees</p>
+              <p className="text-sm text-muted-foreground">Completed</p>
             </CardContent>
           </Card>
         </div>
@@ -238,7 +238,7 @@ export default function RiskActionsPage() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher par titre, risque ou responsable..."
+                  placeholder="Search by title, risk or owner..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-10"
@@ -246,26 +246,26 @@ export default function RiskActionsPage() {
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Statut" />
+                  <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tous les statuts</SelectItem>
-                  <SelectItem value="open">Ouvert</SelectItem>
-                  <SelectItem value="in_progress">En cours</SelectItem>
-                  <SelectItem value="overdue">En retard</SelectItem>
-                  <SelectItem value="completed">Termine</SelectItem>
+                  <SelectItem value="all">All statuses</SelectItem>
+                  <SelectItem value="open">Open</SelectItem>
+                  <SelectItem value="in_progress">In Progress</SelectItem>
+                  <SelectItem value="overdue">Overdue</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={priorityFilter} onValueChange={setPriorityFilter}>
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Priorite" />
+                  <SelectValue placeholder="Priority" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Toutes priorites</SelectItem>
-                  <SelectItem value="critical">Critique</SelectItem>
-                  <SelectItem value="high">Haute</SelectItem>
-                  <SelectItem value="medium">Moyenne</SelectItem>
-                  <SelectItem value="low">Basse</SelectItem>
+                  <SelectItem value="all">All priorities</SelectItem>
+                  <SelectItem value="critical">Critical</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="low">Low</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -277,7 +277,7 @@ export default function RiskActionsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Zap className="h-5 w-5" />
-              Liste des Actions ({filteredActions.length})
+              Actions List ({filteredActions.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -291,12 +291,12 @@ export default function RiskActionsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Titre</TableHead>
-                    <TableHead>Risque Associe</TableHead>
-                    <TableHead>Responsable</TableHead>
-                    <TableHead>Echeance</TableHead>
-                    <TableHead>Priorite</TableHead>
-                    <TableHead>Statut</TableHead>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Associated Risk</TableHead>
+                    <TableHead>Owner</TableHead>
+                    <TableHead>Due Date</TableHead>
+                    <TableHead>Priority</TableHead>
+                    <TableHead>Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

@@ -23,10 +23,10 @@ import {
 import { toast } from 'sonner'
 
 const LIST_TYPES = [
-  { value: 'department' as const, label: 'Departements' },
-  { value: 'activity' as const, label: 'Activites' },
-  { value: 'entity' as const, label: 'Entites' },
-  { value: 'vendor_category' as const, label: 'Categories Fournisseurs' },
+  { value: 'department' as const, label: 'Departments' },
+  { value: 'activity' as const, label: 'Activities' },
+  { value: 'entity' as const, label: 'Entities' },
+  { value: 'vendor_category' as const, label: 'Supplier Categories' },
 ]
 
 export default function SettingsPage() {
@@ -73,9 +73,9 @@ export default function SettingsPage() {
       })
       setNewValue('')
       setNewLabel('')
-      toast.success('Element ajoute')
+      toast.success('Item added')
     } catch {
-      toast.error('Erreur lors de la creation')
+      toast.error('Error during creation')
     }
   }
 
@@ -87,23 +87,23 @@ export default function SettingsPage() {
     try {
       await updateList(id, { value: editValue.trim(), label: editLabel.trim() })
       setEditingId(null)
-      toast.success('Element modifie')
+      toast.success('Item updated')
     } catch {
-      toast.error('Erreur lors de la modification')
+      toast.error('Error during update')
     }
   }
 
   const handleDelete = (id: number, label: string) => {
     showConfirm({
-      title: 'Supprimer cet element',
-      description: `Voulez-vous vraiment supprimer "${label}"? Cette action est irreversible.`,
+      title: 'Delete this item',
+      description: `Do you really want to delete "${label}"? This action is irreversible.`,
       variant: 'destructive',
       onConfirm: async () => {
         try {
           await deleteList(id)
-          toast.success('Element supprime')
+          toast.success('Item deleted')
         } catch {
-          toast.error('Erreur lors de la suppression')
+          toast.error('Error during deletion')
         }
       },
     })
@@ -116,14 +116,14 @@ export default function SettingsPage() {
   }
 
   if (isLoading) {
-    return <PageLoading text="Chargement des parametres..." />
+    return <PageLoading text="Loading settings..." />
   }
 
   return (
     <>
       <Header
-        title="Parametres"
-        description="Configuration de l'application"
+        title="Settings"
+        description="Application configuration"
       />
 
       <div className="p-6">
@@ -192,7 +192,7 @@ export default function SettingsPage() {
                       />
                       <Button onClick={handleCreate} disabled={isSaving}>
                         <Plus className="mr-2 h-4 w-4" />
-                        Ajouter
+                        Add
                       </Button>
                     </div>
 
@@ -200,7 +200,7 @@ export default function SettingsPage() {
                     <div className="space-y-2">
                       {filteredLists.length === 0 ? (
                         <p className="py-8 text-center text-muted-foreground">
-                          Aucun element dans cette liste
+                          No items in this list
                         </p>
                       ) : (
                         filteredLists.map((item) => (
@@ -278,16 +278,16 @@ export default function SettingsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Database className="h-5 w-5" />
-                  Parametres systeme
+                  System Settings
                 </CardTitle>
                 <CardDescription>
-                  Configuration globale de l&apos;application
+                  Global application configuration
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {systemSettings.length === 0 ? (
                   <p className="py-8 text-center text-muted-foreground">
-                    Aucun parametre systeme configure
+                    No system settings configured
                   </p>
                 ) : (
                   <div className="space-y-4">

@@ -48,8 +48,8 @@ export function ImportProgress({ progress }: ImportProgressProps) {
           <p className={cn('font-medium', getStatusColor())}>{progress.message}</p>
           {progress.status === 'importing' && progress.total > 0 && (
             <p className="text-sm text-muted-foreground">
-              {progress.processed} / {progress.total} lignes traitees
-              {progress.errors > 0 && ` (${progress.errors} erreurs)`}
+              {progress.processed} / {progress.total} rows processed
+              {progress.errors > 0 && ` (${progress.errors} errors)`}
             </p>
           )}
         </div>
@@ -66,15 +66,15 @@ export function ImportProgress({ progress }: ImportProgressProps) {
         <div className="grid grid-cols-3 gap-4 pt-2">
           <div className="text-center p-3 bg-green-500/10 rounded-lg">
             <p className="text-2xl font-bold text-green-600">{progress.processed}</p>
-            <p className="text-sm text-muted-foreground">Importes</p>
+            <p className="text-sm text-muted-foreground">Imported</p>
           </div>
           <div className="text-center p-3 bg-muted rounded-lg">
             <p className="text-2xl font-bold">{progress.total - progress.processed - progress.errors}</p>
-            <p className="text-sm text-muted-foreground">Ignores</p>
+            <p className="text-sm text-muted-foreground">Skipped</p>
           </div>
           <div className="text-center p-3 bg-destructive/10 rounded-lg">
             <p className="text-2xl font-bold text-destructive">{progress.errors}</p>
-            <p className="text-sm text-muted-foreground">Erreurs</p>
+            <p className="text-sm text-muted-foreground">Errors</p>
           </div>
         </div>
       )}

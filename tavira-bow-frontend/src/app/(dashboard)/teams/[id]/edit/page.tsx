@@ -23,14 +23,14 @@ export default function EditTeamPage() {
   }, [id, fetchById])
 
   if (isLoadingItem) {
-    return <PageLoading text="Chargement de l'equipe..." />
+    return <PageLoading text="Loading team..." />
   }
 
   if (error || !selectedItem) {
     return (
       <ErrorState
-        title="Equipe introuvable"
-        description={error || "Cette equipe n'existe pas."}
+        title="Team not found"
+        description={error || "This team does not exist."}
         onRetry={() => fetchById(id)}
       />
     )
@@ -39,8 +39,8 @@ export default function EditTeamPage() {
   return (
     <>
       <Header
-        title={`Modifier: ${selectedItem.name}`}
-        description="Modifier les informations de l'equipe"
+        title={`Edit: ${selectedItem.name}`}
+        description="Edit team information"
       />
 
       <div className="p-6">
@@ -48,7 +48,7 @@ export default function EditTeamPage() {
           <Button variant="ghost" asChild>
             <Link href={`/teams/${id}`}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour au detail
+              Back to details
             </Link>
           </Button>
         </div>

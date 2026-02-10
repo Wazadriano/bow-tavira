@@ -39,8 +39,8 @@ export default function GovernanceCalendarPage() {
   return (
     <>
       <Header
-        title="Calendrier"
-        description="Vue calendrier des echeances governance"
+        title="Calendar"
+        description="Calendar view of governance due dates"
       />
 
       <div className="p-6">
@@ -50,7 +50,7 @@ export default function GovernanceCalendarPage() {
           </div>
         ) : (
           <CalendarView
-            title="Echeances Governance"
+            title="Governance Due Dates"
             events={events}
             onEventClick={handleEventClick}
           />

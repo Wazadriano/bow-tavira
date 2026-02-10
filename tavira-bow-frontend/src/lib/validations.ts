@@ -5,8 +5,8 @@ import { z } from 'zod'
 // =============================================================================
 
 export const loginSchema = z.object({
-  email: z.string().min(1, 'Email requis').email('Email invalide'),
-  password: z.string().min(1, 'Mot de passe requis'),
+  email: z.string().min(1, 'Email is required').email('Invalid email'),
+  password: z.string().min(1, 'Password is required'),
 })
 
 export type LoginFormData = z.infer<typeof loginSchema>
@@ -16,32 +16,32 @@ export type LoginFormData = z.infer<typeof loginSchema>
 // =============================================================================
 
 export const userSchema = z.object({
-  email: z.string().min(1, 'Email requis').email('Email invalide'),
+  email: z.string().min(1, 'Email is required').email('Invalid email'),
   password: z
     .string()
-    .min(8, 'Minimum 8 caracteres')
+    .min(8, 'Minimum 8 characters')
     .optional()
     .or(z.literal('')),
   password_confirmation: z.string().optional(),
-  full_name: z.string().min(1, 'Nom requis').max(100, 'Maximum 100 caracteres'),
+  full_name: z.string().min(1, 'Name is required').max(100, 'Maximum 100 characters'),
   role: z.enum(['ADMIN', 'MEMBER']),
   is_active: z.boolean().default(true),
 })
 
 export const userCreateSchema = userSchema
   .extend({
-    password: z.string().min(8, 'Minimum 8 caracteres'),
-    password_confirmation: z.string().min(1, 'Confirmation requise'),
+    password: z.string().min(8, 'Minimum 8 characters'),
+    password_confirmation: z.string().min(1, 'Confirmation is required'),
   })
   .refine((data) => data.password === data.password_confirmation, {
-    message: 'Les mots de passe ne correspondent pas',
+    message: 'Passwords do not match',
     path: ['password_confirmation'],
   })
 
 export const userUpdateSchema = userSchema
   .omit({ password: true, password_confirmation: true })
   .extend({
-    password: z.string().min(8, 'Minimum 8 caracteres').optional().or(z.literal('')),
+    password: z.string().min(8, 'Minimum 8 characters').optional().or(z.literal('')),
     password_confirmation: z.string().optional(),
   })
   .refine(
@@ -52,7 +52,7 @@ export const userUpdateSchema = userSchema
       return true
     },
     {
-      message: 'Les mots de passe ne correspondent pas',
+      message: 'Passwords do not match',
       path: ['password_confirmation'],
     }
   )
@@ -64,11 +64,11 @@ export type UserFormData = z.infer<typeof userSchema>
 // =============================================================================
 
 export const workItemSchema = z.object({
-  ref_no: z.string().min(1, 'Reference requise'),
+  ref_no: z.string().min(1, 'Reference is required'),
   type: z.string().optional(),
   activity: z.string().optional(),
-  department: z.string().min(1, 'Departement requis'),
-  description: z.string().min(1, 'Description requise'),
+  department: z.string().min(1, 'Department is required'),
+  description: z.string().min(1, 'Description is required'),
   bau_or_transformative: z.enum(['bau', 'transformative']).optional(),
   impact_level: z.enum(['low', 'medium', 'high']).optional(),
   current_status: z.enum(['not_started', 'in_progress', 'on_hold', 'completed']).optional(),
@@ -86,9 +86,9 @@ export type { WorkItemFormData } from '@/types'
 // =============================================================================
 
 export const governanceSchema = z.object({
-  activity: z.string().min(1, 'Activite requise').max(200, 'Maximum 200 caracteres'),
+  activity: z.string().min(1, 'Activity is required').max(200, 'Maximum 200 characters'),
   description: z.string().optional(),
-  department: z.string().min(1, 'Departement requis'),
+  department: z.string().min(1, 'Department is required'),
   frequency: z.enum(['daily', 'weekly', 'monthly', 'quarterly', 'annually']).optional(),
   deadline: z.string().optional().nullable(),
   responsible_party_id: z.number().optional().nullable(),
@@ -98,7 +98,7 @@ export const governanceSchema = z.object({
 export type { GovernanceFormData } from '@/types'
 
 export const governanceMilestoneSchema = z.object({
-  title: z.string().min(1, 'Titre requis').max(200, 'Maximum 200 caracteres'),
+  title: z.string().min(1, 'Title is required').max(200, 'Maximum 200 characters'),
   description: z.string().optional(),
   due_date: z.string().optional().nullable(),
   status: z.enum(['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']).default('PENDING'),
@@ -111,7 +111,7 @@ export type GovernanceMilestoneFormData = z.infer<typeof governanceMilestoneSche
 // =============================================================================
 
 export const supplierSchema = z.object({
-  name: z.string().min(1, 'Nom requis').max(200, 'Maximum 200 caracteres'),
+  name: z.string().min(1, 'Name is required').max(200, 'Maximum 200 characters'),
   sage_category_id: z.number().optional(),
   location: z.enum(['local', 'overseas']).optional(),
   is_common_provider: z.boolean().optional(),
@@ -126,11 +126,11 @@ export type { SupplierFormData } from '@/types'
 
 export const contractSchema = z.object({
   supplier_id: z.number(),
-  contract_ref: z.string().min(1, 'Reference requise').max(100, 'Maximum 100 caracteres'),
+  contract_ref: z.string().min(1, 'Reference is required').max(100, 'Maximum 100 characters'),
   description: z.string().optional(),
   start_date: z.string().optional(),
   end_date: z.string().optional(),
-  value: z.number().min(0, 'Valeur positive requise').optional(),
+  value: z.number().min(0, 'Positive value required').optional(),
   currency: z.string().optional(),
   auto_renewal: z.boolean().optional(),
   notice_period_days: z.number().min(0).optional(),
@@ -141,11 +141,11 @@ export type { ContractFormData } from '@/types'
 
 export const invoiceSchema = z.object({
   supplier_id: z.number(),
-  invoice_ref: z.string().min(1, 'Reference requise').max(50, 'Maximum 50 caracteres'),
+  invoice_ref: z.string().min(1, 'Reference is required').max(50, 'Maximum 50 characters'),
   description: z.string().optional(),
-  amount: z.number().min(0, 'Montant positif requis'),
+  amount: z.number().min(0, 'Positive amount required'),
   currency: z.string().optional(),
-  invoice_date: z.string().min(1, 'Date requise'),
+  invoice_date: z.string().min(1, 'Date is required'),
   due_date: z.string().optional(),
   frequency: z.enum(['one_time', 'monthly', 'quarterly', 'annually']).optional(),
 })
@@ -158,8 +158,8 @@ export type { InvoiceFormData } from '@/types'
 // =============================================================================
 
 export const riskSchema = z.object({
-  category_id: z.number({ required_error: 'Categorie requise' }),
-  name: z.string().min(1, 'Nom requis').max(200, 'Maximum 200 caracteres'),
+  category_id: z.number({ required_error: 'Category is required' }),
+  name: z.string().min(1, 'Name is required').max(200, 'Maximum 200 characters'),
   description: z.string().optional(),
   owner_id: z.number().optional(),
   responsible_party_id: z.number().optional(),
@@ -173,7 +173,7 @@ export const riskSchema = z.object({
 export type { RiskFormData } from '@/types'
 
 export const riskControlSchema = z.object({
-  control_id: z.number({ required_error: 'Control requis' }),
+  control_id: z.number({ required_error: 'Control is required' }),
   effectiveness: z.enum(['effective', 'partially_effective', 'ineffective', 'none']).optional(),
   notes: z.string().optional(),
 })
@@ -182,7 +182,7 @@ export const riskControlSchema = z.object({
 export type { RiskControlFormData } from '@/types'
 
 export const riskActionSchema = z.object({
-  title: z.string().min(1, 'Titre requis').max(200, 'Maximum 200 caracteres'),
+  title: z.string().min(1, 'Title is required').max(200, 'Maximum 200 characters'),
   description: z.string().optional(),
   owner_id: z.number().optional(),
   priority: z.enum(['low', 'medium', 'high', 'critical']).optional(),
@@ -197,7 +197,7 @@ export type { RiskActionFormData } from '@/types'
 // =============================================================================
 
 export const teamSchema = z.object({
-  name: z.string().min(1, 'Nom requis').max(100, 'Maximum 100 caracteres'),
+  name: z.string().min(1, 'Name is required').max(100, 'Maximum 100 characters'),
   description: z.string().optional(),
   is_active: z.boolean().optional(),
 })
@@ -206,7 +206,7 @@ export const teamSchema = z.object({
 export type { TeamFormData } from '@/types'
 
 export const teamMemberSchema = z.object({
-  user_id: z.number({ required_error: 'Utilisateur requis' }),
+  user_id: z.number({ required_error: 'User is required' }),
   is_lead: z.boolean().default(false),
 })
 
@@ -217,9 +217,9 @@ export type TeamMemberFormData = z.infer<typeof teamMemberSchema>
 // =============================================================================
 
 export const settingListSchema = z.object({
-  type: z.string().min(1, 'Type requis'),
-  value: z.string().min(1, 'Valeur requise').max(200, 'Maximum 200 caracteres'),
-  label: z.string().min(1, 'Libelle requis').max(200, 'Maximum 200 caracteres'),
+  type: z.string().min(1, 'Type is required'),
+  value: z.string().min(1, 'Value is required').max(200, 'Maximum 200 characters'),
+  label: z.string().min(1, 'Label is required').max(200, 'Maximum 200 characters'),
   sort_order: z.number().min(0).default(0),
   is_active: z.boolean().default(true),
 })
@@ -227,8 +227,8 @@ export const settingListSchema = z.object({
 export type SettingListFormData = z.infer<typeof settingListSchema>
 
 export const systemSettingSchema = z.object({
-  key: z.string().min(1, 'Cle requise').max(100, 'Maximum 100 caracteres'),
-  value: z.string().min(1, 'Valeur requise'),
+  key: z.string().min(1, 'Key is required').max(100, 'Maximum 100 characters'),
+  value: z.string().min(1, 'Value is required'),
   description: z.string().optional(),
 })
 
@@ -239,7 +239,7 @@ export type SystemSettingFormData = z.infer<typeof systemSettingSchema>
 // =============================================================================
 
 export const taskMilestoneSchema = z.object({
-  title: z.string().min(1, 'Titre requis').max(200, 'Maximum 200 caracteres'),
+  title: z.string().min(1, 'Title is required').max(200, 'Maximum 200 characters'),
   description: z.string().optional(),
   due_date: z.string().optional().nullable(),
 })
@@ -251,7 +251,7 @@ export type TaskMilestoneFormData = z.infer<typeof taskMilestoneSchema>
 // =============================================================================
 
 export const importPreviewSchema = z.object({
-  file: z.instanceof(File, { message: 'Fichier requis' }),
+  file: z.instanceof(File, { message: 'File is required' }),
   type: z.enum(['workitems', 'suppliers', 'invoices', 'risks']),
 })
 
@@ -265,7 +265,7 @@ export const importConfirmSchema = z.object({
 // =============================================================================
 
 export const globalSearchSchema = z.object({
-  query: z.string().min(2, 'Minimum 2 caracteres'),
+  query: z.string().min(2, 'Minimum 2 characters'),
   types: z.array(z.enum(['workitems', 'governance', 'suppliers', 'risks', 'users'])).optional(),
 })
 
