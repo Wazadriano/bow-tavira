@@ -131,10 +131,10 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
   fetchById: async (id) => {
     set({ isLoadingItem: true, error: null })
     try {
-      const response = await api.get<{ data: GovernanceItem }>(
+      const response = await api.get<{ governance_item: GovernanceItem }>(
         `/governance/items/${id}`
       )
-      const item = response.data.data
+      const item = response.data.governance_item
       set({ selectedItem: item, isLoadingItem: false })
       return item
     } catch (error: unknown) {
@@ -148,11 +148,11 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
   create: async (data) => {
     set({ isSaving: true, error: null })
     try {
-      const response = await api.post<{ data: GovernanceItem }>(
+      const response = await api.post<{ governance_item: GovernanceItem }>(
         '/governance/items',
         data
       )
-      const newItem = response.data.data
+      const newItem = response.data.governance_item
       set((state) => ({
         items: [newItem, ...state.items],
         isSaving: false,
@@ -169,11 +169,11 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
   update: async (id, data) => {
     set({ isSaving: true, error: null })
     try {
-      const response = await api.put<{ data: GovernanceItem }>(
+      const response = await api.put<{ governance_item: GovernanceItem }>(
         `/governance/items/${id}`,
         data
       )
-      const updatedItem = response.data.data
+      const updatedItem = response.data.governance_item
       set((state) => ({
         items: state.items.map((item) =>
           item.id === id ? updatedItem : item
@@ -213,10 +213,10 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
   // Milestones
   fetchMilestones: async (itemId) => {
     try {
-      const response = await api.get<{ data: GovernanceMilestone[] }>(
+      const response = await api.get<GovernanceMilestone[]>(
         `/governance/items/${itemId}/milestones`
       )
-      set({ milestones: response.data.data })
+      set({ milestones: response.data })
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to fetch milestones'
@@ -226,11 +226,11 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
 
   createMilestone: async (itemId, data) => {
     try {
-      const response = await api.post<{ data: GovernanceMilestone }>(
+      const response = await api.post<GovernanceMilestone>(
         `/governance/items/${itemId}/milestones`,
         data
       )
-      const newMilestone = response.data.data
+      const newMilestone = response.data
       set((state) => ({
         milestones: [...state.milestones, newMilestone],
       }))
@@ -245,13 +245,13 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
 
   updateMilestone: async (milestoneId, data) => {
     try {
-      const response = await api.put<{ data: GovernanceMilestone }>(
+      const response = await api.put<GovernanceMilestone>(
         `/governance/milestones/${milestoneId}`,
         data
       )
       set((state) => ({
         milestones: state.milestones.map((m) =>
-          m.id === milestoneId ? response.data.data : m
+          m.id === milestoneId ? response.data : m
         ),
       }))
     } catch (error: unknown) {

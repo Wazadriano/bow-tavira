@@ -13,6 +13,41 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 class RiskActionController extends Controller
 {
     /**
+     * List all risk actions across all risks (global listing)
+     */
+    public function all(Request $request): AnonymousResourceCollection
+    {
+        $user = $request->user();
+        $query = RiskAction::with('risk:id,ref_no,name');
+
+        if (! $user->isAdmin()) {
+            $themeIds = $user->riskThemePermissions()
+                ->where('can_view', true)
+                ->pluck('theme_id');
+            $query->whereHas('risk.category', fn ($q) => $q->whereIn('theme_id', $themeIds));
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('priority')) {
+            $query->where('priority', $request->priority);
+        }
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'ilike', "%{$search}%")
+                    ->orWhereHas('risk', fn ($rq) => $rq->where('name', 'ilike', "%{$search}%"));
+            });
+        }
+
+        $query->orderByRaw("CASE WHEN status = 'Overdue' THEN 0 WHEN status = 'Open' THEN 1 WHEN status = 'In Progress' THEN 2 ELSE 3 END")
+            ->orderBy('due_date', 'asc');
+
+        return RiskActionResource::collection($query->paginate($request->per_page ?? 20));
+    }
+
+    /**
      * List actions for a risk
      */
     public function index(Request $request, Risk $risk): AnonymousResourceCollection

@@ -47,6 +47,9 @@ export interface WorkItem {
   cost_efficiency_fte: number | null
   expected_cost: number | null
   revenue_potential: number | null
+  dependencies?: TaskDependency[]
+  attachments?: WorkItemAttachment[]
+  assignments?: TaskAssignment[]
   created_at: string
   updated_at: string
 }
@@ -612,8 +615,9 @@ export interface RiskFormData {
 }
 
 export interface GovernanceFormData {
+  ref_no: string
   activity: string
-  description?: string
+  description: string
   department: string
   frequency?: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'annually'
   deadline?: string

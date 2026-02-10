@@ -20,8 +20,9 @@ import type { WorkItemFormData } from '@/types'
 import { useWorkItemsStore } from '@/stores/workitems'
 import { get } from '@/lib/api'
 import type { WorkItem, User, SettingList } from '@/types'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Info } from 'lucide-react'
 import { toast } from 'sonner'
+import { MilestonesPanel } from './milestones-panel'
 
 interface WorkItemFormProps {
   workItem?: WorkItem
@@ -109,6 +110,7 @@ export function WorkItemForm({ workItem, mode }: WorkItemFormProps) {
   }
 
   const watchStatus = watch('current_status')
+  const watchBauOrTransformative = watch('bau_or_transformative')
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -297,6 +299,25 @@ export function WorkItemForm({ workItem, mode }: WorkItemFormProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Milestones - only for Transformative work items */}
+      {watchBauOrTransformative === 'transformative' && (
+        mode === 'edit' && workItem ? (
+          <MilestonesPanel workItemId={workItem.id} />
+        ) : (
+          <Card>
+            <CardHeader>
+              <CardTitle>Milestones</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Info className="h-4 w-4 shrink-0" />
+                <p>Please save the task first before adding milestones.</p>
+              </div>
+            </CardContent>
+          </Card>
+        )
+      )}
 
       <div className="flex justify-end gap-4">
         <Button

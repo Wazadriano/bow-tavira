@@ -38,35 +38,7 @@ export default function TasksDashboardPage() {
         const response = await api.get<{ data: DashboardStats }>('/tasks/dashboard/stats')
         setStats(response.data.data)
       } catch {
-        // Fallback mock data
-        setStats({
-          total_tasks: 156,
-          completed: 89,
-          in_progress: 45,
-          not_started: 12,
-          overdue: 10,
-          priority_count: 23,
-          by_department: [
-            { name: 'IT', total: 45, priority: 8 },
-            { name: 'Finance', total: 32, priority: 5 },
-            { name: 'Operations', total: 38, priority: 6 },
-            { name: 'Compliance', total: 25, priority: 3 },
-            { name: 'HR', total: 16, priority: 1 },
-          ],
-          by_activity: [
-            { name: 'Development', count: 42 },
-            { name: 'Analysis', count: 35 },
-            { name: 'Testing', count: 28 },
-            { name: 'Documentation', count: 22 },
-            { name: 'Review', count: 29 },
-          ],
-          by_rag: { blue: 45, green: 62, amber: 35, red: 14 },
-          priority_by_dept: [
-            { department: 'IT', total: 45, priority: 8 },
-            { department: 'Finance', total: 32, priority: 5 },
-            { department: 'Operations', total: 38, priority: 6 },
-          ],
-        })
+        setStats(null)
       } finally {
         setIsLoading(false)
       }

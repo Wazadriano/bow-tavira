@@ -40,42 +40,21 @@ export default function RiskHeatmapPage() {
   const [heatmapType, setHeatmapType] = useState<'inherent' | 'residual'>('inherent')
   const [selectedCell, setSelectedCell] = useState<HeatmapCell | null>(null)
 
+  const [heatmapError, setHeatmapError] = useState<string | null>(null)
+
   useEffect(() => {
     const fetchHeatmap = async () => {
       setIsLoading(true)
+      setHeatmapError(null)
       try {
         const response = await api.get<{ data: HeatmapData }>(
           `/risks/heatmap?type=${heatmapType}`
         )
-        setHeatmapData(response.data.data)
-      } catch {
-        // Fallback mock data
-        const mockCells: HeatmapCell[] = []
-        for (let impact = 1; impact <= 5; impact++) {
-          for (let prob = 1; prob <= 5; prob++) {
-            const risks = []
-            // Add some mock risks to certain cells
-            if (impact >= 4 && prob >= 4) {
-              risks.push({ id: 1, name: 'Critical System Failure', code: 'RSK-001', score: impact * prob })
-            }
-            if (impact === 3 && prob === 4) {
-              risks.push({ id: 2, name: 'Data Breach', code: 'RSK-002', score: impact * prob })
-              risks.push({ id: 3, name: 'Compliance Violation', code: 'RSK-003', score: impact * prob })
-            }
-            if (impact === 4 && prob === 3) {
-              risks.push({ id: 4, name: 'Vendor Dependency', code: 'RSK-004', score: impact * prob })
-            }
-            if (impact === 2 && prob === 3) {
-              risks.push({ id: 5, name: 'Minor Process Gap', code: 'RSK-005', score: impact * prob })
-            }
-            mockCells.push({ impact, probability: prob, risks })
-          }
-        }
-        setHeatmapData({
-          cells: mockCells,
-          total_risks: 45,
-          type: heatmapType,
-        })
+        const data = response.data.data ?? response.data
+        setHeatmapData(Array.isArray((data as HeatmapData).cells) ? (data as HeatmapData) : { cells: [], total_risks: 0, type: heatmapType })
+      } catch (err) {
+        setHeatmapError(err instanceof Error ? err.message : 'Failed to load heatmap')
+        setHeatmapData({ cells: [], total_risks: 0, type: heatmapType })
       } finally {
         setIsLoading(false)
       }
@@ -133,6 +112,9 @@ export default function RiskHeatmapPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
+              {heatmapError && (
+                <p className="text-sm text-destructive mb-4">{heatmapError}</p>
+              )}
               {isLoading ? (
                 <div className="animate-pulse">
                   <div className="h-[400px] bg-muted rounded-lg" />

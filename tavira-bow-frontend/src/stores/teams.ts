@@ -65,16 +65,28 @@ export const useTeamsStore = create<TeamsState>((set, get) => ({
       params.append('page', String(page))
       params.append('per_page', String(perPage))
 
-      const response = await api.get<PaginatedResponse<Team>>(`/teams?${params}`)
-
-      set({
-        items: response.data.data,
-        currentPage: response.data.current_page,
-        lastPage: response.data.last_page,
-        total: response.data.total,
-        perPage: response.data.per_page,
-        isLoading: false,
-      })
+      const response = await api.get<Team[] | PaginatedResponse<Team>>(`/teams?${params}`)
+      const data = response.data
+      // Backend may return raw array or paginated response
+      if (Array.isArray(data)) {
+        set({
+          items: data,
+          currentPage: 1,
+          lastPage: 1,
+          total: data.length,
+          perPage: data.length,
+          isLoading: false,
+        })
+      } else {
+        set({
+          items: data.data,
+          currentPage: data.current_page,
+          lastPage: data.last_page,
+          total: data.total,
+          perPage: data.per_page,
+          isLoading: false,
+        })
+      }
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to fetch teams'
@@ -86,8 +98,8 @@ export const useTeamsStore = create<TeamsState>((set, get) => ({
   fetchById: async (id) => {
     set({ isLoadingItem: true, error: null })
     try {
-      const response = await api.get<{ data: Team }>(`/teams/${id}`)
-      const item = response.data.data
+      const response = await api.get<Team>(`/teams/${id}`)
+      const item = response.data
       set({ selectedItem: item, isLoadingItem: false })
       return item
     } catch (error: unknown) {
@@ -101,8 +113,8 @@ export const useTeamsStore = create<TeamsState>((set, get) => ({
   create: async (data) => {
     set({ isSaving: true, error: null })
     try {
-      const response = await api.post<{ data: Team }>('/teams', data)
-      const newItem = response.data.data
+      const response = await api.post<Team>('/teams', data)
+      const newItem = response.data
       set((state) => ({
         items: [newItem, ...state.items],
         isSaving: false,
@@ -119,8 +131,8 @@ export const useTeamsStore = create<TeamsState>((set, get) => ({
   update: async (id, data) => {
     set({ isSaving: true, error: null })
     try {
-      const response = await api.put<{ data: Team }>(`/teams/${id}`, data)
-      const updatedItem = response.data.data
+      const response = await api.put<Team>(`/teams/${id}`, data)
+      const updatedItem = response.data
       set((state) => ({
         items: state.items.map((item) =>
           item.id === id ? updatedItem : item
@@ -160,10 +172,10 @@ export const useTeamsStore = create<TeamsState>((set, get) => ({
   // Members
   fetchMembers: async (teamId) => {
     try {
-      const response = await api.get<{ data: TeamMember[] }>(
+      const response = await api.get<TeamMember[]>(
         `/teams/${teamId}/members`
       )
-      set({ members: response.data.data })
+      set({ members: response.data })
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to fetch members'
@@ -174,12 +186,12 @@ export const useTeamsStore = create<TeamsState>((set, get) => ({
   addMember: async (teamId, userId, isLead = false) => {
     set({ isSaving: true })
     try {
-      const response = await api.post<{ data: TeamMember }>(
+      const response = await api.post<TeamMember>(
         `/teams/${teamId}/members`,
         { user_id: userId, is_lead: isLead }
       )
       set((state) => ({
-        members: [...state.members, response.data.data],
+        members: [...state.members, response.data],
         isSaving: false,
       }))
     } catch (error: unknown) {
@@ -193,13 +205,13 @@ export const useTeamsStore = create<TeamsState>((set, get) => ({
   updateMember: async (teamId, memberId, isLead) => {
     set({ isSaving: true })
     try {
-      const response = await api.put<{ data: TeamMember }>(
+      const response = await api.put<TeamMember>(
         `/teams/${teamId}/members/${memberId}`,
         { is_lead: isLead }
       )
       set((state) => ({
         members: state.members.map((m) =>
-          m.id === memberId ? response.data.data : m
+          m.id === memberId ? response.data : m
         ),
         isSaving: false,
       }))

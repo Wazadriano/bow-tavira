@@ -49,77 +49,10 @@ export default function ControlLibraryPage() {
     const fetchControls = async () => {
       try {
         const response = await api.get<{ data: ControlLibraryItem[] }>('/risks/controls/library')
-        setControls(response.data.data)
+        const list = response.data.data ?? response.data
+        setControls(Array.isArray(list) ? list : [])
       } catch {
-        // Fallback mock data
-        setControls([
-          {
-            id: 1,
-            code: 'CTRL-001',
-            name: 'Data Encryption Standard',
-            description: 'Encrypt all sensitive data using AES-256',
-            type: 'preventive',
-            frequency: 'continuous',
-            owner: 'IT Security',
-            linked_risks_count: 5,
-            effectiveness: 'high',
-          },
-          {
-            id: 2,
-            code: 'CTRL-002',
-            name: 'Access Review',
-            description: 'Quarterly review of user access rights',
-            type: 'detective',
-            frequency: 'quarterly',
-            owner: 'Compliance',
-            linked_risks_count: 8,
-            effectiveness: 'medium',
-          },
-          {
-            id: 3,
-            code: 'CTRL-003',
-            name: 'Incident Response Plan',
-            description: 'Documented procedures for security incidents',
-            type: 'corrective',
-            frequency: 'annually',
-            owner: 'Risk Management',
-            linked_risks_count: 12,
-            effectiveness: 'high',
-          },
-          {
-            id: 4,
-            code: 'CTRL-004',
-            name: 'Firewall Rules',
-            description: 'Network firewall configuration and monitoring',
-            type: 'preventive',
-            frequency: 'continuous',
-            owner: 'IT Infrastructure',
-            linked_risks_count: 3,
-            effectiveness: 'high',
-          },
-          {
-            id: 5,
-            code: 'CTRL-005',
-            name: 'Log Monitoring',
-            description: 'Real-time monitoring of system logs for anomalies',
-            type: 'detective',
-            frequency: 'continuous',
-            owner: 'SOC Team',
-            linked_risks_count: 7,
-            effectiveness: 'medium',
-          },
-          {
-            id: 6,
-            code: 'CTRL-006',
-            name: 'Backup Procedures',
-            description: 'Daily backup of critical systems and data',
-            type: 'corrective',
-            frequency: 'daily',
-            owner: 'IT Operations',
-            linked_risks_count: 4,
-            effectiveness: 'high',
-          },
-        ])
+        setControls([])
       } finally {
         setIsLoading(false)
       }
@@ -192,7 +125,7 @@ export default function ControlLibraryPage() {
         title="Control Library"
         description="Risk controls management"
         actions={
-          <Button onClick={() => router.push('/risks/controls/new')}>
+          <Button variant="outline" disabled>
             <Plus className="h-4 w-4 mr-2" />
             New Control
           </Button>

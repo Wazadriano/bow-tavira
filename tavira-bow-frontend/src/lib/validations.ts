@@ -86,8 +86,9 @@ export type { WorkItemFormData } from '@/types'
 // =============================================================================
 
 export const governanceSchema = z.object({
-  activity: z.string().min(1, 'Activity is required').max(200, 'Maximum 200 characters'),
-  description: z.string().optional(),
+  ref_no: z.string().min(1, 'Reference is required').max(50, 'Maximum 50 characters'),
+  activity: z.string().min(1, 'Activity is required').max(100, 'Maximum 100 characters'),
+  description: z.string().min(1, 'Description is required'),
   department: z.string().min(1, 'Department is required'),
   frequency: z.enum(['daily', 'weekly', 'monthly', 'quarterly', 'annually']).optional(),
   deadline: z.string().optional().nullable(),

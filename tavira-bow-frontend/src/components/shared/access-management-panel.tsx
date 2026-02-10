@@ -78,19 +78,20 @@ export function AccessManagementPanel({
           const response = await api.get<{ data: Array<{ name: string }> }>(
             '/settings/lists?type=department'
           )
-          setDepartments(response.data.data.map((d) => d.name))
+          const list = response.data.data ?? response.data
+          setDepartments(Array.isArray(list) ? list.map((d: { name?: string; value?: string }) => d.name ?? d.value ?? '') : [])
         } else {
           const response = await api.get<{ data: Array<{ name: string }> }>(
             '/settings/lists?type=entity'
           )
-          setEntities(response.data.data.map((e) => e.name))
+          const list = response.data.data ?? response.data
+          setEntities(Array.isArray(list) ? list.map((e: { name?: string; value?: string }) => e.name ?? e.value ?? '') : [])
         }
       } catch {
-        // Fallback to demo data
         if (resourceType === 'governance') {
-          setDepartments(['IT', 'Finance', 'Operations', 'Compliance', 'HR'])
+          setDepartments([])
         } else {
-          setEntities(['Entity A', 'Entity B', 'Entity C', 'Entity D'])
+          setEntities([])
         }
       }
     }

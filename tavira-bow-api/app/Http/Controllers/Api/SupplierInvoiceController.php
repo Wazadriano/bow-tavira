@@ -10,9 +10,43 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class SupplierInvoiceController extends Controller
 {
+    /**
+     * List all invoices across all suppliers (global listing)
+     */
+    public function all(Request $request): AnonymousResourceCollection
+    {
+        $refColumn = Schema::hasColumn((new SupplierInvoice)->getTable(), 'invoice_ref')
+            ? 'invoice_ref'
+            : 'invoice_number';
+
+        $query = SupplierInvoice::with(['supplier:id,name', 'sageCategory']);
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search, $refColumn) {
+                $q->where($refColumn, 'ilike', "%{$search}%")
+                    ->orWhereHas('supplier', fn ($sq) => $sq->where('name', 'ilike', "%{$search}%"));
+            });
+        }
+        if ($request->filled('date_from')) {
+            $query->where('invoice_date', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->where('invoice_date', '<=', $request->date_to);
+        }
+
+        return SupplierInvoiceResource::collection(
+            $query->orderBy('invoice_date', 'desc')->paginate($request->per_page ?? 20)
+        );
+    }
+
     /**
      * List invoices for a supplier
      */
@@ -20,7 +54,7 @@ class SupplierInvoiceController extends Controller
     {
         $this->authorize('view', $supplier);
 
-        $query = $supplier->invoices();
+        $query = $supplier->invoices()->with('sageCategory');
 
         // Filters
         if ($request->has('status')) {

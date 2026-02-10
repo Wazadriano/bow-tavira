@@ -36,7 +36,7 @@ interface Invoice {
   amount: number
   currency: string
   status: 'pending' | 'paid' | 'overdue' | 'cancelled'
-  sage_category?: string
+  sage_category?: { id: number; code: string; name: string } | string
 }
 
 export default function InvoicesPage() {
@@ -50,71 +50,10 @@ export default function InvoicesPage() {
     const fetchInvoices = async () => {
       try {
         const response = await api.get<{ data: Invoice[] }>('/invoices')
-        setInvoices(response.data.data)
+        const list = response.data.data ?? response.data
+        setInvoices(Array.isArray(list) ? list : [])
       } catch {
-        // Fallback mock data
-        setInvoices([
-          {
-            id: 1,
-            invoice_number: 'INV-2026-001',
-            supplier_id: 1,
-            supplier_name: 'TechCorp Solutions',
-            invoice_date: '2026-01-15',
-            due_date: '2026-02-15',
-            amount: 12500,
-            currency: 'EUR',
-            status: 'pending',
-            sage_category: '626000',
-          },
-          {
-            id: 2,
-            invoice_number: 'INV-2026-002',
-            supplier_id: 2,
-            supplier_name: 'CloudPro Services',
-            invoice_date: '2026-01-10',
-            due_date: '2026-02-10',
-            amount: 8750.5,
-            currency: 'EUR',
-            status: 'paid',
-            sage_category: '615000',
-          },
-          {
-            id: 3,
-            invoice_number: 'INV-2025-089',
-            supplier_id: 3,
-            supplier_name: 'SecurIT GmbH',
-            invoice_date: '2025-12-01',
-            due_date: '2026-01-01',
-            amount: 5200,
-            currency: 'EUR',
-            status: 'overdue',
-            sage_category: '622000',
-          },
-          {
-            id: 4,
-            invoice_number: 'INV-2026-003',
-            supplier_id: 4,
-            supplier_name: 'SoftVendor SA',
-            invoice_date: '2026-01-20',
-            due_date: '2026-02-20',
-            amount: 18000,
-            currency: 'EUR',
-            status: 'pending',
-            sage_category: '651000',
-          },
-          {
-            id: 5,
-            invoice_number: 'INV-2026-004',
-            supplier_id: 1,
-            supplier_name: 'TechCorp Solutions',
-            invoice_date: '2026-01-22',
-            due_date: '2026-02-22',
-            amount: 3500,
-            currency: 'EUR',
-            status: 'pending',
-            sage_category: '626000',
-          },
-        ])
+        setInvoices([])
       } finally {
         setIsLoading(false)
       }
@@ -161,6 +100,12 @@ export default function InvoicesPage() {
     .filter((i) => i.status === 'overdue')
     .reduce((sum, i) => sum + i.amount, 0)
 
+  // P3 RG-BOW-013: conversion multi-devises - display rates to GBP
+  const [currencyRates, setCurrencyRates] = useState<{ rates_to_gbp?: Record<string, number> } | null>(null)
+  useEffect(() => {
+    api.get<{ rates_to_gbp?: Record<string, number> }>('/currency-rates').then((r) => setCurrencyRates(r.data)).catch(() => setCurrencyRates(null))
+  }, [])
+
   return (
     <>
       <Header
@@ -168,11 +113,13 @@ export default function InvoicesPage() {
         description="Supplier invoices management"
         actions={
           <div className="flex gap-2">
-            <Button variant="outline">
+            <Button variant="outline" onClick={() => router.push('/import-export?type=invoices')}>
               <Upload className="h-4 w-4 mr-2" />
               Import CSV
             </Button>
-            <Button variant="outline">
+            <Button variant="outline" onClick={() => {
+              window.open('/api/export/invoices', '_blank')
+            }}>
               <Download className="h-4 w-4 mr-2" />
               Export
             </Button>
@@ -185,6 +132,14 @@ export default function InvoicesPage() {
       />
 
       <div className="p-6 space-y-6">
+        {currencyRates?.rates_to_gbp && Object.keys(currencyRates.rates_to_gbp).length > 0 && (
+          <p className="text-xs text-muted-foreground">
+            Taux indicatif vers GBP: {Object.entries(currencyRates.rates_to_gbp)
+              .filter(([c]) => c !== 'GBP')
+              .map(([cur, rate]) => `1 ${cur} = ${rate} GBP`)
+              .join(' ; ')}
+          </p>
+        )}
         {/* Summary Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
@@ -299,9 +254,13 @@ export default function InvoicesPage() {
                         {formatCurrency(invoice.amount, invoice.currency)}
                       </TableCell>
                       <TableCell>
-                        {invoice.sage_category && (
-                          <Badge variant="outline">{invoice.sage_category}</Badge>
-                        )}
+                        {(invoice.sage_category && (
+                          <Badge variant="outline">
+                            {typeof invoice.sage_category === 'string'
+                              ? invoice.sage_category
+                              : invoice.sage_category?.name}
+                          </Badge>
+                        )) ?? null}
                       </TableCell>
                       <TableCell>{getStatusBadge(invoice.status)}</TableCell>
                     </TableRow>

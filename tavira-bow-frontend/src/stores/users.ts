@@ -67,7 +67,7 @@ interface UsersState {
   // Actions - Permissions
   fetchPermissions: (userId: number) => Promise<void>
   addPermission: (userId: number, department: string, accessLevel: string) => Promise<void>
-  removePermission: (permissionId: number) => Promise<void>
+  removePermission: (userId: number, permissionId: number) => Promise<void>
 
   // Utility
   clearError: () => void
@@ -140,8 +140,8 @@ export const useUsersStore = create<UsersState>((set, get) => ({
   fetchById: async (id) => {
     set({ isLoadingUser: true, error: null })
     try {
-      const response = await api.get<{ data: User }>(`/users/${id}`)
-      const user = response.data.data
+      const response = await api.get<{ user: User }>(`/users/${id}`)
+      const user = response.data.user
       set({ selectedUser: user, isLoadingUser: false })
       return user
     } catch (error: unknown) {
@@ -154,8 +154,8 @@ export const useUsersStore = create<UsersState>((set, get) => ({
   create: async (data) => {
     set({ isSaving: true, error: null })
     try {
-      const response = await api.post<{ data: User }>('/users', data)
-      const newUser = response.data.data
+      const response = await api.post<{ user: User }>('/users', data)
+      const newUser = response.data.user
       set((state) => ({
         users: [newUser, ...state.users],
         isSaving: false,
@@ -171,8 +171,8 @@ export const useUsersStore = create<UsersState>((set, get) => ({
   update: async (id, data) => {
     set({ isSaving: true, error: null })
     try {
-      const response = await api.put<{ data: User }>(`/users/${id}`, data)
-      const updatedUser = response.data.data
+      const response = await api.put<{ user: User }>(`/users/${id}`, data)
+      const updatedUser = response.data.user
       set((state) => ({
         users: state.users.map((user) => (user.id === id ? updatedUser : user)),
         selectedUser: state.selectedUser?.id === id ? updatedUser : state.selectedUser,
@@ -205,8 +205,11 @@ export const useUsersStore = create<UsersState>((set, get) => ({
   toggleActive: async (id) => {
     set({ isSaving: true, error: null })
     try {
-      const response = await api.patch<{ data: User }>(`/users/${id}/toggle-active`)
-      const updatedUser = response.data.data
+      const currentUser = get().users.find((u) => u.id === id)
+      const response = await api.put<{ user: User }>(`/users/${id}`, {
+        is_active: !currentUser?.is_active,
+      })
+      const updatedUser = response.data.user
       set((state) => ({
         users: state.users.map((user) => (user.id === id ? updatedUser : user)),
         selectedUser: state.selectedUser?.id === id ? updatedUser : state.selectedUser,
@@ -223,10 +226,10 @@ export const useUsersStore = create<UsersState>((set, get) => ({
 
   fetchPermissions: async (userId) => {
     try {
-      const response = await api.get<{ data: DepartmentPermission[] }>(
+      const response = await api.get<DepartmentPermission[]>(
         `/users/${userId}/permissions`
       )
-      set({ permissions: response.data.data })
+      set({ permissions: response.data })
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to fetch permissions'
       set({ error: message })
@@ -244,9 +247,9 @@ export const useUsersStore = create<UsersState>((set, get) => ({
     }
   },
 
-  removePermission: async (permissionId) => {
+  removePermission: async (userId, permissionId) => {
     try {
-      await api.delete(`/users/permissions/${permissionId}`)
+      await api.delete(`/users/${userId}/permissions/${permissionId}`)
       set((state) => ({
         permissions: state.permissions.filter((p) => p.id !== permissionId),
       }))

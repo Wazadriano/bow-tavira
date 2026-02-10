@@ -50,71 +50,10 @@ export default function ContractsPage() {
     const fetchContracts = async () => {
       try {
         const response = await api.get<{ data: Contract[] }>('/contracts')
-        setContracts(response.data.data)
+        const list = response.data.data ?? response.data
+        setContracts(Array.isArray(list) ? list : [])
       } catch {
-        // Fallback mock data
-        setContracts([
-          {
-            id: 1,
-            name: 'IT Support Annual',
-            supplier_id: 1,
-            supplier_name: 'TechCorp Solutions',
-            start_date: '2025-01-01',
-            end_date: '2026-01-01',
-            value: 50000,
-            currency: 'EUR',
-            status: 'active',
-            rag_status: 'green',
-          },
-          {
-            id: 2,
-            name: 'Cloud Infrastructure',
-            supplier_id: 2,
-            supplier_name: 'CloudPro Services',
-            start_date: '2025-06-01',
-            end_date: '2026-02-15',
-            value: 120000,
-            currency: 'EUR',
-            status: 'active',
-            rag_status: 'amber',
-          },
-          {
-            id: 3,
-            name: 'Security Audit Contract',
-            supplier_id: 3,
-            supplier_name: 'SecurIT GmbH',
-            start_date: '2024-03-01',
-            end_date: '2025-12-31',
-            value: 35000,
-            currency: 'EUR',
-            status: 'expired',
-            rag_status: 'red',
-          },
-          {
-            id: 4,
-            name: 'Software Licenses',
-            supplier_id: 4,
-            supplier_name: 'SoftVendor SA',
-            start_date: '2025-09-01',
-            end_date: '2027-09-01',
-            value: 75000,
-            currency: 'EUR',
-            status: 'active',
-            rag_status: 'green',
-          },
-          {
-            id: 5,
-            name: 'Consulting Agreement',
-            supplier_id: 5,
-            supplier_name: 'ConsultExperts',
-            start_date: '2026-01-15',
-            end_date: '2026-07-15',
-            value: 45000,
-            currency: 'EUR',
-            status: 'pending',
-            rag_status: 'blue',
-          },
-        ])
+        setContracts([])
       } finally {
         setIsLoading(false)
       }

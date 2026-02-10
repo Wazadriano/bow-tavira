@@ -37,6 +37,7 @@ export default function SettingsPage() {
   const [editLabel, setEditLabel] = useState('')
   const [newValue, setNewValue] = useState('')
   const [newLabel, setNewLabel] = useState('')
+  const [modifiedSettings, setModifiedSettings] = useState<Record<string, string>>({})
 
   const {
     lists,
@@ -306,17 +307,27 @@ export default function SettingsPage() {
                         </div>
                         <div className="flex items-center gap-2">
                           <Input
-                            value={setting.value}
+                            value={modifiedSettings[setting.key] ?? setting.value}
                             onChange={(e) => {
-                              // Update local state handled by store
+                              setModifiedSettings((prev) => ({
+                                ...prev,
+                                [setting.key]: e.target.value,
+                              }))
                             }}
                             className="max-w-[200px]"
                           />
                           <Button
                             size="sm"
-                            onClick={() =>
-                              updateSystemSetting(setting.key, setting.value)
-                            }
+                            onClick={async () => {
+                              const value = modifiedSettings[setting.key] ?? setting.value
+                              await updateSystemSetting(setting.key, value)
+                              setModifiedSettings((prev) => {
+                                const next = { ...prev }
+                                delete next[setting.key]
+                                return next
+                              })
+                              toast.success('Setting updated')
+                            }}
                             disabled={isSaving}
                           >
                             <Save className="h-4 w-4" />

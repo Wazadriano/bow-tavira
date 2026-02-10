@@ -286,4 +286,20 @@ class RiskController extends Controller
             'count' => $count,
         ]);
     }
+
+    /**
+     * Recalculate scores for a single risk
+     */
+    public function recalculateSingle(Risk $risk): JsonResponse
+    {
+        $this->authorize('update', $risk);
+
+        $risk->calculateScores();
+        $risk->save();
+        $risk->refresh();
+
+        return response()->json([
+            'risk' => new RiskResource($risk->load(['controls.control', 'actions', 'category.theme', 'owner'])),
+        ]);
+    }
 }

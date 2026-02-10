@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CurrencyController;
 use App\Http\Controllers\Api\ControlLibraryController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\GovernanceController;
@@ -83,6 +84,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/assign/{user}', [WorkItemController::class, 'assign']);
         Route::delete('/assign/{user}', [WorkItemController::class, 'unassign']);
 
+        Route::post('/dependencies/{dependency}', [WorkItemController::class, 'addDependency']);
+        Route::delete('/dependencies/{dependency}', [WorkItemController::class, 'removeDependency']);
+
         Route::get('/milestones', [MilestoneController::class, 'forWorkItem']);
     });
 
@@ -118,11 +122,21 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/files/{filename}', [GovernanceFileController::class, 'show']);
             Route::delete('/files/{filename}', [GovernanceFileController::class, 'destroy']);
 
+            Route::post('/access', [GovernanceController::class, 'addAccess']);
+            Route::delete('/access/{access}', [GovernanceController::class, 'removeAccess']);
+
+            Route::get('/milestones', [GovernanceMilestoneController::class, 'forGovernanceItem']);
             Route::post('/milestones', [GovernanceMilestoneController::class, 'store']);
         });
 
         Route::apiResource('milestones', GovernanceMilestoneController::class)->except(['store']);
     });
+
+    // ----------------------------------------
+    // Global listings (before nested resources)
+    // ----------------------------------------
+    Route::get('/invoices', [SupplierInvoiceController::class, 'all']);
+    Route::get('/contracts', [SupplierContractController::class, 'all']);
 
     // ----------------------------------------
     // Suppliers
@@ -147,7 +161,11 @@ Route::middleware('auth:sanctum')->group(function () {
         // Files
         Route::get('/files', [SupplierFileController::class, 'index']);
         Route::post('/files', [SupplierFileController::class, 'store']);
+        Route::get('/files/{file}/download', [SupplierFileController::class, 'download']);
         Route::delete('/files/{file}', [SupplierFileController::class, 'destroy']);
+
+        Route::post('/access', [SupplierController::class, 'addAccess']);
+        Route::delete('/access/{access}', [SupplierController::class, 'removeAccess']);
     });
 
     // Sage Categories
@@ -156,6 +174,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // ----------------------------------------
     // Settings
     // ----------------------------------------
+    Route::get('/currency-rates', [CurrencyController::class, 'rates']);
+
     Route::prefix('settings')->group(function () {
         Route::get('/lists', [SettingListController::class, 'index']);
         Route::post('/lists', [SettingListController::class, 'store']);
@@ -197,12 +217,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/dashboard', [RiskController::class, 'dashboard']);
         Route::get('/heatmap', [RiskController::class, 'heatmap']);
         Route::get('/alerts', [RiskController::class, 'alerts']);
+
+        Route::get('/actions/all', [RiskActionController::class, 'all']);
     });
 
     // Risks (L3)
     Route::apiResource('risks', RiskController::class);
 
     Route::prefix('risks/{risk}')->group(function () {
+        Route::post('/recalculate', [RiskController::class, 'recalculateSingle']);
         // Controls
         Route::get('/controls', [RiskControlController::class, 'index']);
         Route::post('/controls', [RiskControlController::class, 'store']);
@@ -215,9 +238,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/actions/{action}', [RiskActionController::class, 'update']);
         Route::delete('/actions/{action}', [RiskActionController::class, 'destroy']);
 
-        // Files
+        // Files (by-id routes first for download/delete by attachment id)
         Route::get('/files', [RiskFileController::class, 'index']);
         Route::post('/files', [RiskFileController::class, 'store']);
+        Route::get('/files/download/{id}', [RiskFileController::class, 'showById'])->where('id', '[0-9]+');
+        Route::delete('/files/attachment/{id}', [RiskFileController::class, 'destroyById'])->where('id', '[0-9]+');
         Route::get('/files/{filename}', [RiskFileController::class, 'show']);
         Route::delete('/files/{filename}', [RiskFileController::class, 'destroy']);
     });
@@ -263,6 +288,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/governance', [ImportExportController::class, 'exportGovernance']);
         Route::get('/suppliers', [ImportExportController::class, 'exportSuppliers']);
         Route::get('/risks', [ImportExportController::class, 'exportRisks']);
+        Route::get('/invoices', [ImportExportController::class, 'exportInvoices']);
     });
 
     // ----------------------------------------

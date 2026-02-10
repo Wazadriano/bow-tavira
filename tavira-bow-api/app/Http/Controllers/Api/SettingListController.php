@@ -28,7 +28,17 @@ class SettingListController extends Controller
 
         $settings = $query->ordered()->get();
 
-        // Group by type
+        if ($request->has('type')) {
+            $data = $settings->map(fn ($s) => [
+                'id' => $s->id,
+                'name' => $s->label ?? $s->value,
+                'value' => $s->value,
+                'label' => $s->label ?? $s->value,
+            ])->values()->all();
+
+            return response()->json(['data' => $data]);
+        }
+
         $grouped = $settings->groupBy('type');
 
         return response()->json([

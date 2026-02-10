@@ -17,6 +17,13 @@ class GovernanceMilestoneController extends Controller
         return response()->json($milestones);
     }
 
+    public function forGovernanceItem(GovernanceItem $item): JsonResponse
+    {
+        $milestones = $item->milestones()->with('owner')->get();
+
+        return response()->json($milestones);
+    }
+
     public function store(Request $request, GovernanceItem $item): JsonResponse
     {
         $validated = $request->validate([

@@ -45,7 +45,7 @@ export function SupplierForm({ supplier, mode }: SupplierFormProps) {
 
   const { data: sageCategories } = useQuery({
     queryKey: ['sage-categories'],
-    queryFn: () => get<{ data: SettingList[] }>('/settings/sage-categories'),
+    queryFn: () => get<{ data: SettingList[] }>('/sage-categories'),
   })
 
   const { data: users } = useQuery({

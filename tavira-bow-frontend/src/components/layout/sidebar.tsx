@@ -25,6 +25,7 @@ import {
   LogOut,
   Moon,
   Sun,
+  Lock,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -76,6 +77,7 @@ const navSections: NavSection[] = [
       { name: 'Heat Map', href: '/risks/heatmap', icon: Grid3X3 },
       { name: 'Action Log', href: '/risks/actions', icon: Zap },
       { name: 'Control Library', href: '/risks/controls', icon: ShieldCheck },
+      { name: 'Theme Permissions', href: '/risks/themes/permissions', icon: Lock },
     ],
   },
   {

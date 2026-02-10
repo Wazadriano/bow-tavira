@@ -15,7 +15,7 @@ class GovernanceController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(GovernanceItem::class, 'governance');
+        $this->authorizeResource(GovernanceItem::class, 'item');
     }
 
     /**
@@ -112,9 +112,9 @@ class GovernanceController extends Controller
     /**
      * Get single governance item
      */
-    public function show(GovernanceItem $governance): JsonResponse
+    public function show(GovernanceItem $item): JsonResponse
     {
-        $governance->load([
+        $item->load([
             'responsibleParty',
             'milestones',
             'attachments.uploader',
@@ -122,17 +122,17 @@ class GovernanceController extends Controller
         ]);
 
         return response()->json([
-            'governance_item' => new GovernanceItemResource($governance),
+            'governance_item' => new GovernanceItemResource($item),
         ]);
     }
 
     /**
      * Update governance item
      */
-    public function update(Request $request, GovernanceItem $governance): JsonResponse
+    public function update(Request $request, GovernanceItem $item): JsonResponse
     {
         $request->validate([
-            'ref_no' => 'sometimes|string|max:50|unique:governance_items,ref_no,'.$governance->id,
+            'ref_no' => 'sometimes|string|max:50|unique:governance_items,ref_no,'.$item->id,
             'activity' => 'nullable|string|max:100',
             'description' => 'sometimes|string',
             'frequency' => 'nullable|string',
@@ -147,21 +147,21 @@ class GovernanceController extends Controller
             'tags' => 'nullable|array',
         ]);
 
-        $governance->update($request->all());
-        $governance->load(['responsibleParty']);
+        $item->update($request->all());
+        $item->load(['responsibleParty']);
 
         return response()->json([
             'message' => 'Governance item updated successfully',
-            'governance_item' => new GovernanceItemResource($governance),
+            'governance_item' => new GovernanceItemResource($item),
         ]);
     }
 
     /**
      * Delete governance item
      */
-    public function destroy(GovernanceItem $governance): JsonResponse
+    public function destroy(GovernanceItem $item): JsonResponse
     {
-        $governance->delete();
+        $item->delete();
 
         return response()->json([
             'message' => 'Governance item deleted successfully',
@@ -297,5 +297,43 @@ class GovernanceController extends Controller
             'message' => 'Access updated successfully',
             'access' => $governance->access,
         ]);
+    }
+
+    /**
+     * Add access for a user to a governance item (route: POST governance/items/{item}/access)
+     */
+    public function addAccess(Request $request, GovernanceItem $item): JsonResponse
+    {
+        $this->authorize('update', $item);
+
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'access_level' => 'required|in:read,write,admin',
+        ]);
+
+        $canEdit = $validated['access_level'] !== 'read';
+        $access = $item->access()->create([
+            'user_id' => $validated['user_id'],
+            'can_view' => true,
+            'can_edit' => $canEdit,
+        ]);
+
+        return response()->json(['access' => $access->load('user')], 201);
+    }
+
+    /**
+     * Remove access from a governance item (route: DELETE governance/items/{item}/access/{access})
+     */
+    public function removeAccess(GovernanceItem $item, GovernanceItemAccess $access): JsonResponse
+    {
+        $this->authorize('update', $item);
+
+        if ($access->governance_item_id !== $item->id) {
+            return response()->json(['message' => 'Access does not belong to this item'], 403);
+        }
+
+        $access->delete();
+
+        return response()->json(null, 204);
     }
 }

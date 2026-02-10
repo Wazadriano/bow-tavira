@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\RiskThemePermissionResource;
 use App\Http\Resources\RiskThemeResource;
 use App\Models\RiskTheme;
+use App\Models\RiskThemePermission;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -126,5 +128,88 @@ class RiskThemeController extends Controller
         return response()->json([
             'message' => 'Themes reordered successfully',
         ]);
+    }
+
+    /**
+     * List permissions for a theme
+     */
+    public function permissions(RiskTheme $theme): JsonResponse
+    {
+        $theme->load('permissions.user');
+
+        return response()->json([
+            'data' => RiskThemePermissionResource::collection($theme->permissions),
+        ]);
+    }
+
+    /**
+     * Add a user permission for a theme
+     */
+    public function storePermission(Request $request, RiskTheme $theme): JsonResponse
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'can_view' => 'sometimes|boolean',
+            'can_edit' => 'sometimes|boolean',
+            'can_create' => 'sometimes|boolean',
+            'can_delete' => 'sometimes|boolean',
+        ]);
+
+        $perm = RiskThemePermission::updateOrCreate(
+            [
+                'theme_id' => $theme->id,
+                'user_id' => $request->user_id,
+            ],
+            [
+                'can_view' => $request->boolean('can_view', true),
+                'can_edit' => $request->boolean('can_edit', false),
+                'can_create' => $request->boolean('can_create', false),
+                'can_delete' => $request->boolean('can_delete', false),
+            ]
+        );
+        $perm->load('user');
+
+        return response()->json([
+            'message' => 'Permission added',
+            'permission' => new RiskThemePermissionResource($perm),
+        ], 201);
+    }
+
+    /**
+     * Update a theme permission
+     */
+    public function updatePermission(Request $request, RiskTheme $theme, RiskThemePermission $permission): JsonResponse
+    {
+        if ($permission->theme_id !== $theme->id) {
+            return response()->json(['message' => 'Permission does not belong to this theme'], 404);
+        }
+
+        $request->validate([
+            'can_view' => 'sometimes|boolean',
+            'can_edit' => 'sometimes|boolean',
+            'can_create' => 'sometimes|boolean',
+            'can_delete' => 'sometimes|boolean',
+        ]);
+
+        $permission->update($request->only(['can_view', 'can_edit', 'can_create', 'can_delete']));
+
+        return response()->json([
+            'message' => 'Permission updated',
+            'permission' => new RiskThemePermissionResource($permission),
+        ]);
+    }
+
+    /**
+     * Remove a theme permission
+     */
+    public function destroyPermission(RiskTheme $theme, RiskThemePermission $permission): JsonResponse
+    {
+        if ($permission->theme_id !== $theme->id) {
+            return response()->json(['message' => 'Permission does not belong to this theme'], 404);
+        }
+
+        $permission->delete();
+
+        return response()->json(null, 204);
     }
 }

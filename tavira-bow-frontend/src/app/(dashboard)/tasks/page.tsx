@@ -17,6 +17,10 @@ import { ActionButtons } from '@/components/shared/action-buttons'
 import { get } from '@/lib/api'
 import { formatDate } from '@/lib/utils'
 import type { WorkItem, PaginatedResponse, SettingList } from '@/types'
+import { useWorkItemsStore } from '@/stores/workitems'
+import { useUIStore } from '@/stores/ui'
+import { useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { Plus, Search, RotateCcw, ChevronDown, ChevronUp } from 'lucide-react'
 import {
   Select,
@@ -51,6 +55,9 @@ const PRIORITY_OPTIONS = [
 
 export default function TasksPage() {
   const router = useRouter()
+  const queryClient = useQueryClient()
+  const { remove } = useWorkItemsStore()
+  const { showConfirm } = useUIStore()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [ragFilter, setRagFilter] = useState('all')
@@ -209,8 +216,20 @@ export default function TasksPage() {
           onView={() => router.push(`/tasks/${row.original.id}`)}
           onEdit={() => router.push(`/tasks/${row.original.id}/edit`)}
           onDelete={() => {
-            // TODO: Implement delete confirmation
-            console.log('Delete', row.original.id)
+            showConfirm({
+              title: 'Delete this work item',
+              description: `Are you sure you want to delete "${row.original.ref_no}"? This action is irreversible.`,
+              variant: 'destructive',
+              onConfirm: async () => {
+                try {
+                  await remove(row.original.id)
+                  toast.success('Work item deleted')
+                  queryClient.invalidateQueries({ queryKey: ['workitems'] })
+                } catch {
+                  toast.error('Error during deletion')
+                }
+              },
+            })
           }}
         />
       ),

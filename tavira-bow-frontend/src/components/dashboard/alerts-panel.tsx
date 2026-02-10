@@ -62,37 +62,8 @@ export function AlertsPanel() {
         setTotal(response.data.total)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error loading alerts')
-        // Fallback to mock data for demo
-        setAlerts([
-          {
-            id: 1,
-            type: 'overdue_task',
-            title: 'Overdue Work Item',
-            description: 'Database migration - 3 days overdue',
-            severity: 'high',
-            link: '/tasks/1',
-            created_at: new Date().toISOString(),
-          },
-          {
-            id: 2,
-            type: 'expiring_contract',
-            title: 'Expiring Contract',
-            description: 'AWS contract expires in 15 days',
-            severity: 'medium',
-            link: '/suppliers/2',
-            created_at: new Date().toISOString(),
-          },
-          {
-            id: 3,
-            type: 'high_risk',
-            title: 'High Risk',
-            description: 'RSK-001: Unaddressed cybersecurity risk',
-            severity: 'high',
-            link: '/risks/3',
-            created_at: new Date().toISOString(),
-          },
-        ])
-        setTotal(3)
+        setAlerts([])
+        setTotal(0)
       } finally {
         setIsLoading(false)
       }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Header } from '@/components/layout/header'
@@ -8,8 +8,27 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { PageLoading, ErrorState } from '@/components/shared'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { PageLoading, ErrorState, FileAttachmentsPanel } from '@/components/shared'
 import { useRisksStore } from '@/stores/risks'
+import { api } from '@/lib/api'
+import type { Attachment } from '@/types'
 import { useUIStore } from '@/stores/ui'
 import { formatDate } from '@/lib/utils'
 import {
@@ -22,6 +41,7 @@ import {
   Target,
   Activity,
   Plus,
+  Loader2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -49,26 +69,90 @@ export default function RiskDetailPage() {
   const router = useRouter()
   const id = Number(params.id)
 
+  const [controlDialogOpen, setControlDialogOpen] = useState(false)
+  const [actionDialogOpen, setActionDialogOpen] = useState(false)
+  const [isSavingForm, setIsSavingForm] = useState(false)
+  const [selectedControlId, setSelectedControlId] = useState<string>('')
+  const [controlEffectiveness, setControlEffectiveness] = useState<string>('effective')
+  const [controlNotes, setControlNotes] = useState('')
+  const [actionForm, setActionForm] = useState<{
+    title: string
+    description: string
+    priority: 'low' | 'medium' | 'high' | 'critical'
+    due_date: string
+  }>({
+    title: '',
+    description: '',
+    priority: 'medium',
+    due_date: '',
+  })
+  const [riskFiles, setRiskFiles] = useState<Attachment[]>([])
+
   const {
     selectedItem,
     isLoadingItem,
     error,
     controls,
     actions,
+    controlLibrary,
     fetchById,
     fetchControls,
     fetchActions,
+    fetchControlLibrary,
+    addControl,
+    createAction,
     remove,
   } = useRisksStore()
   const { showConfirm } = useUIStore()
+
+  const fetchRiskFiles = async () => {
+    try {
+      const res = await api.get<unknown>(`/risks/${id}/files`)
+      const list = Array.isArray(res.data) ? res.data : []
+      setRiskFiles(
+        list.map((f: unknown) => {
+          const row = f as Record<string, unknown>
+          return {
+            ...row,
+            id: row.id as number,
+            original_filename: (row.original_filename ?? row.original_name ?? row.filename) as string,
+            file_size_formatted: (row.file_size_formatted ?? `${row.file_size ?? 0} B`) as string,
+            filename: (row.filename ?? row.original_filename ?? row.original_name) as string,
+            file_path: (row.file_path ?? row.path ?? '') as string,
+            file_size: (row.file_size ?? 0) as number,
+            mime_type: (row.mime_type ?? '') as string,
+            uploaded_by_id: (row.uploaded_by_id ?? row.uploaded_by ?? null) as number | null,
+            uploaded_by: (row.uploaded_by ?? null) as Attachment['uploaded_by'],
+            created_at: (row.created_at ?? '') as string,
+          } as Attachment
+        })
+      )
+    } catch {
+      setRiskFiles([])
+    }
+  }
 
   useEffect(() => {
     if (id) {
       fetchById(id)
       fetchControls(id)
       fetchActions(id)
+      fetchControlLibrary()
+      fetchRiskFiles()
     }
-  }, [id, fetchById, fetchControls, fetchActions])
+  }, [id, fetchById, fetchControls, fetchActions, fetchControlLibrary])
+
+  const uploadRiskFile = async (file: File) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    await api.post(`/risks/${id}/files`, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+    await fetchRiskFiles()
+  }
+
+  const deleteRiskFile = async (fileId: number) => {
+    await api.delete(`/risks/${id}/files/attachment/${fileId}`)
+    await fetchRiskFiles()
+  }
 
   const handleDelete = () => {
     showConfirm({
@@ -281,10 +365,80 @@ export default function RiskDetailPage() {
                   <Target className="h-5 w-5" />
                   Controls ({controls.length})
                 </CardTitle>
-                <Button size="sm">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add
-                </Button>
+                <Dialog open={controlDialogOpen} onOpenChange={setControlDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm">
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add Control</DialogTitle>
+                      <DialogDescription>Link a control from the library to this risk</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label>Control *</Label>
+                        <Select value={selectedControlId} onValueChange={setSelectedControlId}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a control" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {controlLibrary.map((ctrl) => (
+                              <SelectItem key={ctrl.id} value={String(ctrl.id)}>
+                                {ctrl.code} - {ctrl.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Effectiveness</Label>
+                        <Select value={controlEffectiveness} onValueChange={setControlEffectiveness}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="effective">Effective</SelectItem>
+                            <SelectItem value="partially_effective">Partially Effective</SelectItem>
+                            <SelectItem value="ineffective">Ineffective</SelectItem>
+                            <SelectItem value="none">None</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Notes</Label>
+                        <Input value={controlNotes} onChange={(e) => setControlNotes(e.target.value)} placeholder="Optional notes" />
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setControlDialogOpen(false)}>Cancel</Button>
+                        <Button
+                          disabled={!selectedControlId || isSavingForm}
+                          onClick={async () => {
+                            setIsSavingForm(true)
+                            try {
+                              await addControl(id, {
+                                control_id: Number(selectedControlId),
+                                effectiveness: controlEffectiveness as 'effective' | 'partially_effective' | 'ineffective' | 'none',
+                                notes: controlNotes || undefined,
+                              })
+                              toast.success('Control added')
+                              setControlDialogOpen(false)
+                              setSelectedControlId('')
+                              setControlEffectiveness('effective')
+                              setControlNotes('')
+                            } catch { toast.error('Error adding control') }
+                            finally { setIsSavingForm(false) }
+                          }}
+                        >
+                          {isSavingForm && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                          Add
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </CardHeader>
               <CardContent>
                 {controls.length === 0 ? (
@@ -329,10 +483,74 @@ export default function RiskDetailPage() {
                   <Activity className="h-5 w-5" />
                   Actions ({actions.length})
                 </CardTitle>
-                <Button size="sm">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add
-                </Button>
+                <Dialog open={actionDialogOpen} onOpenChange={setActionDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm">
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add Action</DialogTitle>
+                      <DialogDescription>Create a remediation action for this risk</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label>Title *</Label>
+                        <Input value={actionForm.title} onChange={(e) => setActionForm((f) => ({ ...f, title: e.target.value }))} placeholder="Action title" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Description</Label>
+                        <Input value={actionForm.description} onChange={(e) => setActionForm((f) => ({ ...f, description: e.target.value }))} placeholder="Optional description" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Priority</Label>
+                          <Select value={actionForm.priority} onValueChange={(v) => setActionForm((f) => ({ ...f, priority: v as 'low' | 'medium' | 'high' | 'critical' }))}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="low">Low</SelectItem>
+                              <SelectItem value="medium">Medium</SelectItem>
+                              <SelectItem value="high">High</SelectItem>
+                              <SelectItem value="critical">Critical</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Due Date</Label>
+                          <Input type="date" value={actionForm.due_date} onChange={(e) => setActionForm((f) => ({ ...f, due_date: e.target.value }))} />
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setActionDialogOpen(false)}>Cancel</Button>
+                        <Button
+                          disabled={!actionForm.title.trim() || isSavingForm}
+                          onClick={async () => {
+                            setIsSavingForm(true)
+                            try {
+                              await createAction(id, {
+                                title: actionForm.title,
+                                description: actionForm.description || undefined,
+                                priority: actionForm.priority,
+                                due_date: actionForm.due_date || undefined,
+                              })
+                              toast.success('Action created')
+                              setActionDialogOpen(false)
+                              setActionForm({ title: '', description: '', priority: 'medium', due_date: '' })
+                            } catch { toast.error('Error creating action') }
+                            finally { setIsSavingForm(false) }
+                          }}
+                        >
+                          {isSavingForm && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                          Create
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </CardHeader>
               <CardContent>
                 {actions.length === 0 ? (
@@ -371,6 +589,14 @@ export default function RiskDetailPage() {
                 )}
               </CardContent>
             </Card>
+
+            {/* File Attachments */}
+            <FileAttachmentsPanel
+              files={riskFiles}
+              onUpload={uploadRiskFile}
+              onDelete={deleteRiskFile}
+              downloadUrlPrefix={`/api/risks/${id}/files/download`}
+            />
           </div>
 
           {/* Sidebar */}

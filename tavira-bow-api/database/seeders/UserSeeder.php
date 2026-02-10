@@ -10,8 +10,8 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        // Create default admin user
-        User::firstOrCreate(
+        // Create or update default admin: login "admin", password "admin123"
+        User::updateOrCreate(
             ['username' => 'admin'],
             [
                 'email' => 'admin@tavira-bow.local',
@@ -23,6 +23,6 @@ class UserSeeder extends Seeder
             ]
         );
 
-        $this->command->info('Default admin user created: admin / admin123');
+        $this->command->info('Default admin: username=admin, password=admin123');
     }
 }

@@ -15,6 +15,31 @@ use Illuminate\Support\Facades\DB;
 class SupplierContractController extends Controller
 {
     /**
+     * List all contracts across all suppliers (global listing)
+     */
+    public function all(Request $request): AnonymousResourceCollection
+    {
+        $query = SupplierContract::with('supplier:id,name');
+
+        if ($request->boolean('expiring_soon')) {
+            $query->where('end_date', '<=', now()->addDays(90))
+                ->where('end_date', '>=', now());
+        }
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('contract_ref', 'ilike', "%{$search}%")
+                    ->orWhere('description', 'ilike', "%{$search}%")
+                    ->orWhereHas('supplier', fn ($sq) => $sq->where('name', 'ilike', "%{$search}%"));
+            });
+        }
+
+        return SupplierContractResource::collection(
+            $query->orderBy('end_date', 'asc')->paginate($request->per_page ?? 20)
+        );
+    }
+
+    /**
      * List contracts for a supplier
      */
     public function index(Request $request, Supplier $supplier): AnonymousResourceCollection

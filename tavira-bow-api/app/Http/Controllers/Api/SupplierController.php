@@ -235,6 +235,111 @@ class SupplierController extends Controller
     }
 
     /**
+     * Add access for a user to a supplier (route: POST suppliers/{supplier}/access)
+     */
+    public function addAccess(Request $request, Supplier $supplier): JsonResponse
+    {
+        $this->authorize('update', $supplier);
+
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'access_level' => 'required|in:read,write,admin',
+        ]);
+
+        $canEdit = $validated['access_level'] !== 'read';
+        $access = $supplier->access()->create([
+            'user_id' => $validated['user_id'],
+            'can_view' => true,
+            'can_edit' => $canEdit,
+        ]);
+
+        return response()->json(['access' => $access->load('user')], 201);
+    }
+
+    /**
+     * Remove access from a supplier (route: DELETE suppliers/{supplier}/access/{access})
+     */
+    public function removeAccess(Supplier $supplier, SupplierAccess $access): JsonResponse
+    {
+        $this->authorize('update', $supplier);
+
+        if ($access->supplier_id !== $supplier->id) {
+            return response()->json(['message' => 'Access does not belong to this supplier'], 403);
+        }
+
+        $access->delete();
+
+        return response()->json(null, 204);
+    }
+
+    /**
+     * Suppliers dashboard stats (global)
+     */
+    public function dashboard(Request $request): JsonResponse
+    {
+        $totalSuppliers = Supplier::count();
+        $activeSuppliers = Supplier::active()->count();
+
+        $totalContracts = \App\Models\SupplierContract::count();
+        $expiringSoon = \App\Models\SupplierContract::expiringSoon(90)->count();
+
+        $totalInvoices = \App\Models\SupplierInvoice::count();
+        $pendingInvoices = \App\Models\SupplierInvoice::pending()->count();
+
+        // By location
+        $byLocation = Supplier::selectRaw('location, count(*) as count')
+            ->whereNotNull('location')
+            ->groupBy('location')
+            ->get()
+            ->map(fn ($row) => ['name' => $row->location->value ?? $row->location, 'count' => (int) $row->count]);
+
+        // By sage category
+        $byCategory = Supplier::selectRaw('sage_category_id, count(*) as count')
+            ->whereNotNull('sage_category_id')
+            ->groupBy('sage_category_id')
+            ->with('sageCategory')
+            ->get()
+            ->map(fn ($row) => ['name' => $row->sageCategory?->name ?? 'Unknown', 'count' => (int) $row->count]);
+
+        // By status
+        $statusCounts = Supplier::selectRaw('status, count(*) as count')
+            ->groupBy('status')
+            ->pluck('count', 'status');
+
+        $byStatus = [
+            'active' => (int) ($statusCounts['Active'] ?? 0),
+            'inactive' => (int) ($statusCounts['Exited'] ?? 0),
+            'pending' => (int) ($statusCounts['Pending'] ?? 0),
+        ];
+
+        // Expiring contracts
+        $expiringContracts = \App\Models\SupplierContract::expiringSoon(90)
+            ->with('supplier')
+            ->orderBy('end_date')
+            ->limit(10)
+            ->get()
+            ->map(fn ($c) => [
+                'id' => $c->id,
+                'name' => $c->description ?? $c->contract_ref,
+                'supplier' => $c->supplier?->name ?? '',
+                'end_date' => $c->end_date?->toDateString(),
+            ]);
+
+        return response()->json([
+            'total_suppliers' => $totalSuppliers,
+            'active_suppliers' => $activeSuppliers,
+            'total_contracts' => $totalContracts,
+            'expiring_soon' => $expiringSoon,
+            'total_invoices' => $totalInvoices,
+            'pending_invoices' => $pendingInvoices,
+            'by_location' => $byLocation->values(),
+            'by_category' => $byCategory->values(),
+            'by_status' => $byStatus,
+            'expiring_contracts' => $expiringContracts->values(),
+        ]);
+    }
+
+    /**
      * Get supplier statistics
      */
     public function stats(Supplier $supplier): JsonResponse

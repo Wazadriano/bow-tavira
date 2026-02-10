@@ -28,6 +28,9 @@ class SupplierInvoiceResource extends JsonResource
 
             // Relations
             'supplier' => new SupplierResource($this->whenLoaded('supplier')),
+            'supplier_name' => $this->whenLoaded('supplier', fn () => $this->supplier?->name),
+            'sage_category' => new SageCategoryResource($this->whenLoaded('sageCategory')),
+            'sage_category_id' => $this->sage_category_id,
         ];
     }
 }

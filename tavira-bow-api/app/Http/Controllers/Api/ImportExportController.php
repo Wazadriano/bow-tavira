@@ -275,6 +275,14 @@ class ImportExportController extends Controller
     }
 
     /**
+     * Export invoices
+     */
+    public function exportInvoices(Request $request): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        return $this->export($request, 'invoices');
+    }
+
+    /**
      * Export data
      */
     private function export(Request $request, string $type): \Symfony\Component\HttpFoundation\BinaryFileResponse
@@ -484,6 +492,24 @@ class ImportExportController extends Controller
                     'responsible_party' => $item->responsibleParty?->full_name,
                     'monthly_update' => $item->monthly_update,
                     'tags' => implode(', ', $item->tags ?? []),
+                ])
+                ->toArray(),
+            'invoices' => \App\Models\SupplierInvoice::query()
+                ->with('supplier:id,name')
+                ->orderBy('invoice_date', 'desc')
+                ->get()
+                ->map(fn ($item) => [
+                    'supplier_name' => $item->supplier?->name,
+                    'invoice_ref' => $item->invoice_ref,
+                    'description' => $item->description,
+                    'amount' => $item->amount,
+                    'currency' => $item->currency,
+                    'invoice_date' => $item->invoice_date?->toDateString(),
+                    'due_date' => $item->due_date?->toDateString(),
+                    'paid_date' => $item->paid_date?->toDateString(),
+                    'status' => $item->status?->value ?? $item->status,
+                    'frequency' => $item->frequency?->value ?? $item->frequency,
+                    'notes' => $item->notes,
                 ])
                 ->toArray(),
             default => [],

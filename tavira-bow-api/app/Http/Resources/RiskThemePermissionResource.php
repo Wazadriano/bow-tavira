@@ -12,10 +12,12 @@ class RiskThemePermissionResource extends JsonResource
         return [
             'id' => $this->id,
             'theme_id' => $this->theme_id,
+            'user_id' => $this->user_id,
             'can_view' => $this->can_view,
             'can_edit' => $this->can_edit,
             'can_create' => $this->can_create,
             'can_delete' => $this->can_delete,
+            'user' => new UserResource($this->whenLoaded('user')),
         ];
     }
 }

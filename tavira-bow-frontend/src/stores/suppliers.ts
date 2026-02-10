@@ -54,19 +54,21 @@ interface SuppliersState {
   fetchContracts: (supplierId: number) => Promise<void>
   createContract: (data: ContractFormData) => Promise<SupplierContract>
   updateContract: (
+    supplierId: number,
     contractId: number,
     data: Partial<ContractFormData>
   ) => Promise<void>
-  deleteContract: (contractId: number) => Promise<void>
+  deleteContract: (supplierId: number, contractId: number) => Promise<void>
 
   // Actions - Invoices
   fetchInvoices: (supplierId: number) => Promise<void>
   createInvoice: (data: InvoiceFormData) => Promise<SupplierInvoice>
   updateInvoice: (
+    supplierId: number,
     invoiceId: number,
     data: Partial<InvoiceFormData>
   ) => Promise<void>
-  deleteInvoice: (invoiceId: number) => Promise<void>
+  deleteInvoice: (supplierId: number, invoiceId: number) => Promise<void>
   importInvoices: (supplierId: number, file: File) => Promise<void>
 
   // Utility
@@ -133,10 +135,10 @@ export const useSuppliersStore = create<SuppliersState>((set, get) => ({
 
   fetchStats: async () => {
     try {
-      const response = await api.get<{ data: SupplierDashboardStats }>(
-        '/suppliers/stats'
+      const response = await api.get<SupplierDashboardStats>(
+        '/suppliers-dashboard'
       )
-      set({ stats: response.data.data })
+      set({ stats: response.data })
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to fetch stats'
@@ -160,8 +162,8 @@ export const useSuppliersStore = create<SuppliersState>((set, get) => ({
   fetchById: async (id) => {
     set({ isLoadingItem: true, error: null })
     try {
-      const response = await api.get<{ data: Supplier }>(`/suppliers/${id}`)
-      const item = response.data.data
+      const response = await api.get<{ supplier: Supplier }>(`/suppliers/${id}`)
+      const item = response.data.supplier
       set({ selectedItem: item, isLoadingItem: false })
       return item
     } catch (error: unknown) {
@@ -175,8 +177,8 @@ export const useSuppliersStore = create<SuppliersState>((set, get) => ({
   create: async (data) => {
     set({ isSaving: true, error: null })
     try {
-      const response = await api.post<{ data: Supplier }>('/suppliers', data)
-      const newItem = response.data.data
+      const response = await api.post<{ supplier: Supplier }>('/suppliers', data)
+      const newItem = response.data.supplier
       set((state) => ({
         items: [newItem, ...state.items],
         isSaving: false,
@@ -193,11 +195,11 @@ export const useSuppliersStore = create<SuppliersState>((set, get) => ({
   update: async (id, data) => {
     set({ isSaving: true, error: null })
     try {
-      const response = await api.put<{ data: Supplier }>(
+      const response = await api.put<{ supplier: Supplier }>(
         `/suppliers/${id}`,
         data
       )
-      const updatedItem = response.data.data
+      const updatedItem = response.data.supplier
       set((state) => ({
         items: state.items.map((item) =>
           item.id === id ? updatedItem : item
@@ -237,10 +239,10 @@ export const useSuppliersStore = create<SuppliersState>((set, get) => ({
   // Contracts
   fetchContracts: async (supplierId) => {
     try {
-      const response = await api.get<{ data: SupplierContract[] }>(
+      const response = await api.get<SupplierContract[]>(
         `/suppliers/${supplierId}/contracts`
       )
-      set({ contracts: response.data.data })
+      set({ contracts: response.data })
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to fetch contracts'
@@ -251,11 +253,11 @@ export const useSuppliersStore = create<SuppliersState>((set, get) => ({
   createContract: async (data) => {
     set({ isSaving: true })
     try {
-      const response = await api.post<{ data: SupplierContract }>(
+      const response = await api.post<{ contract: SupplierContract }>(
         `/suppliers/${data.supplier_id}/contracts`,
         data
       )
-      const newContract = response.data.data
+      const newContract = response.data.contract
       set((state) => ({
         contracts: [...state.contracts, newContract],
         isSaving: false,
@@ -269,16 +271,16 @@ export const useSuppliersStore = create<SuppliersState>((set, get) => ({
     }
   },
 
-  updateContract: async (contractId, data) => {
+  updateContract: async (supplierId, contractId, data) => {
     set({ isSaving: true })
     try {
-      const response = await api.put<{ data: SupplierContract }>(
-        `/contracts/${contractId}`,
+      const response = await api.put<{ contract: SupplierContract }>(
+        `/suppliers/${supplierId}/contracts/${contractId}`,
         data
       )
       set((state) => ({
         contracts: state.contracts.map((c) =>
-          c.id === contractId ? response.data.data : c
+          c.id === contractId ? response.data.contract : c
         ),
         isSaving: false,
       }))
@@ -290,9 +292,9 @@ export const useSuppliersStore = create<SuppliersState>((set, get) => ({
     }
   },
 
-  deleteContract: async (contractId) => {
+  deleteContract: async (supplierId, contractId) => {
     try {
-      await api.delete(`/contracts/${contractId}`)
+      await api.delete(`/suppliers/${supplierId}/contracts/${contractId}`)
       set((state) => ({
         contracts: state.contracts.filter((c) => c.id !== contractId),
       }))
@@ -307,10 +309,10 @@ export const useSuppliersStore = create<SuppliersState>((set, get) => ({
   // Invoices
   fetchInvoices: async (supplierId) => {
     try {
-      const response = await api.get<{ data: SupplierInvoice[] }>(
+      const response = await api.get<SupplierInvoice[]>(
         `/suppliers/${supplierId}/invoices`
       )
-      set({ invoices: response.data.data })
+      set({ invoices: response.data })
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to fetch invoices'
@@ -321,11 +323,11 @@ export const useSuppliersStore = create<SuppliersState>((set, get) => ({
   createInvoice: async (data) => {
     set({ isSaving: true })
     try {
-      const response = await api.post<{ data: SupplierInvoice }>(
+      const response = await api.post<{ invoice: SupplierInvoice }>(
         `/suppliers/${data.supplier_id}/invoices`,
         data
       )
-      const newInvoice = response.data.data
+      const newInvoice = response.data.invoice
       set((state) => ({
         invoices: [...state.invoices, newInvoice],
         isSaving: false,
@@ -339,16 +341,16 @@ export const useSuppliersStore = create<SuppliersState>((set, get) => ({
     }
   },
 
-  updateInvoice: async (invoiceId, data) => {
+  updateInvoice: async (supplierId, invoiceId, data) => {
     set({ isSaving: true })
     try {
-      const response = await api.put<{ data: SupplierInvoice }>(
-        `/invoices/${invoiceId}`,
+      const response = await api.put<{ invoice: SupplierInvoice }>(
+        `/suppliers/${supplierId}/invoices/${invoiceId}`,
         data
       )
       set((state) => ({
         invoices: state.invoices.map((i) =>
-          i.id === invoiceId ? response.data.data : i
+          i.id === invoiceId ? response.data.invoice : i
         ),
         isSaving: false,
       }))
@@ -360,9 +362,9 @@ export const useSuppliersStore = create<SuppliersState>((set, get) => ({
     }
   },
 
-  deleteInvoice: async (invoiceId) => {
+  deleteInvoice: async (supplierId, invoiceId) => {
     try {
-      await api.delete(`/invoices/${invoiceId}`)
+      await api.delete(`/suppliers/${supplierId}/invoices/${invoiceId}`)
       set((state) => ({
         invoices: state.invoices.filter((i) => i.id !== invoiceId),
       }))

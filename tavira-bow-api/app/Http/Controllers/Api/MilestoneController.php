@@ -38,6 +38,15 @@ class MilestoneController extends Controller
             'status' => 'nullable|string',
         ]);
 
+        // Map API field to DB column (table has target_date, not due_date)
+        if (isset($validated['due_date'])) {
+            $validated['target_date'] = $validated['due_date'];
+            unset($validated['due_date']);
+        } else {
+            $validated['target_date'] = now()->format('Y-m-d');
+        }
+        $validated['status'] = $validated['status'] ?? 'Not Started';
+
         $milestone = TaskMilestone::create($validated);
 
         return response()->json($milestone->load(['workItem', 'assignments.user']), 201);
@@ -55,7 +64,18 @@ class MilestoneController extends Controller
             'description' => 'nullable|string',
             'due_date' => 'nullable|date',
             'status' => 'nullable|string',
+            'is_completed' => 'nullable|boolean',
         ]);
+
+        // Map API field to DB column
+        if (array_key_exists('due_date', $validated)) {
+            $validated['target_date'] = $validated['due_date'];
+            unset($validated['due_date']);
+        }
+        if (array_key_exists('is_completed', $validated)) {
+            $validated['status'] = $validated['is_completed'] ? 'Completed' : 'Not Started';
+            unset($validated['is_completed']);
+        }
 
         $milestone->update($validated);
 
