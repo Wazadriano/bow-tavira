@@ -202,6 +202,71 @@ class RiskController extends Controller
     }
 
     /**
+     * Risk dashboard stats
+     */
+    public function dashboard(Request $request): JsonResponse
+    {
+        $risks = Risk::active()->get();
+
+        $totalRisks = $risks->count();
+        $highRisks = $risks->where('inherent_rag', \App\Enums\RAGStatus::RED)->count();
+        $mediumRisks = $risks->where('inherent_rag', \App\Enums\RAGStatus::AMBER)->count();
+        $lowRisks = $totalRisks - $highRisks - $mediumRisks;
+
+        $openActions = \App\Models\RiskAction::open()->count();
+        $overdueActions = \App\Models\RiskAction::overdue()->count();
+
+        // By theme (L1)
+        $byTheme = \App\Models\RiskTheme::withCount(['categories as risks_count' => function ($q) {
+            $q->withCount('risks');
+        }])->get()->map(function ($theme) {
+            return [
+                'name' => $theme->name,
+                'code' => $theme->code ?? $theme->name,
+                'count' => $theme->categories->sum(fn ($c) => $c->risks()->active()->count()),
+            ];
+        })->filter(fn ($t) => $t['count'] > 0)->values();
+
+        // By tier
+        $byTier = $risks->groupBy(fn ($r) => $r->tier?->value ?? 'Unknown')
+            ->map(fn ($group, $name) => ['name' => $name, 'count' => $group->count()])
+            ->values();
+
+        // By RAG
+        $byRag = [
+            'blue' => $risks->where('inherent_rag', \App\Enums\RAGStatus::BLUE)->count(),
+            'green' => $risks->where('inherent_rag', \App\Enums\RAGStatus::GREEN)->count(),
+            'amber' => $risks->where('inherent_rag', \App\Enums\RAGStatus::AMBER)->count(),
+            'red' => $risks->where('inherent_rag', \App\Enums\RAGStatus::RED)->count(),
+        ];
+
+        // Appetite breaches
+        $appetiteBreaches = $risks
+            ->where('appetite_status', \App\Enums\AppetiteStatus::OUTSIDE)
+            ->map(fn ($r) => [
+                'id' => $r->id,
+                'name' => $r->name,
+                'theme' => $r->category?->theme?->name ?? '',
+                'score' => (float) $r->residual_risk_score,
+                'appetite' => (float) ($r->category?->theme?->board_appetite ?? 0),
+            ])
+            ->values();
+
+        return response()->json([
+            'total_risks' => $totalRisks,
+            'high_risks' => $highRisks,
+            'medium_risks' => $mediumRisks,
+            'low_risks' => $lowRisks,
+            'open_actions' => $openActions,
+            'overdue_actions' => $overdueActions,
+            'by_theme' => $byTheme,
+            'by_tier' => $byTier,
+            'by_rag' => $byRag,
+            'appetite_breaches' => $appetiteBreaches,
+        ]);
+    }
+
+    /**
      * Get risk heatmap data
      */
     public function heatmap(Request $request): JsonResponse

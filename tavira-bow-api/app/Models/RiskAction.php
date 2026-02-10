@@ -17,7 +17,7 @@ class RiskAction extends Model
         'status',
         'priority',
         'due_date',
-        'completion_date',
+        'completed_at',
         'notes',
     ];
 
@@ -27,7 +27,7 @@ class RiskAction extends Model
             'status' => ActionStatus::class,
             'priority' => ActionPriority::class,
             'due_date' => 'date',
-            'completion_date' => 'date',
+            'completed_at' => 'date',
         ];
     }
 
@@ -58,7 +58,7 @@ class RiskAction extends Model
     public function scopeOverdue($query)
     {
         return $query->where('due_date', '<', now())
-            ->whereNull('completion_date');
+            ->whereNull('completed_at');
     }
 
     public function scopeHighPriority($query)
@@ -72,6 +72,6 @@ class RiskAction extends Model
     {
         return $this->due_date
             && $this->due_date->isPast()
-            && ! $this->completion_date;
+            && ! $this->completed_at;
     }
 }
