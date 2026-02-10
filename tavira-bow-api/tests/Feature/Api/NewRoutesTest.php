@@ -9,7 +9,6 @@ use App\Models\RiskAction;
 use App\Models\RiskCategory;
 use App\Models\Supplier;
 use App\Models\SupplierAccess;
-use App\Models\SupplierContract;
 use App\Models\TaskDependency;
 use App\Models\User;
 use App\Models\WorkItem;
