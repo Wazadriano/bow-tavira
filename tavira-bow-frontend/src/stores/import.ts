@@ -42,13 +42,30 @@ export interface ImportResult {
   errors: Array<{ row: number; message: string }>
 }
 
+export interface SheetInfo {
+  name: string
+  columns: number
+  rows: number
+  importable: boolean
+}
+
 interface ImportState {
   // Current import
   importType: ImportType | null
   file: File | null
+  tempFile: string | null
   preview: ImportPreview | null
   mapping: ColumnMapping[]
   progress: ImportProgress
+
+  // Sheet selection
+  sheets: string[]
+  sheetInfo: SheetInfo[]
+  selectedSheet: string | null
+  selectedSheets: string[]
+
+  // Async job
+  jobId: string | null
 
   // Loading states
   isUploading: boolean
@@ -59,6 +76,9 @@ interface ImportState {
   // Actions
   setImportType: (type: ImportType) => void
   setFile: (file: File | null) => void
+  setSelectedSheet: (sheet: string) => void
+  setSelectedSheets: (sheets: string[]) => void
+  toggleAllImportable: () => void
   uploadAndPreview: () => Promise<void>
   updateMapping: (index: number, targetField: string) => void
   confirmImport: () => Promise<ImportResult>
@@ -77,65 +97,79 @@ const initialProgress: ImportProgress = {
   message: '',
 }
 
-// Target fields per import type
+// Target fields per import type - aligned with backend getExpectedColumns()
 export const targetFields: Record<ImportType, Array<{ field: string; label: string; required: boolean }>> = {
   workitems: [
-    { field: 'title', label: 'Titre', required: true },
-    { field: 'description', label: 'Description', required: false },
-    { field: 'type', label: 'Type (BAU/Non-BAU)', required: true },
-    { field: 'status', label: 'Statut', required: true },
-    { field: 'priority', label: 'Priorite', required: false },
+    { field: 'ref_no', label: 'Reference', required: true },
+    { field: 'type', label: 'Type', required: false },
+    { field: 'activity', label: 'Activite', required: false },
     { field: 'department', label: 'Departement', required: true },
-    { field: 'responsible', label: 'Responsable', required: false },
-    { field: 'due_date', label: 'Date echeance', required: false },
-    { field: 'start_date', label: 'Date debut', required: false },
-    { field: 'end_date', label: 'Date fin', required: false },
-    { field: 'progress', label: 'Progression (%)', required: false },
+    { field: 'description', label: 'Description', required: true },
+    { field: 'goal', label: 'Objectif', required: false },
+    { field: 'bau_or_transformative', label: 'BAU / Transformatif', required: false },
+    { field: 'impact_level', label: 'Niveau impact', required: false },
+    { field: 'current_status', label: 'Statut', required: false },
+    { field: 'rag_status', label: 'Statut RAG', required: false },
+    { field: 'deadline', label: 'Date echeance', required: false },
+    { field: 'completion_date', label: 'Date completion', required: false },
+    { field: 'monthly_update', label: 'Mise a jour mensuelle', required: false },
+    { field: 'comments', label: 'Commentaires', required: false },
+    { field: 'update_frequency', label: 'Frequence MAJ', required: false },
+    { field: 'responsible_party_id', label: 'Responsable', required: false },
+    { field: 'department_head_id', label: 'Chef de departement', required: false },
+    { field: 'tags', label: 'Tags', required: false },
+    { field: 'priority_item', label: 'Prioritaire', required: false },
+    { field: 'cost_savings', label: 'Economies', required: false },
+    { field: 'cost_efficiency_fte', label: 'Efficience FTE', required: false },
+    { field: 'expected_cost', label: 'Cout prevu', required: false },
+    { field: 'revenue_potential', label: 'Potentiel revenu', required: false },
   ],
   suppliers: [
+    { field: 'ref_no', label: 'Reference', required: true },
     { field: 'name', label: 'Nom', required: true },
-    { field: 'code', label: 'Code', required: false },
-    { field: 'contact_name', label: 'Contact', required: false },
-    { field: 'contact_email', label: 'Email', required: false },
-    { field: 'contact_phone', label: 'Telephone', required: false },
-    { field: 'address', label: 'Adresse', required: false },
-    { field: 'city', label: 'Ville', required: false },
-    { field: 'country', label: 'Pays', required: false },
-    { field: 'status', label: 'Statut', required: true },
-    { field: 'category', label: 'Categorie', required: false },
+    { field: 'sage_category_id', label: 'Categorie Sage', required: false },
+    { field: 'location', label: 'Localisation', required: false },
+    { field: 'is_common_provider', label: 'Fournisseur commun', required: false },
+    { field: 'status', label: 'Statut', required: false },
+    { field: 'entities', label: 'Entites', required: false },
+    { field: 'notes', label: 'Notes', required: false },
   ],
   invoices: [
-    { field: 'invoice_number', label: 'Numero facture', required: true },
-    { field: 'supplier_code', label: 'Code fournisseur', required: true },
+    { field: 'supplier_ref', label: 'Ref fournisseur', required: true },
+    { field: 'invoice_ref', label: 'Ref facture', required: true },
+    { field: 'description', label: 'Description', required: false },
     { field: 'amount', label: 'Montant', required: true },
     { field: 'currency', label: 'Devise', required: false },
     { field: 'invoice_date', label: 'Date facture', required: true },
     { field: 'due_date', label: 'Date echeance', required: false },
-    { field: 'status', label: 'Statut', required: true },
-    { field: 'description', label: 'Description', required: false },
-    { field: 'sage_category', label: 'Categorie Sage', required: false },
+    { field: 'frequency', label: 'Frequence', required: false },
+    { field: 'status', label: 'Statut', required: false },
   ],
   risks: [
-    { field: 'code', label: 'Code risque', required: true },
-    { field: 'name', label: 'Nom', required: true },
-    { field: 'description', label: 'Description', required: false },
+    { field: 'ref_no', label: 'Reference', required: true },
     { field: 'theme_code', label: 'Code theme (L1)', required: true },
     { field: 'category_code', label: 'Code categorie (L2)', required: true },
-    { field: 'inherent_impact', label: 'Impact inherent (1-5)', required: true },
-    { field: 'inherent_likelihood', label: 'Probabilite inherente (1-5)', required: true },
-    { field: 'residual_impact', label: 'Impact residuel (1-5)', required: false },
-    { field: 'residual_likelihood', label: 'Probabilite residuelle (1-5)', required: false },
-    { field: 'owner', label: 'Proprietaire', required: false },
-    { field: 'status', label: 'Statut', required: true },
+    { field: 'name', label: 'Nom', required: true },
+    { field: 'description', label: 'Description', required: false },
+    { field: 'tier', label: 'Tier', required: false },
+    { field: 'owner_id', label: 'Proprietaire', required: false },
+    { field: 'responsible_party_id', label: 'Responsable', required: false },
+    { field: 'financial_impact', label: 'Impact financier (1-5)', required: false },
+    { field: 'regulatory_impact', label: 'Impact reglementaire (1-5)', required: false },
+    { field: 'reputational_impact', label: 'Impact reputationnel (1-5)', required: false },
+    { field: 'inherent_probability', label: 'Probabilite inherente (1-5)', required: false },
   ],
   governance: [
-    { field: 'title', label: 'Titre', required: true },
+    { field: 'ref_no', label: 'Reference', required: true },
+    { field: 'activity', label: 'Activite', required: false },
     { field: 'description', label: 'Description', required: false },
     { field: 'department', label: 'Departement', required: true },
-    { field: 'frequency', label: 'Frequence', required: true },
-    { field: 'responsible', label: 'Responsable', required: false },
-    { field: 'next_review_date', label: 'Prochaine revue', required: false },
-    { field: 'status', label: 'Statut', required: true },
+    { field: 'frequency', label: 'Frequence', required: false },
+    { field: 'location', label: 'Localisation', required: false },
+    { field: 'current_status', label: 'Statut', required: false },
+    { field: 'deadline', label: 'Date echeance', required: false },
+    { field: 'responsible_party_id', label: 'Responsable', required: false },
+    { field: 'tags', label: 'Tags', required: false },
   ],
 }
 
@@ -143,24 +177,47 @@ export const useImportStore = create<ImportState>((set, get) => ({
   // Initial state
   importType: null,
   file: null,
+  tempFile: null,
   preview: null,
   mapping: [],
   progress: { ...initialProgress },
+  sheets: [],
+  sheetInfo: [],
+  selectedSheet: null,
+  selectedSheets: [],
+  jobId: null,
   isUploading: false,
   isPreviewing: false,
   isImporting: false,
   error: null,
 
   setImportType: (type) => {
-    set({ importType: type, file: null, preview: null, mapping: [], error: null })
+    set({ importType: type, file: null, tempFile: null, preview: null, mapping: [], sheets: [], sheetInfo: [], selectedSheet: null, selectedSheets: [], jobId: null, error: null })
   },
 
   setFile: (file) => {
-    set({ file, preview: null, mapping: [] })
+    set({ file, tempFile: null, preview: null, mapping: [], sheets: [], sheetInfo: [], selectedSheet: null, selectedSheets: [] })
+  },
+
+  setSelectedSheet: (sheet) => {
+    set({ selectedSheet: sheet, preview: null, mapping: [] })
+    // Re-trigger preview with selected sheet
+    get().uploadAndPreview()
+  },
+
+  setSelectedSheets: (sheets) => {
+    set({ selectedSheets: sheets })
+  },
+
+  toggleAllImportable: () => {
+    const { sheetInfo, selectedSheets } = get()
+    const importable = sheetInfo.filter((s) => s.importable).map((s) => s.name)
+    const allSelected = importable.every((s) => selectedSheets.includes(s))
+    set({ selectedSheets: allSelected ? [] : importable })
   },
 
   uploadAndPreview: async () => {
-    const { file, importType } = get()
+    const { file, importType, selectedSheet } = get()
     if (!file || !importType) return
 
     set({
@@ -174,26 +231,61 @@ export const useImportStore = create<ImportState>((set, get) => ({
       const formData = new FormData()
       formData.append('file', file)
       formData.append('type', importType)
+      if (selectedSheet) {
+        formData.append('sheet_name', selectedSheet)
+      }
 
-      const response = await api.post<{ data: ImportPreview }>('/import/preview', formData, {
+      const response = await api.post('/import/preview', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
 
-      const preview = response.data.data
+      const data = response.data
 
-      // Use suggested mapping or create default
-      const mapping = preview.suggested_mapping.length > 0
-        ? preview.suggested_mapping
-        : preview.columns.map((col) => ({
-            sourceColumn: col,
-            targetField: '',
-            required: false,
-            detected: false,
-          }))
+      // Extract sheets, sheet info, and selected sheet from response
+      const sheets = data.sheets || []
+      const sheetInfo: SheetInfo[] = data.sheet_info || []
+      const respSelectedSheet = data.selected_sheet || null
+
+      // Build mapping from backend column_mapping
+      const headers = data.headers || []
+      const backendMapping = data.column_mapping || {}
+
+      const mapping: ColumnMapping[] = headers.map((col: string, index: number) => {
+        const targetField = backendMapping[index] || ''
+        const fieldDef = targetFields[importType]?.find((f) => f.field === targetField)
+        return {
+          sourceColumn: col || `Column ${index + 1}`,
+          targetField,
+          required: fieldDef?.required || false,
+          detected: !!targetField,
+        }
+      }).filter((m: ColumnMapping) => m.sourceColumn !== null)
+
+      const preview: ImportPreview = {
+        total_rows: data.total_rows,
+        valid_rows: data.total_rows - (data.validation_errors?.length || 0),
+        error_rows: data.validation_errors?.length || 0,
+        columns: headers,
+        suggested_mapping: mapping,
+        preview_data: (data.preview_rows || []).map((row: unknown[], i: number) => ({
+          row_number: i + 2,
+          data: Object.fromEntries(headers.map((h: string, j: number) => [h, row[j]])),
+          errors: [],
+          warnings: [],
+        })),
+      }
+
+      // Auto-select importable sheets
+      const importableSheets = sheetInfo.filter((s) => s.importable).map((s) => s.name)
 
       set({
+        tempFile: data.temp_file || null,
         preview,
         mapping,
+        sheets,
+        sheetInfo,
+        selectedSheet: respSelectedSheet,
+        selectedSheets: importableSheets.length > 0 ? importableSheets : (respSelectedSheet ? [respSelectedSheet] : []),
         isUploading: false,
         isPreviewing: false,
         progress: { ...initialProgress, status: 'previewing', message: 'Apercu pret' },
@@ -218,42 +310,126 @@ export const useImportStore = create<ImportState>((set, get) => ({
   },
 
   confirmImport: async () => {
-    const { file, importType, mapping } = get()
-    if (!file || !importType) {
+    const { tempFile, importType, mapping, selectedSheets, selectedSheet } = get()
+    if (!tempFile || !importType) {
       throw new Error('Fichier ou type manquant')
     }
 
     set({
       isImporting: true,
       error: null,
-      progress: { ...initialProgress, status: 'importing', message: 'Import en cours...' },
+      jobId: null,
+      progress: { ...initialProgress, status: 'importing', message: 'Lancement de l\'import...' },
     })
 
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('type', importType)
-      formData.append('mapping', JSON.stringify(mapping))
-
-      const response = await api.post<{ data: ImportResult }>('/import/confirm', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      // Build column_mapping as { columnIndex: targetField } for the backend
+      const columnMapping: Record<string, string> = {}
+      mapping.forEach((m, index) => {
+        if (m.targetField) {
+          columnMapping[String(index)] = m.targetField
+        }
       })
 
-      const result = response.data.data
+      const payload: Record<string, unknown> = {
+        temp_file: tempFile,
+        type: importType,
+        column_mapping: columnMapping,
+      }
 
-      set({
-        isImporting: false,
-        progress: {
-          status: 'completed',
-          progress: 100,
-          total: result.imported + result.skipped,
-          processed: result.imported,
-          errors: result.errors.length,
-          message: `Import termine: ${result.imported} importes, ${result.skipped} ignores`,
-        },
+      // Send sheet_names array if multiple sheets selected, otherwise single sheet_name
+      if (selectedSheets.length > 1) {
+        payload.sheet_names = selectedSheets
+      } else if (selectedSheets.length === 1) {
+        payload.sheet_name = selectedSheets[0]
+      } else if (selectedSheet) {
+        payload.sheet_name = selectedSheet
+      }
+
+      const response = await api.post('/import/confirm', payload)
+      const { job_id } = response.data
+
+      if (!job_id) {
+        throw new Error('Pas de job_id dans la reponse')
+      }
+
+      set({ jobId: job_id })
+
+      // Poll for status
+      return await new Promise<ImportResult>((resolve, reject) => {
+        let pollCount = 0
+        const maxPolls = 150 // 5 min at 2s intervals
+
+        const poll = setInterval(async () => {
+          pollCount++
+
+          if (pollCount > maxPolls) {
+            clearInterval(poll)
+            const msg = 'Timeout: l\'import prend trop de temps'
+            set({
+              error: msg,
+              isImporting: false,
+              progress: { ...initialProgress, status: 'error', message: msg },
+            })
+            reject(new Error(msg))
+            return
+          }
+
+          try {
+            const statusRes = await api.get(`/import/status/${job_id}`)
+            const status = statusRes.data
+
+            if (status.status === 'processing') {
+              set({
+                progress: {
+                  status: 'importing',
+                  progress: status.percentage || 0,
+                  total: status.total || 0,
+                  processed: status.processed || 0,
+                  errors: 0,
+                  message: status.message || 'Import en cours...',
+                },
+              })
+            } else if (status.status === 'completed') {
+              clearInterval(poll)
+              const results = status.results || {}
+              const importResult: ImportResult = {
+                success: true,
+                imported: (results.created || 0) + (results.updated || 0),
+                skipped: results.skipped || 0,
+                errors: (results.errors || []).map((e: string, i: number) => ({
+                  row: i + 1,
+                  message: e,
+                })),
+              }
+              set({
+                isImporting: false,
+                progress: {
+                  status: 'completed',
+                  progress: 100,
+                  total: results.total || 0,
+                  processed: (results.created || 0) + (results.updated || 0),
+                  errors: results.errors?.length || 0,
+                  message: `Import termine: ${results.created || 0} crees, ${results.updated || 0} mis a jour, ${results.skipped || 0} ignores`,
+                },
+              })
+              resolve(importResult)
+            } else if (status.status === 'failed') {
+              clearInterval(poll)
+              const msg = status.message || 'L\'import a echoue'
+              set({
+                error: msg,
+                isImporting: false,
+                progress: { ...initialProgress, status: 'error', message: msg },
+              })
+              reject(new Error(msg))
+            }
+            // status === 'unknown' -> job not started yet, keep polling
+          } catch {
+            // Network error during polling - keep trying
+          }
+        }, 2000)
       })
-
-      return result
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Erreur lors de l\'import'
       set({
@@ -311,9 +487,15 @@ export const useImportStore = create<ImportState>((set, get) => ({
     set({
       importType: null,
       file: null,
+      tempFile: null,
       preview: null,
       mapping: [],
       progress: { ...initialProgress },
+      sheets: [],
+      sheetInfo: [],
+      selectedSheet: null,
+      selectedSheets: [],
+      jobId: null,
       isUploading: false,
       isPreviewing: false,
       isImporting: false,

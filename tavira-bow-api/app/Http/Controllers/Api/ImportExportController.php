@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Import\ConfirmImportRequest;
+use App\Http\Requests\Import\PreviewImportRequest;
 use App\Jobs\ProcessImportFile;
 use App\Services\ImportNormalizationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -24,19 +27,45 @@ class ImportExportController extends Controller
     /**
      * Preview import file
      */
-    public function preview(Request $request): JsonResponse
+    public function preview(PreviewImportRequest $request): JsonResponse
     {
-        $request->validate([
-            'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:10240',
-            'type' => 'required|in:workitems,suppliers,invoices,risks',
-        ]);
 
         $file = $request->file('file');
         $extension = $file->getClientOriginalExtension();
 
+        $sheets = [];
+        $sheetInfo = [];
+        $selectedSheet = $request->sheet_name;
+
         // Parse file content
         if (in_array($extension, ['xlsx', 'xls'])) {
-            $data = $this->parseExcel($file->getPathname());
+            $spreadsheet = IOFactory::load($file->getPathname());
+            $sheets = $spreadsheet->getSheetNames();
+
+            // Build sheet_info for each sheet
+            foreach ($sheets as $sheetName) {
+                $sheet = $spreadsheet->getSheetByName($sheetName);
+                if ($sheet) {
+                    $highestCol = $sheet->getHighestDataColumn();
+                    $highestRow = $sheet->getHighestDataRow();
+                    $colCount = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($highestCol);
+                    $rowCount = max(0, $highestRow - 1); // exclude header row
+                    $sheetInfo[] = [
+                        'name' => $sheetName,
+                        'columns' => $colCount,
+                        'rows' => $rowCount,
+                        'importable' => $colCount >= 13,
+                    ];
+                }
+            }
+
+            // Auto-select "BOW List" if present and no sheet specified
+            if (! $selectedSheet) {
+                $bowListIndex = array_search('BOW List', $sheets);
+                $selectedSheet = $bowListIndex !== false ? 'BOW List' : $sheets[0];
+            }
+
+            $data = $this->parseExcel($file->getPathname(), $selectedSheet);
         } else {
             $content = file_get_contents($file->getPathname());
             $data = $this->importService->parseCSV($content);
@@ -53,7 +82,7 @@ class ImportExportController extends Controller
         $previewRows = array_slice($data, 1, 10);
 
         // Get expected columns for this type
-        $expectedColumns = $this->getExpectedColumns($request->type);
+        $expectedColumns = $this->importService->getExpectedColumns($request->type);
 
         // Auto-map columns
         $columnMapping = $this->importService->mapColumns($headers, $expectedColumns);
@@ -75,6 +104,9 @@ class ImportExportController extends Controller
 
         return response()->json([
             'temp_file' => $tempPath,
+            'sheets' => $sheets,
+            'sheet_info' => $sheetInfo,
+            'selected_sheet' => $selectedSheet,
             'headers' => $headers,
             'column_mapping' => $columnMapping,
             'expected_columns' => array_keys($expectedColumns),
@@ -88,32 +120,57 @@ class ImportExportController extends Controller
     /**
      * Confirm and execute import
      */
-    public function confirm(Request $request): JsonResponse
+    public function confirm(ConfirmImportRequest $request): JsonResponse
     {
-        $request->validate([
-            'temp_file' => 'required|string',
-            'type' => 'required|in:workitems,suppliers,invoices,risks',
-            'column_mapping' => 'required|array',
-        ]);
+        $tempFile = $request->temp_file;
 
-        if (! Storage::exists($request->temp_file)) {
+        if (! Storage::exists($tempFile)) {
             return response()->json([
                 'message' => 'Temporary file not found. Please upload again.',
             ], 404);
         }
 
+        $jobId = uniqid('import_', true);
+
+        // Determine sheet(s) to import: sheet_names (array) takes priority over sheet_name (string)
+        $sheetNames = $request->input('sheet_names');
+        if (! $sheetNames) {
+            $sheetName = $request->input('sheet_name');
+            $sheetNames = $sheetName ? [$sheetName] : null;
+        }
+
         // Queue the import job
         ProcessImportFile::dispatch(
-            $request->temp_file,
+            $tempFile,
             $request->type,
             $request->column_mapping,
-            $request->user()->id
+            $request->user()->id,
+            $sheetNames,
+            $jobId
         );
 
         return response()->json([
             'message' => 'Import queued successfully. You will be notified when complete.',
+            'job_id' => $jobId,
             'job_status' => 'queued',
         ], 202);
+    }
+
+    /**
+     * Get import job status
+     */
+    public function status(string $jobId): JsonResponse
+    {
+        $progress = Cache::get("import_progress_{$jobId}");
+
+        if (! $progress) {
+            return response()->json([
+                'status' => 'unknown',
+                'message' => 'Job not found or not yet started.',
+            ]);
+        }
+
+        return response()->json($progress);
     }
 
     /**
@@ -123,9 +180,12 @@ class ImportExportController extends Controller
     {
         $templates = [
             'workitems' => [
-                'ref_no', 'type', 'activity', 'department', 'description',
+                'ref_no', 'type', 'activity', 'department', 'description', 'goal',
                 'bau_or_transformative', 'impact_level', 'current_status',
-                'deadline', 'responsible_party', 'tags', 'priority_item',
+                'deadline', 'completion_date', 'monthly_update', 'comments',
+                'update_frequency', 'responsible_party', 'department_head',
+                'tags', 'priority_item', 'cost_savings', 'cost_efficiency_fte',
+                'expected_cost', 'revenue_potential',
             ],
             'suppliers' => [
                 'ref_no', 'name', 'sage_category', 'location',
@@ -139,6 +199,10 @@ class ImportExportController extends Controller
                 'ref_no', 'theme_code', 'category_code', 'name', 'description',
                 'tier', 'owner', 'responsible_party', 'financial_impact',
                 'regulatory_impact', 'reputational_impact', 'inherent_probability',
+            ],
+            'governance' => [
+                'ref_no', 'activity', 'description', 'department', 'frequency',
+                'location', 'responsible_party', 'deadline', 'tags',
             ],
         ];
 
@@ -155,11 +219,12 @@ class ImportExportController extends Controller
         }
 
         // Style headers
-        $headerRange = 'A1:'.chr(65 + count($templates[$type]) - 1).'1';
+        $lastCol = chr(65 + min(count($templates[$type]) - 1, 25));
+        $headerRange = "A1:{$lastCol}1";
         $sheet->getStyle($headerRange)->getFont()->setBold(true);
 
         // Auto-size columns
-        foreach (range('A', chr(65 + count($templates[$type]) - 1)) as $col) {
+        foreach (range('A', $lastCol) as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
@@ -178,9 +243,41 @@ class ImportExportController extends Controller
     }
 
     /**
+     * Export work items
+     */
+    public function exportWorkItems(Request $request): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        return $this->export($request, 'workitems');
+    }
+
+    /**
+     * Export governance items
+     */
+    public function exportGovernance(Request $request): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        return $this->export($request, 'governance');
+    }
+
+    /**
+     * Export suppliers
+     */
+    public function exportSuppliers(Request $request): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        return $this->export($request, 'suppliers');
+    }
+
+    /**
+     * Export risks
+     */
+    public function exportRisks(Request $request): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        return $this->export($request, 'risks');
+    }
+
+    /**
      * Export data
      */
-    public function export(Request $request, string $type): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    private function export(Request $request, string $type): \Symfony\Component\HttpFoundation\BinaryFileResponse
     {
         $data = $this->getExportData($type, $request);
 
@@ -205,11 +302,12 @@ class ImportExportController extends Controller
         }
 
         // Style headers
-        $headerRange = 'A1:'.chr(65 + count($headers) - 1).'1';
+        $lastCol = chr(65 + min(count($headers) - 1, 25));
+        $headerRange = "A1:{$lastCol}1";
         $sheet->getStyle($headerRange)->getFont()->setBold(true);
 
         // Auto-size columns
-        foreach (range('A', chr(65 + min(count($headers) - 1, 25))) as $col) {
+        foreach (range('A', $lastCol) as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
@@ -228,91 +326,22 @@ class ImportExportController extends Controller
     }
 
     /**
-     * Parse Excel file
+     * Parse Excel file with optional sheet name selection
      */
-    private function parseExcel(string $path): array
+    private function parseExcel(string $path, ?string $sheetName = null): array
     {
         $spreadsheet = IOFactory::load($path);
-        $sheet = $spreadsheet->getActiveSheet();
+
+        if ($sheetName) {
+            $sheet = $spreadsheet->getSheetByName($sheetName);
+            if (! $sheet) {
+                $sheet = $spreadsheet->getActiveSheet();
+            }
+        } else {
+            $sheet = $spreadsheet->getActiveSheet();
+        }
 
         return $sheet->toArray(null, true, true, false);
-    }
-
-    /**
-     * Get expected columns for import type
-     */
-    private function getExpectedColumns(string $type): array
-    {
-        return match ($type) {
-            'workitems' => [
-                'ref_no' => 'ref_no',
-                'reference' => 'ref_no',
-                'type' => 'type',
-                'activity' => 'activity',
-                'department' => 'department',
-                'description' => 'description',
-                'bau_or_transformative' => 'bau_or_transformative',
-                'bau' => 'bau_or_transformative',
-                'impact_level' => 'impact_level',
-                'impact' => 'impact_level',
-                'current_status' => 'current_status',
-                'status' => 'current_status',
-                'deadline' => 'deadline',
-                'due_date' => 'deadline',
-                'responsible_party' => 'responsible_party_id',
-                'owner' => 'responsible_party_id',
-                'tags' => 'tags',
-                'priority_item' => 'priority_item',
-                'priority' => 'priority_item',
-            ],
-            'suppliers' => [
-                'ref_no' => 'ref_no',
-                'reference' => 'ref_no',
-                'name' => 'name',
-                'supplier_name' => 'name',
-                'sage_category' => 'sage_category_id',
-                'category' => 'sage_category_id',
-                'location' => 'location',
-                'is_common_provider' => 'is_common_provider',
-                'common_provider' => 'is_common_provider',
-                'status' => 'status',
-                'entities' => 'entities',
-                'notes' => 'notes',
-            ],
-            'invoices' => [
-                'supplier_ref' => 'supplier_ref',
-                'supplier' => 'supplier_ref',
-                'invoice_ref' => 'invoice_ref',
-                'invoice_number' => 'invoice_ref',
-                'description' => 'description',
-                'amount' => 'amount',
-                'currency' => 'currency',
-                'invoice_date' => 'invoice_date',
-                'date' => 'invoice_date',
-                'due_date' => 'due_date',
-                'frequency' => 'frequency',
-                'status' => 'status',
-            ],
-            'risks' => [
-                'ref_no' => 'ref_no',
-                'reference' => 'ref_no',
-                'theme_code' => 'theme_code',
-                'theme' => 'theme_code',
-                'category_code' => 'category_code',
-                'category' => 'category_code',
-                'name' => 'name',
-                'description' => 'description',
-                'tier' => 'tier',
-                'owner' => 'owner_id',
-                'responsible_party' => 'responsible_party_id',
-                'financial_impact' => 'financial_impact',
-                'regulatory_impact' => 'regulatory_impact',
-                'reputational_impact' => 'reputational_impact',
-                'inherent_probability' => 'inherent_probability',
-                'probability' => 'inherent_probability',
-            ],
-            default => [],
-        };
     }
 
     /**
@@ -343,6 +372,10 @@ class ImportExportController extends Controller
                 'category_code' => 'required|string',
                 'name' => 'required|string',
             ],
+            'governance' => [
+                'ref_no' => 'required|string',
+                'department' => 'required|string',
+            ],
             default => [],
         };
     }
@@ -368,7 +401,7 @@ class ImportExportController extends Controller
     {
         return match ($type) {
             'workitems' => \App\Models\WorkItem::query()
-                ->with('responsibleParty')
+                ->with(['responsibleParty', 'departmentHead'])
                 ->get()
                 ->map(fn ($item) => [
                     'ref_no' => $item->ref_no,
@@ -376,15 +409,24 @@ class ImportExportController extends Controller
                     'activity' => $item->activity,
                     'department' => $item->department,
                     'description' => $item->description,
+                    'goal' => $item->goal,
                     'bau_or_transformative' => $item->bau_or_transformative?->value,
                     'impact_level' => $item->impact_level?->value,
                     'current_status' => $item->current_status?->value,
                     'rag_status' => $item->rag_status?->value,
                     'deadline' => $item->deadline?->toDateString(),
                     'completion_date' => $item->completion_date?->toDateString(),
+                    'monthly_update' => $item->monthly_update,
+                    'comments' => $item->comments,
+                    'update_frequency' => $item->update_frequency?->value,
                     'responsible_party' => $item->responsibleParty?->full_name,
+                    'department_head' => $item->departmentHead?->full_name,
                     'tags' => implode(', ', $item->tags ?? []),
                     'priority_item' => $item->priority_item ? 'Yes' : 'No',
+                    'cost_savings' => $item->cost_savings,
+                    'cost_efficiency_fte' => $item->cost_efficiency_fte,
+                    'expected_cost' => $item->expected_cost,
+                    'revenue_potential' => $item->revenue_potential,
                 ])
                 ->toArray(),
             'suppliers' => \App\Models\Supplier::query()
@@ -423,6 +465,25 @@ class ImportExportController extends Controller
                     'residual_risk_score' => $item->residual_risk_score,
                     'residual_rag' => $item->residual_rag?->value,
                     'appetite_status' => $item->appetite_status?->value,
+                ])
+                ->toArray(),
+            'governance' => \App\Models\GovernanceItem::query()
+                ->with('responsibleParty')
+                ->get()
+                ->map(fn ($item) => [
+                    'ref_no' => $item->ref_no,
+                    'activity' => $item->activity,
+                    'description' => $item->description,
+                    'department' => $item->department,
+                    'frequency' => $item->frequency?->value,
+                    'location' => $item->location?->value,
+                    'current_status' => $item->current_status?->value,
+                    'rag_status' => $item->rag_status?->value,
+                    'deadline' => $item->deadline?->toDateString(),
+                    'completion_date' => $item->completion_date?->toDateString(),
+                    'responsible_party' => $item->responsibleParty?->full_name,
+                    'monthly_update' => $item->monthly_update,
+                    'tags' => implode(', ', $item->tags ?? []),
                 ])
                 ->toArray(),
             default => [],

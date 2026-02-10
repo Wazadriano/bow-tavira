@@ -27,16 +27,26 @@ export interface WorkItem {
   activity: string | null
   department: string
   description: string
+  goal: string | null
   bau_or_transformative: 'bau' | 'transformative' | null
   impact_level: 'low' | 'medium' | 'high' | null
   current_status: 'not_started' | 'in_progress' | 'on_hold' | 'completed' | null
   rag_status: 'blue' | 'green' | 'amber' | 'red' | null
   deadline: string | null
   completion_date: string | null
+  monthly_update: string | null
+  comments: string | null
+  update_frequency: string | null
   responsible_party_id: number | null
   responsible_party: User | null
+  department_head_id: number | null
+  department_head: User | null
   tags: string[]
   priority_item: boolean
+  cost_savings: number | null
+  cost_efficiency_fte: number | null
+  expected_cost: number | null
+  revenue_potential: number | null
   created_at: string
   updated_at: string
 }

@@ -12,13 +12,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { FileUpload, ColumnMapper, PreviewTable, ImportProgress } from '@/components/import-export'
 import { useImportStore, type ImportType, targetFields } from '@/stores/import'
@@ -60,11 +55,18 @@ export default function ImportExportPage() {
     preview,
     mapping,
     progress,
+    sheets,
+    sheetInfo,
+    selectedSheet,
+    selectedSheets,
     isUploading,
     isPreviewing,
     isImporting,
     setImportType,
     setFile,
+    setSelectedSheet,
+    setSelectedSheets,
+    toggleAllImportable,
     uploadAndPreview,
     updateMapping,
     confirmImport,
@@ -102,13 +104,17 @@ export default function ImportExportPage() {
     }
   }
 
-  const canPreview = importType && file && !preview
+  const canPreview = importType && file && !preview && sheets.length === 0
   const canImport = preview && mapping.some((m) => m.targetField)
   const requiredFields = importType ? targetFields[importType].filter((f) => f.required) : []
   const mappedRequired = requiredFields.filter((f) =>
     mapping.some((m) => m.targetField === f.field)
   )
   const allRequiredMapped = mappedRequired.length === requiredFields.length
+
+  // Step numbering accounting for sheet selection step
+  const hasSheets = sheets.length > 1
+  const sheetStepOffset = hasSheets ? 1 : 0
 
   return (
     <div className="space-y-6">
@@ -223,18 +229,98 @@ export default function ImportExportPage() {
             </Card>
           )}
 
-          {/* Step 3: Column mapping */}
-          {preview && (
+          {/* Step 2.5: Sheet selection (only for multi-sheet Excel files) */}
+          {hasSheets && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm">
                     3
                   </span>
+                  Selection des onglets
+                </CardTitle>
+                <CardDescription>
+                  Le fichier contient {sheets.length} onglets. Selectionnez ceux a importer.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="select-all-importable"
+                    checked={sheetInfo.filter((s) => s.importable).every((s) => selectedSheets.includes(s.name))}
+                    onCheckedChange={() => toggleAllImportable()}
+                  />
+                  <label htmlFor="select-all-importable" className="text-sm font-medium cursor-pointer">
+                    Importer tous les onglets compatibles ({sheetInfo.filter((s) => s.importable).length})
+                  </label>
+                </div>
+                <div className="border-t pt-3 space-y-2">
+                  {(sheetInfo.length > 0 ? sheetInfo : sheets.map((s) => ({ name: s, columns: 0, rows: 0, importable: true }))).map((sheet) => (
+                    <div
+                      key={sheet.name}
+                      className={`flex items-center justify-between p-3 rounded-lg border ${
+                        !sheet.importable ? 'opacity-50 bg-muted' : ''
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <Checkbox
+                          id={`sheet-${sheet.name}`}
+                          disabled={!sheet.importable}
+                          checked={selectedSheets.includes(sheet.name)}
+                          onCheckedChange={(checked: boolean | "indeterminate") => {
+                            if (checked) {
+                              setSelectedSheets([...selectedSheets, sheet.name])
+                            } else {
+                              setSelectedSheets(selectedSheets.filter((s) => s !== sheet.name))
+                            }
+                          }}
+                        />
+                        <label htmlFor={`sheet-${sheet.name}`} className={`text-sm cursor-pointer ${!sheet.importable ? 'text-muted-foreground' : ''}`}>
+                          {sheet.name}
+                          {sheet.name === 'BOW List' && <span className="text-primary ml-1">(source primaire)</span>}
+                        </label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {sheet.rows > 0 && (
+                          <Badge variant="secondary" className="text-xs">
+                            {sheet.rows} lignes
+                          </Badge>
+                        )}
+                        {sheet.columns > 0 && (
+                          <Badge variant="outline" className="text-xs">
+                            {sheet.columns} cols
+                          </Badge>
+                        )}
+                        {!sheet.importable && (
+                          <Badge variant="destructive" className="text-xs">
+                            Non importable
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Step 3 (or 4): Column mapping */}
+          {preview && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm">
+                    {3 + sheetStepOffset}
+                  </span>
                   Mapping des colonnes
                 </CardTitle>
                 <CardDescription>
-                  Associez les colonnes de votre fichier aux champs du systeme
+                  Associez les colonnes de votre fichier aux champs du systeme.
+                  {mapping.filter((m) => m.detected).length > 0 && (
+                    <span className="ml-1 font-medium">
+                      {mapping.filter((m) => m.detected).length}/{mapping.length} colonnes auto-detectees.
+                    </span>
+                  )}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -247,13 +333,13 @@ export default function ImportExportPage() {
             </Card>
           )}
 
-          {/* Step 4: Preview data */}
+          {/* Step 4 (or 5): Preview data */}
           {preview && mapping.some((m) => m.targetField) && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm">
-                    4
+                    {4 + sheetStepOffset}
                   </span>
                   Apercu et validation
                 </CardTitle>
@@ -279,7 +365,7 @@ export default function ImportExportPage() {
                     ) : (
                       <>
                         <CheckCircle className="h-4 w-4 mr-2" />
-                        Lancer l&apos;import ({preview.valid_rows} lignes)
+                        Lancer l&apos;import ({preview.total_rows} lignes{selectedSheets.length > 1 ? `, ${selectedSheets.length} onglets` : ''})
                       </>
                     )}
                   </Button>

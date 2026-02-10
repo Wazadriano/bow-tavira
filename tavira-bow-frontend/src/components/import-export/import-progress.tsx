@@ -57,7 +57,7 @@ export function ImportProgress({ progress }: ImportProgressProps) {
 
       {(progress.status === 'importing' || progress.status === 'uploading') && (
         <Progress
-          value={progress.total > 0 ? (progress.processed / progress.total) * 100 : undefined}
+          value={progress.progress > 0 ? progress.progress : (progress.total > 0 ? (progress.processed / progress.total) * 100 : undefined)}
           className="h-2"
         />
       )}
