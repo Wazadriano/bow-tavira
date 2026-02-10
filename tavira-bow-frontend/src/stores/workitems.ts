@@ -150,16 +150,25 @@ export const useWorkItemsStore = create<WorkItemsState>((set, get) => ({
 
   // Fetch single item
   fetchById: async (id) => {
-    set({ isLoadingItem: true, error: null })
+    set({ isLoadingItem: true, error: null, selectedItem: null })
     try {
-      const response = await api.get<{ data: WorkItem }>(`/workitems/${id}`)
-      const item = response.data.data
+      const response = await api.get<{ work_item: WorkItem }>(`/workitems/${id}`)
+      const data = response.data as { work_item?: WorkItem } & Record<string, unknown>
+      const item = data.work_item ?? (data as unknown as WorkItem)
+      if (!item || typeof item !== 'object' || !('id' in item)) {
+        set({ error: 'Réponse invalide du serveur', isLoadingItem: false })
+        throw new Error('Invalid work item response')
+      }
       set({ selectedItem: item, isLoadingItem: false })
       return item
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : 'Failed to fetch work item'
-      set({ error: message, isLoadingItem: false })
+      const msg = error instanceof Error ? error.message : 'Impossible de charger la tâche'
+      const is404 = typeof error === 'object' && error !== null && (error as { response?: { status?: number } }).response?.status === 404
+      set({
+        error: is404 ? 'Cette tâche est introuvable ou a été supprimée.' : msg,
+        isLoadingItem: false,
+        selectedItem: null,
+      })
       throw error
     }
   },
@@ -168,8 +177,8 @@ export const useWorkItemsStore = create<WorkItemsState>((set, get) => ({
   create: async (data) => {
     set({ isSaving: true, error: null })
     try {
-      const response = await api.post<{ data: WorkItem }>('/workitems', data)
-      const newItem = response.data.data
+      const response = await api.post<{ work_item: WorkItem }>('/workitems', data)
+      const newItem = response.data.work_item
       set((state) => ({
         items: [newItem, ...state.items],
         isSaving: false,
@@ -187,11 +196,11 @@ export const useWorkItemsStore = create<WorkItemsState>((set, get) => ({
   update: async (id, data) => {
     set({ isSaving: true, error: null })
     try {
-      const response = await api.put<{ data: WorkItem }>(
+      const response = await api.put<{ work_item: WorkItem }>(
         `/workitems/${id}`,
         data
       )
-      const updatedItem = response.data.data
+      const updatedItem = response.data.work_item
       set((state) => ({
         items: state.items.map((item) =>
           item.id === id ? updatedItem : item
@@ -213,11 +222,11 @@ export const useWorkItemsStore = create<WorkItemsState>((set, get) => ({
   updateStatus: async (id, status) => {
     set({ isSaving: true, error: null })
     try {
-      const response = await api.patch<{ data: WorkItem }>(
-        `/workitems/${id}/status`,
-        { status }
+      const response = await api.put<{ work_item: WorkItem }>(
+        `/workitems/${id}`,
+        { current_status: status }
       )
-      const updatedItem = response.data.data
+      const updatedItem = response.data.work_item
       set((state) => ({
         items: state.items.map((item) =>
           item.id === id ? updatedItem : item
@@ -257,11 +266,13 @@ export const useWorkItemsStore = create<WorkItemsState>((set, get) => ({
 
   // Milestones
   fetchMilestones: async (workItemId) => {
+    set({ milestones: [] })
     try {
-      const response = await api.get<{ data: TaskMilestone[] }>(
+      const response = await api.get<TaskMilestone[]>(
         `/workitems/${workItemId}/milestones`
       )
-      set({ milestones: response.data.data })
+      const list = Array.isArray(response.data) ? response.data : []
+      set({ milestones: list })
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to fetch milestones'
@@ -271,11 +282,11 @@ export const useWorkItemsStore = create<WorkItemsState>((set, get) => ({
 
   createMilestone: async (workItemId, data) => {
     try {
-      const response = await api.post<{ data: TaskMilestone }>(
-        `/workitems/${workItemId}/milestones`,
-        data
+      const response = await api.post<TaskMilestone>(
+        `/milestones`,
+        { ...data, work_item_id: workItemId }
       )
-      const newMilestone = response.data.data
+      const newMilestone = response.data
       set((state) => ({
         milestones: [...state.milestones, newMilestone],
       }))
@@ -290,13 +301,13 @@ export const useWorkItemsStore = create<WorkItemsState>((set, get) => ({
 
   updateMilestone: async (milestoneId, data) => {
     try {
-      const response = await api.put<{ data: TaskMilestone }>(
+      const response = await api.put<TaskMilestone>(
         `/milestones/${milestoneId}`,
         data
       )
       set((state) => ({
         milestones: state.milestones.map((m) =>
-          m.id === milestoneId ? response.data.data : m
+          m.id === milestoneId ? response.data : m
         ),
       }))
     } catch (error: unknown) {
@@ -324,10 +335,10 @@ export const useWorkItemsStore = create<WorkItemsState>((set, get) => ({
   // Assignments
   fetchAssignments: async (workItemId) => {
     try {
-      const response = await api.get<{ data: TaskAssignment[] }>(
+      const response = await api.get<TaskAssignment[]>(
         `/workitems/${workItemId}/assignments`
       )
-      set({ assignments: response.data.data })
+      set({ assignments: response.data })
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to fetch assignments'
@@ -338,8 +349,8 @@ export const useWorkItemsStore = create<WorkItemsState>((set, get) => ({
   assignUser: async (workItemId, userId, type) => {
     try {
       await api.post(`/workitems/${workItemId}/assign/${userId}`, { type })
-      // Refresh assignments
-      get().fetchAssignments(workItemId)
+      // Refresh work item so selectedItem.assignments is updated
+      await get().fetchById(workItemId)
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to assign user'
@@ -351,9 +362,8 @@ export const useWorkItemsStore = create<WorkItemsState>((set, get) => ({
   unassignUser: async (workItemId, userId) => {
     try {
       await api.delete(`/workitems/${workItemId}/assign/${userId}`)
-      set((state) => ({
-        assignments: state.assignments.filter((a) => a.user_id !== userId),
-      }))
+      // Refresh work item so selectedItem.assignments is updated
+      await get().fetchById(workItemId)
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to unassign user'

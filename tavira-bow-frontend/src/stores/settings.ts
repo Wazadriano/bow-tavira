@@ -39,8 +39,20 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     set({ isLoading: true, error: null })
     try {
       const url = type ? `/settings/lists?type=${type}` : '/settings/lists'
-      const response = await api.get<{ data: SettingList[] }>(url)
-      set({ lists: response.data.data, isLoading: false })
+      const response = await api.get<{ settings: Record<string, SettingList[]> } | { data: SettingList[] } | SettingList[]>(url)
+      // Backend returns { data: [...] } when filtered by type, or { settings: { type: [...] } } grouped object
+      const data = response.data
+      let lists: SettingList[]
+      if (Array.isArray(data)) {
+        lists = data
+      } else if (data && typeof data === 'object' && 'data' in data && Array.isArray((data as { data: SettingList[] }).data)) {
+        lists = (data as { data: SettingList[] }).data
+      } else if (data && typeof data === 'object' && 'settings' in data) {
+        lists = Object.values((data as { settings: Record<string, SettingList[]> }).settings).flat()
+      } else {
+        lists = []
+      }
+      set({ lists, isLoading: false })
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to fetch settings lists'
@@ -51,11 +63,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   createList: async (data) => {
     set({ isSaving: true, error: null })
     try {
-      const response = await api.post<{ data: SettingList }>(
+      const response = await api.post<{ setting: SettingList }>(
         '/settings/lists',
         data
       )
-      const newItem = response.data.data
+      const newItem = response.data.setting
       set((state) => ({
         lists: [...state.lists, newItem],
         isSaving: false,
@@ -72,13 +84,13 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   updateList: async (id, data) => {
     set({ isSaving: true, error: null })
     try {
-      const response = await api.put<{ data: SettingList }>(
+      const response = await api.put<{ setting: SettingList }>(
         `/settings/lists/${id}`,
         data
       )
       set((state) => ({
         lists: state.lists.map((item) =>
-          item.id === id ? response.data.data : item
+          item.id === id ? response.data.setting : item
         ),
         isSaving: false,
       }))
@@ -110,10 +122,27 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   fetchSystemSettings: async () => {
     set({ isLoading: true, error: null })
     try {
-      const response = await api.get<{ data: SystemSetting[] }>(
+      const response = await api.get<Record<string, string> | SystemSetting[]>(
         '/settings/system'
       )
-      set({ systemSettings: response.data.data, isLoading: false })
+      const data = response.data
+      // Backend returns { key: value } flat object, convert to array
+      let settings: SystemSetting[]
+      if (Array.isArray(data)) {
+        settings = data
+      } else if (data && typeof data === 'object') {
+        settings = Object.entries(data).map(([key, value], index) => ({
+          id: index + 1,
+          key,
+          value: String(value),
+          type: 'string' as const,
+          description: null,
+          updated_at: new Date().toISOString(),
+        }))
+      } else {
+        settings = []
+      }
+      set({ systemSettings: settings, isLoading: false })
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to fetch system settings'
@@ -124,13 +153,13 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   updateSystemSetting: async (key, value) => {
     set({ isSaving: true, error: null })
     try {
-      const response = await api.put<{ data: SystemSetting }>(
+      await api.put(
         `/settings/system/${key}`,
         { value }
       )
       set((state) => ({
         systemSettings: state.systemSettings.map((item) =>
-          item.key === key ? response.data.data : item
+          item.key === key ? { ...item, value } : item
         ),
         isSaving: false,
       }))

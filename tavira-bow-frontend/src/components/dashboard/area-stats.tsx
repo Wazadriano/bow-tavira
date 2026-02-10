@@ -51,49 +51,7 @@ export function AreaStats() {
         const response = await api.get<AreaStatsResponse>('/dashboard/by-area')
         setStats(response.data.data)
       } catch {
-        // Fallback to mock data for demo
-        setStats([
-          {
-            department: 'IT',
-            total_tasks: 45,
-            completed: 32,
-            in_progress: 10,
-            overdue: 3,
-            completion_rate: 71,
-            trend: 'up',
-            rag_distribution: { blue: 12, green: 20, amber: 10, red: 3 },
-          },
-          {
-            department: 'Finance',
-            total_tasks: 28,
-            completed: 22,
-            in_progress: 4,
-            overdue: 2,
-            completion_rate: 79,
-            trend: 'up',
-            rag_distribution: { blue: 8, green: 14, amber: 4, red: 2 },
-          },
-          {
-            department: 'Operations',
-            total_tasks: 52,
-            completed: 35,
-            in_progress: 12,
-            overdue: 5,
-            completion_rate: 67,
-            trend: 'down',
-            rag_distribution: { blue: 10, green: 25, amber: 12, red: 5 },
-          },
-          {
-            department: 'Compliance',
-            total_tasks: 18,
-            completed: 15,
-            in_progress: 2,
-            overdue: 1,
-            completion_rate: 83,
-            trend: 'stable',
-            rag_distribution: { blue: 6, green: 9, amber: 2, red: 1 },
-          },
-        ])
+        setStats([])
       } finally {
         setIsLoading(false)
       }

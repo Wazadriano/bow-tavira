@@ -1,15 +1,16 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Header } from '@/components/layout/header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { RAGBadge } from '@/components/shared/rag-badge'
-import { PageLoading, ErrorState } from '@/components/shared'
+import { PageLoading, ErrorState, FileAttachmentsPanel } from '@/components/shared'
 import { useWorkItemsStore } from '@/stores/workitems'
 import { useUIStore } from '@/stores/ui'
 import { formatDate } from '@/lib/utils'
@@ -24,10 +25,14 @@ import {
   AlertCircle,
   FileText,
   Target,
+  Tag,
+  Plus,
+  X,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { DependenciesPanel } from '@/components/workitems/dependencies-panel'
 import { MilestonesPanel } from '@/components/workitems/milestones-panel'
+import { AssignmentPanel } from '@/components/workitems/assignment-panel'
 
 const STATUS_LABELS: Record<string, string> = {
   not_started: 'Not Started',
@@ -42,7 +47,10 @@ export default function WorkItemDetailPage() {
   const router = useRouter()
   const id = Number(params.id)
 
-  const { selectedItem, isLoadingItem, error, fetchById, remove } = useWorkItemsStore()
+  const { selectedItem, isLoadingItem, error, fetchById, remove, uploadFile, deleteFile, update } = useWorkItemsStore()
+  const assignments = selectedItem?.assignments ?? []
+  const [newTag, setNewTag] = useState('')
+  const [isSavingTags, setIsSavingTags] = useState(false)
   const { showConfirm } = useUIStore()
 
   useEffect(() => {
@@ -75,8 +83,8 @@ export default function WorkItemDetailPage() {
   if (error || !selectedItem) {
     return (
       <ErrorState
-        title="Work item not found"
-        description={error || "This work item does not exist or has been deleted."}
+        title="Tâche introuvable"
+        description={error || "Cette tâche n'existe pas ou vous n'avez pas les droits pour y accéder."}
         onRetry={() => fetchById(id)}
       />
     )
@@ -165,11 +173,28 @@ export default function WorkItemDetailPage() {
             {/* Dependencies */}
             <DependenciesPanel
               workItemId={item.id}
-              currentDependencies={[]}
+              currentDependencies={(item.dependencies || []).map((d) => d.depends_on).filter(Boolean)}
             />
 
-            {/* Milestones */}
-            <MilestonesPanel workItemId={item.id} />
+            {/* Assignments */}
+            <AssignmentPanel
+              workItemId={item.id}
+              currentAssignments={assignments}
+              onAssignmentsUpdated={() => fetchById(id)}
+            />
+
+            {/* Milestones (only for Transformative tasks, as in POC) */}
+            {item.bau_or_transformative === 'transformative' && (
+              <MilestonesPanel workItemId={item.id} />
+            )}
+
+            {/* File Attachments */}
+            <FileAttachmentsPanel
+              files={item.attachments || []}
+              onUpload={(file) => uploadFile(item.id, file)}
+              onDelete={(fileId) => deleteFile(item.id, fileId)}
+              downloadUrlPrefix={`/api/workitems/${item.id}/files`}
+            />
           </div>
 
           {/* Colonne laterale */}
@@ -225,6 +250,84 @@ export default function WorkItemDetailPage() {
                   <Badge variant="secondary" className="mt-1">
                     {item.department}
                   </Badge>
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-1">
+                    <Tag className="h-4 w-4" />
+                    Tags
+                  </h4>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {(item.tags ?? []).map((t) => (
+                      <Badge key={t} variant="outline" className="pr-1">
+                        {t}
+                        <button
+                          type="button"
+                          className="ml-1 rounded hover:bg-muted"
+                          disabled={isSavingTags}
+                          onClick={async () => {
+                            const next = (item.tags ?? []).filter((x) => x !== t)
+                            setIsSavingTags(true)
+                            try {
+                              await update(item.id, { tags: next })
+                              await fetchById(id)
+                              toast.success('Tag removed')
+                            } catch {
+                              toast.error('Error updating tags')
+                            } finally {
+                              setIsSavingTags(false)
+                            }
+                          }}
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                  <div className="flex gap-2 mt-2">
+                    <Input
+                      placeholder="New tag"
+                      value={newTag}
+                      onChange={(e) => setNewTag(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          const v = newTag.trim()
+                          if (v && !(item.tags ?? []).includes(v)) {
+                            update(item.id, { tags: [...(item.tags ?? []), v] }).then(() => {
+                              fetchById(id)
+                              setNewTag('')
+                              toast.success('Tag added')
+                            }).catch(() => toast.error('Error adding tag'))
+                          }
+                        }
+                      }}
+                      className="h-8"
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={!newTag.trim() || isSavingTags || (item.tags ?? []).includes(newTag.trim())}
+                      onClick={async () => {
+                        const v = newTag.trim()
+                        if (!v || (item.tags ?? []).includes(v)) return
+                        setIsSavingTags(true)
+                        try {
+                          await update(item.id, { tags: [...(item.tags ?? []), v] })
+                          await fetchById(id)
+                          setNewTag('')
+                          toast.success('Tag added')
+                        } catch {
+                          toast.error('Error adding tag')
+                        } finally {
+                          setIsSavingTags(false)
+                        }
+                      }}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
 
                 <div>

@@ -21,6 +21,7 @@ class SupplierInvoice extends Model
         'frequency',
         'status',
         'notes',
+        'sage_category_id',
     ];
 
     protected function casts(): array
@@ -42,6 +43,11 @@ class SupplierInvoice extends Model
         return $this->belongsTo(Supplier::class);
     }
 
+    public function sageCategory(): BelongsTo
+    {
+        return $this->belongsTo(SageCategory::class, 'sage_category_id');
+    }
+
     // ========== Scopes ==========
 
     public function scopePending($query)
@@ -61,6 +67,11 @@ class SupplierInvoice extends Model
     }
 
     // ========== Accessors ==========
+
+    public function getInvoiceRefAttribute(): ?string
+    {
+        return $this->attributes['invoice_ref'] ?? $this->attributes['invoice_number'] ?? null;
+    }
 
     public function getIsOverdueAttribute(): bool
     {

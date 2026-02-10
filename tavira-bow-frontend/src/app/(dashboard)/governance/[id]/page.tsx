@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { RAGBadge } from '@/components/shared/rag-badge'
-import { PageLoading, ErrorState, AccessManagementPanel } from '@/components/shared'
+import { PageLoading, ErrorState, AccessManagementPanel, FileAttachmentsPanel } from '@/components/shared'
 import { useGovernanceStore } from '@/stores/governance'
 import { useUIStore } from '@/stores/ui'
 import { formatDate } from '@/lib/utils'
@@ -49,7 +49,7 @@ export default function GovernanceDetailPage() {
   const router = useRouter()
   const id = Number(params.id)
 
-  const { selectedItem, isLoadingItem, error, fetchById, remove } = useGovernanceStore()
+  const { selectedItem, isLoadingItem, error, fetchById, remove, uploadFile, deleteFile } = useGovernanceStore()
   const { showConfirm } = useUIStore()
 
   useEffect(() => {
@@ -180,6 +180,14 @@ export default function GovernanceDetailPage() {
 
             {/* Milestones */}
             <GovernanceMilestonesPanel itemId={item.id} />
+
+            {/* File Attachments */}
+            <FileAttachmentsPanel
+              files={[]}
+              onUpload={(file) => uploadFile(item.id, file)}
+              onDelete={(fileId) => deleteFile(item.id, fileId)}
+              downloadUrlPrefix={`/api/governance/items/${item.id}/files`}
+            />
 
             {/* Access Management */}
             <AccessManagementPanel

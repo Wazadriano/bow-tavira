@@ -59,6 +59,7 @@ export function GovernanceForm({ item, mode }: GovernanceFormProps) {
     resolver: zodResolver(governanceSchema),
     defaultValues: item
       ? {
+          ref_no: item.ref_no || '',
           activity: item.activity || '',
           description: item.description || '',
           department: item.department || '',
@@ -67,6 +68,7 @@ export function GovernanceForm({ item, mode }: GovernanceFormProps) {
           responsible_party_id: item.responsible_party_id || undefined,
         }
       : {
+          ref_no: '',
           activity: '',
           description: '',
           department: '',
@@ -97,6 +99,18 @@ export function GovernanceForm({ item, mode }: GovernanceFormProps) {
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
+              <Label htmlFor="ref_no">Reference *</Label>
+              <Input
+                id="ref_no"
+                {...register('ref_no')}
+                placeholder="GOV-001"
+              />
+              {errors.ref_no && (
+                <p className="text-sm text-destructive">{errors.ref_no.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="activity">Activity *</Label>
               <Input
                 id="activity"
@@ -107,7 +121,9 @@ export function GovernanceForm({ item, mode }: GovernanceFormProps) {
                 <p className="text-sm text-destructive">{errors.activity.message}</p>
               )}
             </div>
+          </div>
 
+          <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="department">Department *</Label>
               <Select
@@ -132,7 +148,7 @@ export function GovernanceForm({ item, mode }: GovernanceFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">Description *</Label>
             <textarea
               id="description"
               {...register('description')}
@@ -140,6 +156,9 @@ export function GovernanceForm({ item, mode }: GovernanceFormProps) {
               className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               placeholder="Detailed description"
             />
+            {errors.description && (
+              <p className="text-sm text-destructive">{errors.description.message}</p>
+            )}
           </div>
         </CardContent>
       </Card>

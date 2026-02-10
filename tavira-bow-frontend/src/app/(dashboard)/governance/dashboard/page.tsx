@@ -36,31 +36,7 @@ export default function GovernanceDashboardPage() {
         const response = await api.get<{ data: GovernanceStats }>('/governance/dashboard/stats')
         setStats(response.data.data)
       } catch {
-        // Fallback mock data
-        setStats({
-          total_items: 48,
-          completed: 32,
-          pending: 12,
-          overdue: 4,
-          by_department: [
-            { name: 'Compliance', count: 18 },
-            { name: 'Finance', count: 12 },
-            { name: 'IT', count: 10 },
-            { name: 'Operations', count: 8 },
-          ],
-          by_frequency: [
-            { name: 'Monthly', count: 20 },
-            { name: 'Quarterly', count: 15 },
-            { name: 'Annually', count: 8 },
-            { name: 'Weekly', count: 5 },
-          ],
-          by_status: { completed: 32, in_progress: 8, pending: 4, overdue: 4 },
-          upcoming: [
-            { id: 1, title: 'Board Meeting Review', next_due: '2026-02-01', department: 'Compliance' },
-            { id: 2, title: 'Quarterly Report', next_due: '2026-02-05', department: 'Finance' },
-            { id: 3, title: 'Security Audit', next_due: '2026-02-10', department: 'IT' },
-          ],
-        })
+        setStats(null)
       } finally {
         setIsLoading(false)
       }

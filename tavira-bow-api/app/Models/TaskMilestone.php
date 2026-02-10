@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\RAGStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,18 +12,17 @@ class TaskMilestone extends Model
         'work_item_id',
         'title',
         'description',
-        'due_date',
-        'completion_date',
-        'rag_status',
+        'target_date',
+        'status',
         'order',
     ];
+
+    protected $appends = ['due_date', 'is_completed'];
 
     protected function casts(): array
     {
         return [
-            'due_date' => 'date',
-            'completion_date' => 'date',
-            'rag_status' => RAGStatus::class,
+            'target_date' => 'date',
             'order' => 'integer',
         ];
     }
@@ -50,18 +48,23 @@ class TaskMilestone extends Model
 
     public function scopeIncomplete($query)
     {
-        return $query->whereNull('completion_date');
+        return $query->where('status', '!=', 'Completed');
     }
 
-    // ========== Accessors ==========
+    // ========== Accessors (API compat: frontend expects due_date + is_completed) ==========
+
+    public function getDueDateAttribute(): ?string
+    {
+        return $this->target_date?->format('Y-m-d');
+    }
 
     public function getIsCompletedAttribute(): bool
     {
-        return $this->completion_date !== null;
+        return $this->status === 'Completed';
     }
 
     public function getIsOverdueAttribute(): bool
     {
-        return $this->due_date && $this->due_date->isPast() && ! $this->completion_date;
+        return $this->target_date && $this->target_date->isPast() && $this->status !== 'Completed';
     }
 }

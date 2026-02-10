@@ -31,17 +31,15 @@ interface GovernanceMilestonesPanelProps {
 }
 
 const STATUS_OPTIONS = [
-  { value: 'PENDING', label: 'Pending' },
-  { value: 'IN_PROGRESS', label: 'In Progress' },
-  { value: 'COMPLETED', label: 'Completed' },
-  { value: 'CANCELLED', label: 'Cancelled' },
+  { value: 'not_started', label: 'Not Started' },
+  { value: 'in_progress', label: 'In Progress' },
+  { value: 'completed', label: 'Completed' },
 ]
 
 const statusColors: Record<string, string> = {
-  PENDING: 'bg-blue-500',
-  IN_PROGRESS: 'bg-amber-500',
-  COMPLETED: 'bg-green-500',
-  CANCELLED: 'bg-gray-500',
+  not_started: 'bg-blue-500',
+  in_progress: 'bg-amber-500',
+  completed: 'bg-green-500',
 }
 
 export function GovernanceMilestonesPanel({ itemId }: GovernanceMilestonesPanelProps) {
@@ -50,7 +48,7 @@ export function GovernanceMilestonesPanel({ itemId }: GovernanceMilestonesPanelP
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [dueDate, setDueDate] = useState('')
-  const [status, setStatus] = useState('PENDING')
+  const [status, setStatus] = useState('not_started')
 
   const { milestones, fetchMilestones, createMilestone, updateMilestone, deleteMilestone } =
     useGovernanceStore()
@@ -74,7 +72,7 @@ export function GovernanceMilestonesPanel({ itemId }: GovernanceMilestonesPanelP
       setTitle('')
       setDescription('')
       setDueDate('')
-      setStatus('PENDING')
+      setStatus('not_started')
       setIsOpen(false)
     } catch {
       toast.error('Error creating milestone')

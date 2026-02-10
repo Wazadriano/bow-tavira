@@ -14,6 +14,10 @@ import { UserAvatarWithName } from '@/components/ui/user-avatar'
 import { ActionButtons } from '@/components/shared/action-buttons'
 import { get } from '@/lib/api'
 import type { Supplier, PaginatedResponse, SageCategory } from '@/types'
+import { useSuppliersStore } from '@/stores/suppliers'
+import { useUIStore } from '@/stores/ui'
+import { useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { Plus, Search, RotateCcw, ChevronDown, ChevronUp, Upload, FileText } from 'lucide-react'
 import {
   Select,
@@ -39,6 +43,9 @@ const LOCATION_OPTIONS = [
 
 export default function SuppliersPage() {
   const router = useRouter()
+  const queryClient = useQueryClient()
+  const { remove } = useSuppliersStore()
+  const { showConfirm } = useUIStore()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [locationFilter, setLocationFilter] = useState('all')
@@ -52,7 +59,7 @@ export default function SuppliersPage() {
 
   const { data: categories } = useQuery({
     queryKey: ['sage-categories'],
-    queryFn: () => get<{ data: SageCategory[] }>('/settings/sage-categories'),
+    queryFn: () => get<{ data: SageCategory[] }>('/sage-categories'),
   })
 
   // Filter data
@@ -163,10 +170,10 @@ export default function SuppliersPage() {
     {
       id: 'contracts',
       header: 'Contracts',
-      cell: () => (
+      cell: ({ row }) => (
         <Badge variant="secondary" className="font-mono">
           <FileText className="mr-1 h-3 w-3" />
-          0
+          {(row.original as Supplier & { contracts?: unknown[] }).contracts?.length || 0}
         </Badge>
       ),
     },
@@ -186,8 +193,20 @@ export default function SuppliersPage() {
           onView={() => router.push(`/suppliers/${row.original.id}`)}
           onEdit={() => router.push(`/suppliers/${row.original.id}/edit`)}
           onDelete={() => {
-            // TODO: Implement delete confirmation
-            console.log('Delete', row.original.id)
+            showConfirm({
+              title: 'Delete this supplier',
+              description: `Are you sure you want to delete "${row.original.name}"? This action is irreversible.`,
+              variant: 'destructive',
+              onConfirm: async () => {
+                try {
+                  await remove(row.original.id)
+                  toast.success('Supplier deleted')
+                  queryClient.invalidateQueries({ queryKey: ['suppliers'] })
+                } catch {
+                  toast.error('Error during deletion')
+                }
+              },
+            })
           }}
         />
       ),
@@ -295,7 +314,7 @@ export default function SuppliersPage() {
             </Badge>
 
             {/* Import CSV Button */}
-            <Button variant="outline">
+            <Button variant="outline" onClick={() => router.push('/import-export?type=suppliers')}>
               <Upload className="mr-2 h-4 w-4" />
               Import CSV
             </Button>

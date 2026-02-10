@@ -50,68 +50,11 @@ export default function RiskActionsPage() {
   useEffect(() => {
     const fetchActions = async () => {
       try {
-        const response = await api.get<{ data: RiskAction[] }>('/risks/actions')
-        setActions(response.data.data)
+        const response = await api.get<{ data: RiskAction[] }>('/risks/actions/all')
+        const list = response.data.data ?? response.data
+        setActions(Array.isArray(list) ? list : [])
       } catch {
-        // Fallback mock data
-        setActions([
-          {
-            id: 1,
-            title: 'Implement data encryption',
-            description: 'Encrypt all PII data at rest and in transit',
-            risk_id: 1,
-            risk_name: 'Data Privacy Non-Compliance',
-            owner: 'John Smith',
-            status: 'in_progress',
-            priority: 'high',
-            due_date: '2026-02-15',
-          },
-          {
-            id: 2,
-            title: 'Setup redundant systems',
-            description: 'Configure failover for critical systems',
-            risk_id: 2,
-            risk_name: 'System Availability',
-            owner: 'Sarah Johnson',
-            status: 'open',
-            priority: 'critical',
-            due_date: '2026-02-28',
-          },
-          {
-            id: 3,
-            title: 'Vendor assessment review',
-            description: 'Complete annual vendor security assessment',
-            risk_id: 3,
-            risk_name: 'Third Party Dependency',
-            owner: 'Mike Brown',
-            status: 'overdue',
-            priority: 'high',
-            due_date: '2026-01-15',
-          },
-          {
-            id: 4,
-            title: 'Update compliance documentation',
-            description: 'Review and update all regulatory compliance docs',
-            risk_id: 4,
-            risk_name: 'Regulatory Changes',
-            owner: 'Emily Davis',
-            status: 'completed',
-            priority: 'medium',
-            due_date: '2026-01-20',
-            completed_date: '2026-01-18',
-          },
-          {
-            id: 5,
-            title: 'Security awareness training',
-            description: 'Conduct training for all employees',
-            risk_id: 5,
-            risk_name: 'Human Error',
-            owner: 'Alex Wilson',
-            status: 'open',
-            priority: 'medium',
-            due_date: '2026-03-01',
-          },
-        ])
+        setActions([])
       } finally {
         setIsLoading(false)
       }
@@ -189,7 +132,7 @@ export default function RiskActionsPage() {
         title="Actions"
         description="Remediation actions management"
         actions={
-          <Button onClick={() => router.push('/risks/actions/new')}>
+          <Button variant="outline" disabled>
             <Plus className="h-4 w-4 mr-2" />
             New Action
           </Button>

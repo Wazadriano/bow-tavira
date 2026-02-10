@@ -115,7 +115,7 @@ export default function UserDetailPage() {
 
   const handleRemovePermission = async (permissionId: number) => {
     try {
-      await removePermission(permissionId)
+      await removePermission(id, permissionId)
       toast.success('Permission deleted')
     } catch {
       toast.error('Error during deletion')

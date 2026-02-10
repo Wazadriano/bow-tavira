@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Schema;
 
 class Risk extends Model
 {
@@ -150,10 +151,12 @@ class Risk extends Model
         $this->inherent_risk_score = $impact * $probability;
         $this->inherent_rag = $this->calculateRAG($this->inherent_risk_score);
 
-        // Calculate residual score based on control effectiveness
-        $controlEffectiveness = $this->controls()
-            ->whereNotNull('effectiveness_score')
-            ->avg('effectiveness_score') ?? 0;
+        $controlEffectiveness = 0;
+        if (Schema::hasColumn($this->controls()->getRelated()->getTable(), 'effectiveness_score')) {
+            $controlEffectiveness = $this->controls()
+                ->whereNotNull('effectiveness_score')
+                ->avg('effectiveness_score') ?? 0;
+        }
 
         $reduction = $controlEffectiveness / 100;
         $this->residual_risk_score = $this->inherent_risk_score * (1 - $reduction);

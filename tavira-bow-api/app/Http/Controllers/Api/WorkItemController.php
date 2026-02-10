@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreWorkItemRequest;
 use App\Http\Requests\UpdateWorkItemRequest;
 use App\Http\Resources\WorkItemResource;
+use App\Models\TaskDependency;
 use App\Models\WorkItem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -247,6 +248,47 @@ class WorkItemController extends Controller
                 ],
             ]),
         ]);
+    }
+
+    /**
+     * Add a dependency (work item depends on another)
+     */
+    public function addDependency(Request $request, WorkItem $workitem, WorkItem $dependency): JsonResponse
+    {
+        $this->authorize('update', $workitem);
+
+        if ($workitem->id === $dependency->id) {
+            return response()->json(['message' => 'Cannot depend on itself'], 422);
+        }
+
+        $existing = TaskDependency::where('work_item_id', $workitem->id)
+            ->where('depends_on_id', $dependency->id)
+            ->first();
+
+        if ($existing) {
+            return response()->json(['message' => 'Dependency already exists'], 409);
+        }
+
+        $dep = TaskDependency::create([
+            'work_item_id' => $workitem->id,
+            'depends_on_id' => $dependency->id,
+        ]);
+
+        return response()->json(['dependency' => $dep->load('dependsOn')], 201);
+    }
+
+    /**
+     * Remove a dependency
+     */
+    public function removeDependency(WorkItem $workitem, WorkItem $dependency): JsonResponse
+    {
+        $this->authorize('update', $workitem);
+
+        TaskDependency::where('work_item_id', $workitem->id)
+            ->where('depends_on_id', $dependency->id)
+            ->delete();
+
+        return response()->json(null, 204);
     }
 
     private function getRagColor(?string $rag): string

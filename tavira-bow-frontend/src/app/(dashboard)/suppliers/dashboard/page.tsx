@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { api } from '@/lib/api'
 import { safeDateString } from '@/lib/utils'
+import { ErrorState } from '@/components/shared'
 import {
   Truck,
   FileText,
@@ -41,39 +42,10 @@ export default function SuppliersDashboardPage() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await api.get<{ data: SupplierStats }>('/suppliers/dashboard/stats')
-        setStats(response.data.data)
+        const response = await api.get<{ data: SupplierStats }>('/suppliers-dashboard')
+        setStats(response.data.data ?? response.data)
       } catch {
-        // Fallback mock data
-        setStats({
-          total_suppliers: 67,
-          active_suppliers: 52,
-          total_contracts: 89,
-          expiring_soon: 8,
-          total_invoices: 234,
-          pending_invoices: 15,
-          by_location: [
-            { name: 'France', count: 28 },
-            { name: 'Belgium', count: 15 },
-            { name: 'Luxembourg', count: 12 },
-            { name: 'Germany', count: 8 },
-            { name: 'UK', count: 4 },
-          ],
-          by_category: [
-            { name: 'IT Services', count: 18 },
-            { name: 'Consulting', count: 14 },
-            { name: 'Software', count: 12 },
-            { name: 'Hardware', count: 10 },
-            { name: 'Telecom', count: 8 },
-            { name: 'Other', count: 5 },
-          ],
-          by_status: { active: 52, inactive: 10, pending: 5 },
-          expiring_contracts: [
-            { id: 1, name: 'IT Support Contract', supplier: 'TechCorp', end_date: '2026-02-15' },
-            { id: 2, name: 'Cloud Services', supplier: 'CloudPro', end_date: '2026-02-28' },
-            { id: 3, name: 'Security Audit', supplier: 'SecurIT', end_date: '2026-03-10' },
-          ],
-        })
+        setStats(null)
       } finally {
         setIsLoading(false)
       }
@@ -81,7 +53,7 @@ export default function SuppliersDashboardPage() {
     fetchStats()
   }, [])
 
-  if (isLoading || !stats) {
+  if (isLoading) {
     return (
       <>
         <Header title="Dashboard" description="Suppliers Statistics" />
@@ -93,6 +65,20 @@ export default function SuppliersDashboardPage() {
               ))}
             </div>
           </div>
+        </div>
+      </>
+    )
+  }
+
+  if (!stats) {
+    return (
+      <>
+        <Header title="Dashboard" description="Suppliers Statistics" />
+        <div className="p-6">
+          <ErrorState
+            title="Données indisponibles"
+            description="Impossible de charger les statistiques fournisseurs. Vérifiez la connexion à l'API."
+          />
         </div>
       </>
     )

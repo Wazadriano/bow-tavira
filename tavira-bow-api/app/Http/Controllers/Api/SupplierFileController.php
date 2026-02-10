@@ -50,4 +50,20 @@ class SupplierFileController extends Controller
 
         return response()->json(null, 204);
     }
+
+    public function download(Supplier $supplier, SupplierAttachment $file): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        if ($file->supplier_id !== $supplier->id) {
+            abort(404);
+        }
+
+        if (! Storage::disk('local')->exists($file->stored_filename)) {
+            abort(404, 'File not found');
+        }
+
+        return Storage::disk('local')->download(
+            $file->stored_filename,
+            $file->original_filename ?? basename($file->stored_filename)
+        );
+    }
 }

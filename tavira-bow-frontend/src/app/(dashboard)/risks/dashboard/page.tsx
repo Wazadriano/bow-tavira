@@ -6,6 +6,7 @@ import { BarChart, DoughnutChart, StatsCard, StatsGrid } from '@/components/char
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { api } from '@/lib/api'
+import { ErrorState } from '@/components/shared'
 import {
   Shield,
   AlertTriangle,
@@ -41,36 +42,10 @@ export default function RisksDashboardPage() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await api.get<{ data: RiskStats }>('/risks/dashboard/stats')
-        setStats(response.data.data)
+        const response = await api.get<{ data: RiskStats }>('/risks/dashboard')
+        setStats(response.data.data ?? response.data)
       } catch {
-        // Fallback mock data
-        setStats({
-          total_risks: 45,
-          high_risks: 8,
-          medium_risks: 22,
-          low_risks: 15,
-          open_actions: 34,
-          overdue_actions: 6,
-          by_theme: [
-            { name: 'Regulatory', code: 'REG', count: 12 },
-            { name: 'Governance', code: 'GOV', count: 10 },
-            { name: 'Operational', code: 'OPS', count: 15 },
-            { name: 'Business', code: 'BUS', count: 5 },
-            { name: 'Capital', code: 'CAP', count: 3 },
-          ],
-          by_tier: [
-            { name: 'Tier 1', count: 8 },
-            { name: 'Tier 2', count: 15 },
-            { name: 'Tier 3', count: 22 },
-          ],
-          by_rag: { blue: 10, green: 18, amber: 12, red: 5 },
-          appetite_breaches: [
-            { id: 1, name: 'Data Privacy Non-Compliance', theme: 'REG', score: 20, appetite: 12 },
-            { id: 2, name: 'System Availability', theme: 'OPS', score: 16, appetite: 10 },
-            { id: 3, name: 'Third Party Dependency', theme: 'OPS', score: 15, appetite: 12 },
-          ],
-        })
+        setStats(null)
       } finally {
         setIsLoading(false)
       }
@@ -78,7 +53,7 @@ export default function RisksDashboardPage() {
     fetchStats()
   }, [])
 
-  if (isLoading || !stats) {
+  if (isLoading) {
     return (
       <>
         <Header title="Dashboard" description="Statistiques Risk Management" />
@@ -90,6 +65,20 @@ export default function RisksDashboardPage() {
               ))}
             </div>
           </div>
+        </div>
+      </>
+    )
+  }
+
+  if (!stats) {
+    return (
+      <>
+        <Header title="Dashboard" description="Statistiques Risk Management" />
+        <div className="p-6">
+          <ErrorState
+            title="Données indisponibles"
+            description="Impossible de charger les statistiques risques. Vérifiez la connexion à l'API."
+          />
         </div>
       </>
     )

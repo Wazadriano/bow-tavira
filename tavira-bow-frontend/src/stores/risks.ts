@@ -154,8 +154,8 @@ export const useRisksStore = create<RisksState>((set, get) => ({
 
   fetchThemes: async () => {
     try {
-      const response = await api.get<{ data: RiskTheme[] }>('/risks/themes')
-      set({ themes: response.data.data })
+      const response = await api.get<RiskTheme[]>('/risks/themes')
+      set({ themes: response.data })
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to fetch themes'
@@ -168,8 +168,8 @@ export const useRisksStore = create<RisksState>((set, get) => ({
       const url = themeId
         ? `/risks/categories?theme_id=${themeId}`
         : '/risks/categories'
-      const response = await api.get<{ data: RiskCategory[] }>(url)
-      set({ categories: response.data.data })
+      const response = await api.get<RiskCategory[]>(url)
+      set({ categories: response.data })
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to fetch categories'
@@ -179,10 +179,10 @@ export const useRisksStore = create<RisksState>((set, get) => ({
 
   fetchControlLibrary: async () => {
     try {
-      const response = await api.get<{ data: ControlLibrary[] }>(
+      const response = await api.get<ControlLibrary[]>(
         '/risks/controls/library'
       )
-      set({ controlLibrary: response.data.data })
+      set({ controlLibrary: response.data })
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to fetch control library'
@@ -192,10 +192,10 @@ export const useRisksStore = create<RisksState>((set, get) => ({
 
   fetchHeatmap: async (type = 'inherent') => {
     try {
-      const response = await api.get<{ data: HeatmapData }>(
+      const response = await api.get<HeatmapData>(
         `/risks/heatmap?type=${type}`
       )
-      set({ heatmapData: response.data.data })
+      set({ heatmapData: response.data })
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to fetch heatmap'
@@ -205,10 +205,10 @@ export const useRisksStore = create<RisksState>((set, get) => ({
 
   fetchStats: async () => {
     try {
-      const response = await api.get<{ data: RiskDashboardStats }>(
-        '/risks/dashboard/stats'
+      const response = await api.get<RiskDashboardStats>(
+        '/risks/dashboard'
       )
-      set({ stats: response.data.data })
+      set({ stats: response.data })
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to fetch stats'
@@ -232,8 +232,8 @@ export const useRisksStore = create<RisksState>((set, get) => ({
   fetchById: async (id) => {
     set({ isLoadingItem: true, error: null })
     try {
-      const response = await api.get<{ data: Risk }>(`/risks/${id}`)
-      const item = response.data.data
+      const response = await api.get<{ risk: Risk }>(`/risks/${id}`)
+      const item = response.data.risk
       set({ selectedItem: item, isLoadingItem: false })
       return item
     } catch (error: unknown) {
@@ -247,8 +247,8 @@ export const useRisksStore = create<RisksState>((set, get) => ({
   create: async (data) => {
     set({ isSaving: true, error: null })
     try {
-      const response = await api.post<{ data: Risk }>('/risks', data)
-      const newItem = response.data.data
+      const response = await api.post<{ risk: Risk }>('/risks', data)
+      const newItem = response.data.risk
       set((state) => ({
         items: [newItem, ...state.items],
         isSaving: false,
@@ -265,8 +265,8 @@ export const useRisksStore = create<RisksState>((set, get) => ({
   update: async (id, data) => {
     set({ isSaving: true, error: null })
     try {
-      const response = await api.put<{ data: Risk }>(`/risks/${id}`, data)
-      const updatedItem = response.data.data
+      const response = await api.put<{ risk: Risk }>(`/risks/${id}`, data)
+      const updatedItem = response.data.risk
       set((state) => ({
         items: state.items.map((item) =>
           item.id === id ? updatedItem : item
@@ -303,8 +303,8 @@ export const useRisksStore = create<RisksState>((set, get) => ({
 
   recalculateScores: async (id) => {
     try {
-      const response = await api.post<{ data: Risk }>(`/risks/${id}/recalculate`)
-      const updatedItem = response.data.data
+      const response = await api.post<{ risk: Risk }>(`/risks/${id}/recalculate`)
+      const updatedItem = response.data.risk
       set((state) => ({
         items: state.items.map((item) =>
           item.id === id ? updatedItem : item
@@ -325,10 +325,10 @@ export const useRisksStore = create<RisksState>((set, get) => ({
   // Controls
   fetchControls: async (riskId) => {
     try {
-      const response = await api.get<{ data: RiskControl[] }>(
+      const response = await api.get<RiskControl[]>(
         `/risks/${riskId}/controls`
       )
-      set({ controls: response.data.data })
+      set({ controls: response.data })
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to fetch controls'
@@ -385,10 +385,10 @@ export const useRisksStore = create<RisksState>((set, get) => ({
   // Actions
   fetchActions: async (riskId) => {
     try {
-      const response = await api.get<{ data: RiskAction[] }>(
+      const response = await api.get<RiskAction[]>(
         `/risks/${riskId}/actions`
       )
-      set({ actions: response.data.data })
+      set({ actions: response.data })
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to fetch actions'
@@ -399,11 +399,11 @@ export const useRisksStore = create<RisksState>((set, get) => ({
   createAction: async (riskId, data) => {
     set({ isSaving: true })
     try {
-      const response = await api.post<{ data: RiskAction }>(
+      const response = await api.post<{ action: RiskAction }>(
         `/risks/${riskId}/actions`,
         data
       )
-      const newAction = response.data.data
+      const newAction = response.data.action
       set((state) => ({
         actions: [...state.actions, newAction],
         isSaving: false,
@@ -420,13 +420,13 @@ export const useRisksStore = create<RisksState>((set, get) => ({
   updateAction: async (riskId, actionId, data) => {
     set({ isSaving: true })
     try {
-      const response = await api.put<{ data: RiskAction }>(
+      const response = await api.put<{ action: RiskAction }>(
         `/risks/${riskId}/actions/${actionId}`,
         data
       )
       set((state) => ({
         actions: state.actions.map((a) =>
-          a.id === actionId ? response.data.data : a
+          a.id === actionId ? response.data.action : a
         ),
         isSaving: false,
       }))

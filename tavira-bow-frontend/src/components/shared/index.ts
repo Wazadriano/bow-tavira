@@ -22,3 +22,6 @@ export { ConfirmDialog } from './confirm-dialog'
 
 // Access Management
 export { AccessManagementPanel } from './access-management-panel'
+
+// File Attachments
+export { FileAttachmentsPanel } from './file-attachments-panel'
