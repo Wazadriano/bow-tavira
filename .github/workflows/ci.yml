@@ -114,6 +114,9 @@ jobs:
       - name: Prepare environment
         run: cp .env.testing .env
 
+      - name: Create storage directories
+        run: mkdir -p storage/framework/{cache/data,views,sessions,testing} storage/app/imports/temp
+
       - name: Run migrations
         run: php artisan migrate --force
 

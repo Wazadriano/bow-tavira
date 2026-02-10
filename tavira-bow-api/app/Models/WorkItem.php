@@ -20,6 +20,7 @@ class WorkItem extends Model
         'activity',
         'department',
         'description',
+        'goal',
         'bau_or_transformative',
         'impact_level',
         'current_status',
@@ -27,11 +28,17 @@ class WorkItem extends Model
         'deadline',
         'completion_date',
         'monthly_update',
+        'comments',
         'update_frequency',
         'responsible_party_id',
+        'department_head_id',
         'tags',
         'priority_item',
         'file_path',
+        'cost_savings',
+        'cost_efficiency_fte',
+        'expected_cost',
+        'revenue_potential',
     ];
 
     protected function casts(): array
@@ -46,6 +53,10 @@ class WorkItem extends Model
             'completion_date' => 'date',
             'tags' => 'array',
             'priority_item' => 'boolean',
+            'cost_savings' => 'decimal:2',
+            'cost_efficiency_fte' => 'decimal:2',
+            'expected_cost' => 'decimal:2',
+            'revenue_potential' => 'decimal:2',
         ];
     }
 
@@ -54,6 +65,11 @@ class WorkItem extends Model
     public function responsibleParty(): BelongsTo
     {
         return $this->belongsTo(User::class, 'responsible_party_id');
+    }
+
+    public function departmentHead(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'department_head_id');
     }
 
     public function dependencies(): HasMany

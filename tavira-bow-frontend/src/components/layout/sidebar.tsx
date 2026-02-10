@@ -18,6 +18,7 @@ import {
   Users,
   UserCog,
   Settings,
+  FileSpreadsheet,
   ChevronDown,
   ChevronLeft,
   LogOut,
@@ -79,6 +80,7 @@ const navSections: NavSection[] = [
   {
     title: 'MANAGEMENT',
     items: [
+      { name: 'Import / Export', href: '/import-export', icon: FileSpreadsheet },
       { name: 'Teams', href: '/teams', icon: Users },
       { name: 'Users', href: '/users', icon: UserCog },
       { name: 'Settings', href: '/settings', icon: Settings },
