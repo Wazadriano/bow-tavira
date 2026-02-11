@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Sidebar } from '@/components/layout/sidebar'
+import { CommandPalette } from '@/components/layout/command-palette'
 import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { useAuthHydrated, useAuthIsAuthenticated, useAuthIsLoading, useAuthActions } from '@/stores/auth'
 
@@ -48,6 +49,7 @@ export default function DashboardLayout({
     <div className="flex h-screen">
       <Sidebar />
       <main className="flex-1 overflow-auto">{children}</main>
+      <CommandPalette />
       <ConfirmDialog />
     </div>
   )

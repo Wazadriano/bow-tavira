@@ -7,9 +7,13 @@ use App\Enums\SupplierStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Supplier extends Model
 {
+    use LogsActivity;
+
     protected $fillable = [
         'name',
         'contact_name',
@@ -33,6 +37,14 @@ class Supplier extends Model
             'status' => SupplierStatus::class,
             'tags' => 'array',
         ];
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['name', 'status', 'location'])
+            ->logOnlyDirty()
+            ->useLogName('suppliers');
     }
 
     // ========== Relationships ==========

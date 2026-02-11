@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AuditController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ControlLibraryController;
 use App\Http\Controllers\Api\CurrencyController;
@@ -9,6 +10,8 @@ use App\Http\Controllers\Api\GovernanceFileController;
 use App\Http\Controllers\Api\GovernanceMilestoneController;
 use App\Http\Controllers\Api\ImportExportController;
 use App\Http\Controllers\Api\MilestoneController;
+use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\RiskActionController;
 use App\Http\Controllers\Api\RiskCategoryController;
 use App\Http\Controllers\Api\RiskControlController;
@@ -308,8 +311,34 @@ Route::middleware(['auth:sanctum', EnsureTwoFactorComplete::class])->group(funct
     });
 
     // ----------------------------------------
-    // Notifications (Admin)
+    // Reports (PDF)
     // ----------------------------------------
-    Route::post('/notifications/send-reminders', [DashboardController::class, 'sendReminders'])
-        ->middleware('ability:admin');
+    Route::prefix('reports')->group(function () {
+        Route::get('/work-items', [ReportController::class, 'workItemsReport']);
+        Route::get('/risks', [ReportController::class, 'risksReport']);
+        Route::get('/suppliers', [ReportController::class, 'suppliersReport']);
+        Route::get('/governance', [ReportController::class, 'governanceReport']);
+    });
+
+    // ----------------------------------------
+    // Audit Trail
+    // ----------------------------------------
+    Route::prefix('audit')->group(function () {
+        Route::get('/', [AuditController::class, 'index']);
+        Route::get('/stats', [AuditController::class, 'stats']);
+        Route::get('/{type}/{id}', [AuditController::class, 'forSubject']);
+    });
+
+    // ----------------------------------------
+    // Notifications
+    // ----------------------------------------
+    Route::prefix('notifications')->group(function () {
+        Route::get('/', [NotificationController::class, 'index']);
+        Route::get('/unread-count', [NotificationController::class, 'unreadCount']);
+        Route::put('/read-all', [NotificationController::class, 'markAllRead']);
+        Route::put('/{id}/read', [NotificationController::class, 'markRead']);
+        Route::delete('/{id}', [NotificationController::class, 'destroy']);
+        Route::post('/send-reminders', [DashboardController::class, 'sendReminders'])
+            ->middleware('ability:admin');
+    });
 });

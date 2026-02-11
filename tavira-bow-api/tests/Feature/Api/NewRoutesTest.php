@@ -34,7 +34,14 @@ it('returns paginated list from GET /api/contracts', function () {
 });
 
 it('returns paginated list from GET /api/risks/actions/all', function () {
-    $category = RiskCategory::first();
+    $theme = \App\Models\RiskTheme::firstOrCreate(
+        ['code' => 'OPS'],
+        ['name' => 'Operational', 'board_appetite' => 3, 'order' => 1]
+    );
+    $category = RiskCategory::firstOrCreate(
+        ['code' => 'P-OPS-01'],
+        ['theme_id' => $theme->id, 'name' => 'Process Risk', 'order' => 0, 'is_active' => true]
+    );
     $risk = Risk::create([
         'ref_no' => 'R-001',
         'category_id' => $category->id,
@@ -55,7 +62,14 @@ it('returns paginated list from GET /api/risks/actions/all', function () {
 });
 
 it('recalculates single risk from POST /api/risks/{id}/recalculate', function () {
-    $category = RiskCategory::first();
+    $theme = \App\Models\RiskTheme::firstOrCreate(
+        ['code' => 'OPS'],
+        ['name' => 'Operational', 'board_appetite' => 3, 'order' => 1]
+    );
+    $category = RiskCategory::firstOrCreate(
+        ['code' => 'P-OPS-01'],
+        ['theme_id' => $theme->id, 'name' => 'Process Risk', 'order' => 0, 'is_active' => true]
+    );
     $risk = Risk::create([
         'ref_no' => 'R-RECALC',
         'category_id' => $category->id,

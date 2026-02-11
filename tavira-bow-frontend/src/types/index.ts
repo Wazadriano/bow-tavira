@@ -580,14 +580,29 @@ export interface ExportOptions {
 }
 
 // Notification types
-export interface Notification {
+export interface AppNotification {
   id: string
-  type: 'info' | 'warning' | 'error' | 'success'
-  title: string
-  message: string
-  read: boolean
+  type: string
+  notifiable_type: string
+  notifiable_id: number
+  data: {
+    type: string
+    message: string
+    [key: string]: unknown
+  }
+  read_at: string | null
   created_at: string
-  link?: string
+  updated_at: string
+}
+
+export interface NotificationListResponse {
+  notifications: AppNotification[]
+  unread_count: number
+  meta: {
+    current_page: number
+    last_page: number
+    total: number
+  }
 }
 
 // Form data types

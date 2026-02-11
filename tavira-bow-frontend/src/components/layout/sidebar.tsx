@@ -15,17 +15,22 @@ import {
   AlertTriangle,
   Grid3X3,
   Zap,
+  Columns3,
+  GanttChart,
+  BarChart3,
   ShieldCheck,
   Users,
   UserCog,
   Settings,
   FileSpreadsheet,
+  ClipboardList,
   ChevronDown,
   ChevronLeft,
   LogOut,
   Moon,
   Sun,
   Lock,
+  Bell,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -47,6 +52,9 @@ const navSections: NavSection[] = [
     title: 'BOOK OF WORK',
     items: [
       { name: 'Work Items', href: '/tasks', icon: CheckSquare },
+      { name: 'Kanban', href: '/tasks/kanban', icon: Columns3 },
+      { name: 'Gantt', href: '/tasks/gantt', icon: GanttChart },
+      { name: 'Workload', href: '/tasks/workload', icon: BarChart3 },
       { name: 'Dashboard', href: '/tasks/dashboard', icon: LayoutDashboard },
       { name: 'Calendar', href: '/tasks/calendar', icon: Calendar },
     ],
@@ -84,6 +92,8 @@ const navSections: NavSection[] = [
     title: 'MANAGEMENT',
     items: [
       { name: 'Import / Export', href: '/import-export', icon: FileSpreadsheet },
+      { name: 'Audit Trail', href: '/audit', icon: ClipboardList },
+      { name: 'Notifications', href: '/notifications', icon: Bell },
       { name: 'Teams', href: '/teams', icon: Users },
       { name: 'Users', href: '/users', icon: UserCog },
       { name: 'Settings', href: '/settings', icon: Settings },

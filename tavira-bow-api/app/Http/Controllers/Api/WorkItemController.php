@@ -10,6 +10,7 @@ use App\Models\TaskAssignment;
 use App\Models\TaskDependency;
 use App\Models\User;
 use App\Models\WorkItem;
+use App\Notifications\TaskAssignedNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -303,6 +304,8 @@ class WorkItemController extends Controller
             'user_id' => $user->id,
             'assignment_type' => $request->get('type', 'member'),
         ]);
+
+        $user->notify(new TaskAssignedNotification($workitem, $request->user()));
 
         return response()->json([
             'message' => 'User assigned successfully',

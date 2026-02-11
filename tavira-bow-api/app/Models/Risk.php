@@ -10,9 +10,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Schema;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Risk extends Model
 {
+    use LogsActivity;
+
     protected $fillable = [
         'category_id',
         'ref_no',
@@ -49,6 +53,14 @@ class Risk extends Model
             'appetite_status' => AppetiteStatus::class,
             'is_active' => 'boolean',
         ];
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['inherent_risk_score', 'residual_risk_score', 'inherent_rag', 'residual_rag', 'appetite_status', 'tier'])
+            ->logOnlyDirty()
+            ->useLogName('risks');
     }
 
     // ========== Relationships ==========

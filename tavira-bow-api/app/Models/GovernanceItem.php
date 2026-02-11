@@ -10,9 +10,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class GovernanceItem extends Model
 {
+    use LogsActivity;
+
     protected $fillable = [
         'ref_no',
         'activity',
@@ -41,6 +45,14 @@ class GovernanceItem extends Model
             'completion_date' => 'date',
             'tags' => 'array',
         ];
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['current_status', 'rag_status', 'deadline', 'responsible_party_id'])
+            ->logOnlyDirty()
+            ->useLogName('governance');
     }
 
     // ========== Relationships ==========

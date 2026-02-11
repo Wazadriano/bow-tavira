@@ -85,8 +85,16 @@ export function GovernanceForm({ item, mode }: GovernanceFormProps) {
         toast.success('Governance item updated')
       }
       router.push('/governance')
-    } catch {
-      toast.error('An error occurred')
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { status?: number; data?: { message?: string; errors?: Record<string, string[]> } } }
+      if (axiosError.response?.status === 422 && axiosError.response.data?.errors) {
+        const serverErrors = axiosError.response.data.errors
+        Object.entries(serverErrors).forEach(([field, messages]) => {
+          toast.error(`${field}: ${messages.join(', ')}`)
+        })
+      } else {
+        toast.error(axiosError.response?.data?.message || 'An error occurred')
+      }
     }
   }
 
