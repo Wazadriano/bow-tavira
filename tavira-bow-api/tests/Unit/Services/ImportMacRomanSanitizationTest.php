@@ -22,7 +22,7 @@ it('replaces MacRoman en-dash artifact', function () {
 });
 
 it('does not alter valid French characters', function () {
-    $french = "hotel controle evaluation etat";
+    $french = 'hotel controle evaluation etat';
     expect($this->service->fixMacRomanArtifacts($french))->toBe($french);
 });
 
@@ -34,7 +34,7 @@ it('does not alter clean ASCII text', function () {
 it('sanitizes Excel data array', function () {
     $data = [
         ['Header A', 'Header B'],
-        ["value with \u{00D5}", "clean value"],
+        ["value with \u{00D5}", 'clean value'],
         [null, 42],
     ];
 
