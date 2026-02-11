@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreWorkItemRequest;
 use App\Http\Requests\UpdateWorkItemRequest;
 use App\Http\Resources\WorkItemResource;
+use App\Models\TaskAssignment;
 use App\Models\TaskDependency;
+use App\Models\User;
 use App\Models\WorkItem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -275,6 +277,55 @@ class WorkItemController extends Controller
         ]);
 
         return response()->json(['dependency' => $dep->load('dependsOn')], 201);
+    }
+
+    /**
+     * Assign a user to a work item
+     */
+    public function assign(Request $request, WorkItem $workitem, User $user): JsonResponse
+    {
+        $this->authorize('update', $workitem);
+
+        $request->validate([
+            'type' => 'sometimes|string|in:owner,member',
+        ]);
+
+        $existing = TaskAssignment::where('work_item_id', $workitem->id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if ($existing) {
+            return response()->json(['message' => 'User already assigned'], 409);
+        }
+
+        $assignment = TaskAssignment::create([
+            'work_item_id' => $workitem->id,
+            'user_id' => $user->id,
+            'assignment_type' => $request->get('type', 'member'),
+        ]);
+
+        return response()->json([
+            'message' => 'User assigned successfully',
+            'assignment' => $assignment->load('user'),
+        ], 201);
+    }
+
+    /**
+     * Unassign a user from a work item
+     */
+    public function unassign(WorkItem $workitem, User $user): JsonResponse
+    {
+        $this->authorize('update', $workitem);
+
+        $deleted = TaskAssignment::where('work_item_id', $workitem->id)
+            ->where('user_id', $user->id)
+            ->delete();
+
+        if (! $deleted) {
+            return response()->json(['message' => 'Assignment not found'], 404);
+        }
+
+        return response()->json(null, 204);
     }
 
     /**
