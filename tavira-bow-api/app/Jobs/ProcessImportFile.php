@@ -256,7 +256,11 @@ class ProcessImportFile implements ShouldQueue
             $sheet = $spreadsheet->getActiveSheet();
         }
 
-        return $sheet->toArray(null, true, true, false);
+        $data = $sheet->toArray(null, true, true, false);
+
+        $service = app(ImportNormalizationService::class);
+
+        return $service->sanitizeExcelData($data);
     }
 
     private function mapRowToFields(array $row): array

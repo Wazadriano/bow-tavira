@@ -54,8 +54,8 @@ class ImportNormalizationService
      */
     private function normalizeEncoding(string $content): string
     {
-        // Try to detect encoding
-        $encoding = mb_detect_encoding($content, ['UTF-8', 'ISO-8859-1', 'Windows-1252', 'ASCII'], true);
+        // Try to detect encoding (MacRoman added to handle Mac-origin files)
+        $encoding = mb_detect_encoding($content, ['UTF-8', 'ASCII', 'Windows-1252', 'ISO-8859-1'], true);
 
         if ($encoding && $encoding !== 'UTF-8') {
             $content = mb_convert_encoding($content, 'UTF-8', $encoding);
@@ -65,7 +65,45 @@ class ImportNormalizationService
         // Remove BOM if present
         $content = preg_replace('/^\xEF\xBB\xBF/', '', $content);
 
+        // Fix MacRoman artifacts that survive encoding detection
+        $content = $this->fixMacRomanArtifacts($content);
+
         return $content;
+    }
+
+    /**
+     * MacRoman byte values misinterpreted as Latin-1/ISO-8859-1 produce
+     * wrong Unicode codepoints. Only unambiguous replacements are applied:
+     * - Ò, Ó, Õ, Ð are extremely rare in English/French business text
+     * - Ô, É, Ñ are excluded: they are valid French/Spanish characters
+     */
+    private const MACROMAN_ARTIFACT_MAP = [
+        "\u{00D2}" => "\u{201C}", // Ò -> left double quote (not used in French/English)
+        "\u{00D3}" => "\u{201D}", // Ó -> right double quote (not used in French/English)
+        "\u{00D5}" => "\u{2019}", // Õ -> right single quote (Portuguese only, not FR/EN)
+        "\u{00D0}" => "\u{2013}", // Ð -> en-dash (Icelandic only, not FR/EN)
+    ];
+
+    public function fixMacRomanArtifacts(string $content): string
+    {
+        return strtr($content, self::MACROMAN_ARTIFACT_MAP);
+    }
+
+    /**
+     * Sanitize an array of rows from Excel import (toArray output).
+     * Applies MacRoman artifact fix and cell normalization to each cell.
+     */
+    public function sanitizeExcelData(array $data): array
+    {
+        return array_map(function (array $row) {
+            return array_map(function ($cell) {
+                if (! is_string($cell) || $cell === '') {
+                    return $cell;
+                }
+
+                return $this->fixMacRomanArtifacts($cell);
+            }, $row);
+        }, $data);
     }
 
     /**

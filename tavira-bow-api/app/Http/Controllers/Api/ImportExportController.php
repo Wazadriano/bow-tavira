@@ -39,7 +39,8 @@ class ImportExportController extends Controller
 
         // Parse file content
         if (in_array($extension, ['xlsx', 'xls'])) {
-            $spreadsheet = IOFactory::load($file->getPathname());
+            // Suppress PhpSpreadsheet warnings on complex Excel files with empty XML parts
+            $spreadsheet = @IOFactory::load($file->getPathname());
             $sheets = $spreadsheet->getSheetNames();
 
             // Build sheet_info for each sheet
@@ -65,7 +66,12 @@ class ImportExportController extends Controller
                 $selectedSheet = $bowListIndex !== false ? 'BOW List' : $sheets[0];
             }
 
-            $data = $this->parseExcel($file->getPathname(), $selectedSheet);
+            // Get data from selected sheet (reuse loaded spreadsheet)
+            $activeSheet = $selectedSheet
+                ? ($spreadsheet->getSheetByName($selectedSheet) ?? $spreadsheet->getActiveSheet())
+                : $spreadsheet->getActiveSheet();
+            $data = $activeSheet->toArray(null, true, true, false);
+            $data = $this->importService->sanitizeExcelData($data);
         } else {
             $content = file_get_contents($file->getPathname());
             $data = $this->importService->parseCSV($content);
@@ -338,7 +344,7 @@ class ImportExportController extends Controller
      */
     private function parseExcel(string $path, ?string $sheetName = null): array
     {
-        $spreadsheet = IOFactory::load($path);
+        $spreadsheet = @IOFactory::load($path);
 
         if ($sheetName) {
             $sheet = $spreadsheet->getSheetByName($sheetName);
