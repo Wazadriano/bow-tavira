@@ -6,6 +6,8 @@ use App\Enums\RAGStatus;
 use App\Enums\RiskAppetiteStatus;
 use App\Models\Risk;
 use App\Models\RiskCategory;
+use App\Models\User;
+use App\Notifications\RiskThresholdBreachedNotification;
 use Illuminate\Support\Collection;
 
 class RiskScoringService
@@ -136,9 +138,18 @@ class RiskScoringService
         $risk->residual_risk_score = $this->calculateResidualScore($risk);
         $risk->residual_rag = $this->getRAGFromScore($risk->residual_risk_score);
 
+        $previousAppetite = $risk->appetite_status;
         $risk->appetite_status = $this->calculateAppetiteStatus($risk);
 
         $risk->save();
+
+        // Notify when appetite becomes EXCEEDED
+        if (
+            $risk->appetite_status === RiskAppetiteStatus::EXCEEDED
+            && $previousAppetite !== RiskAppetiteStatus::EXCEEDED
+        ) {
+            $this->notifyRiskThresholdBreached($risk);
+        }
 
         return $risk;
     }
@@ -348,5 +359,20 @@ class RiskScoringService
     public function getRAGThresholds(): array
     {
         return self::RAG_THRESHOLDS;
+    }
+
+    private function notifyRiskThresholdBreached(Risk $risk): void
+    {
+        $owner = $risk->owner;
+        $admins = User::where('role', 'admin')->where('is_active', true)->get();
+
+        $recipients = $admins;
+        if ($owner && ! $admins->contains('id', $owner->id)) {
+            $recipients = $admins->push($owner);
+        }
+
+        foreach ($recipients as $user) {
+            $user->notify(new RiskThresholdBreachedNotification($risk, 'exceeded'));
+        }
     }
 }

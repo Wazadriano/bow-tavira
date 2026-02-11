@@ -3,6 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Models\SupplierContract;
+use App\Models\User;
+use App\Notifications\ContractExpiringNotification;
 use Illuminate\Console\Command;
 
 class ContractExpiryAlertsCommand extends Command
@@ -26,14 +28,22 @@ class ContractExpiryAlertsCommand extends Command
             return Command::SUCCESS;
         }
 
-        $this->info('Contract expiration alerts ('.$contracts->count().' contract(s) expiring within '.$days.' days):');
+        $admins = User::where('role', 'admin')->where('is_active', true)->get();
+        $totalSent = 0;
+
         foreach ($contracts as $contract) {
+            $daysUntilExpiry = $contract->days_until_expiry ?? $days;
+
+            foreach ($admins as $admin) {
+                $admin->notify(new ContractExpiringNotification($contract, $daysUntilExpiry));
+                $totalSent++;
+            }
+
             $supplierName = $contract->supplier?->name ?? 'N/A';
-            $this->line("  - [{$contract->contract_ref}] {$supplierName} - expires in {$contract->days_until_expiry} days (".$contract->end_date?->toDateString().')');
+            $this->line("  - [{$contract->contract_ref}] {$supplierName} - expires in {$daysUntilExpiry} days (".$contract->end_date?->toDateString().')');
         }
 
-        // Optional: dispatch notifications (email, in-app) when notification system exists
-        // event(new ContractExpiringSoonEvent($contracts));
+        $this->info("Contract alerts sent: {$totalSent} notification(s) for {$contracts->count()} contract(s).");
 
         return Command::SUCCESS;
     }

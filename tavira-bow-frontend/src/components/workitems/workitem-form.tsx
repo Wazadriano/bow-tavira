@@ -20,7 +20,9 @@ import type { WorkItemFormData } from '@/types'
 import { useWorkItemsStore } from '@/stores/workitems'
 import { get } from '@/lib/api'
 import type { WorkItem, User, SettingList } from '@/types'
-import { Loader2, Info } from 'lucide-react'
+import { Loader2, Info, X } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { MilestonesPanel } from './milestones-panel'
 
@@ -104,13 +106,35 @@ export function WorkItemForm({ workItem, mode }: WorkItemFormProps) {
         toast.success('Work item updated successfully')
       }
       router.push('/tasks')
-    } catch {
-      toast.error('An error occurred')
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { status?: number; data?: { message?: string; errors?: Record<string, string[]> } } }
+      if (axiosError.response?.status === 422 && axiosError.response.data?.errors) {
+        const serverErrors = axiosError.response.data.errors
+        Object.entries(serverErrors).forEach(([field, messages]) => {
+          toast.error(`${field}: ${messages.join(', ')}`)
+        })
+      } else {
+        toast.error(axiosError.response?.data?.message || 'An error occurred')
+      }
     }
   }
 
+  const [tagInput, setTagInput] = useState('')
   const watchStatus = watch('current_status')
   const watchBauOrTransformative = watch('bau_or_transformative')
+  const watchTags = watch('tags') || []
+
+  const addTag = () => {
+    const tag = tagInput.trim()
+    if (tag && !watchTags.includes(tag)) {
+      setValue('tags', [...watchTags, tag])
+    }
+    setTagInput('')
+  }
+
+  const removeTag = (tag: string) => {
+    setValue('tags', watchTags.filter((t) => t !== tag))
+  }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -296,6 +320,41 @@ export function WorkItemForm({ workItem, mode }: WorkItemFormProps) {
               />
               <span className="text-sm font-medium">Priority Item</span>
             </label>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Tags</Label>
+            <div className="flex flex-wrap gap-1 mb-2">
+              {watchTags.map((tag) => (
+                <Badge key={tag} variant="secondary" className="gap-1">
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => removeTag(tag)}
+                    className="ml-1 hover:text-destructive"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    addTag()
+                  }
+                }}
+                placeholder="Add a tag and press Enter"
+                className="flex-1"
+              />
+              <Button type="button" variant="outline" size="sm" onClick={addTag}>
+                Add
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
