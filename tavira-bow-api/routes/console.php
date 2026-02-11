@@ -40,3 +40,23 @@ Schedule::command('bow:recalculate-dashboard')
 Schedule::command('activitylog:clean')
     ->monthly()
     ->description('Clean old activity logs');
+
+// Database backup daily at 02:00 AM
+Schedule::command('backup:run --only-db')
+    ->dailyAt('02:00')
+    ->description('Run daily database backup');
+
+// Full backup weekly on Sunday at 03:00 AM
+Schedule::command('backup:run')
+    ->weeklyOn(0, '03:00')
+    ->description('Run weekly full backup');
+
+// Clean old backups weekly
+Schedule::command('backup:clean')
+    ->weeklyOn(0, '04:00')
+    ->description('Clean old backups');
+
+// Monitor backup health daily
+Schedule::command('backup:monitor')
+    ->dailyAt('06:00')
+    ->description('Monitor backup health');

@@ -25,10 +25,12 @@ use App\Http\Controllers\Api\SupplierInvoiceController;
 use App\Http\Controllers\Api\SystemSettingController;
 use App\Http\Controllers\Api\TeamController;
 use App\Http\Controllers\Api\TeamMemberController;
+use App\Http\Controllers\Api\TwoFactorController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\UserPermissionController;
 use App\Http\Controllers\Api\WorkItemController;
 use App\Http\Controllers\Api\WorkItemFileController;
+use App\Http\Middleware\EnsureTwoFactorComplete;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -44,17 +46,28 @@ Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/refresh', [AuthController::class, 'refresh']);
 
-    // Protected auth routes
+    // Protected auth routes (accepts 2fa-pending tokens)
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/me', [AuthController::class, 'me']);
+        Route::post('/2fa/verify', [TwoFactorController::class, 'verify']);
     });
 });
 
 // ============================================
 // Protected Routes
 // ============================================
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', EnsureTwoFactorComplete::class])->group(function () {
+
+    // ----------------------------------------
+    // 2FA Management
+    // ----------------------------------------
+    Route::prefix('auth/2fa')->group(function () {
+        Route::post('/enable', [TwoFactorController::class, 'enable']);
+        Route::post('/confirm', [TwoFactorController::class, 'confirm']);
+        Route::post('/disable', [TwoFactorController::class, 'disable']);
+        Route::post('/recovery-codes', [TwoFactorController::class, 'recoveryCodes']);
+    });
 
     // ----------------------------------------
     // Users & Permissions

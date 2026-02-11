@@ -37,6 +37,17 @@ class AuthController extends Controller
         // Revoke all existing tokens
         $user->tokens()->delete();
 
+        // If 2FA is enabled, issue a limited token for verification
+        if ($user->two_factor_confirmed_at) {
+            $token = $user->createToken('2fa-pending', ['2fa-pending'], now()->addMinutes(15));
+
+            return response()->json([
+                'requires_2fa' => true,
+                'token' => $token->plainTextToken,
+                'token_type' => 'Bearer',
+            ]);
+        }
+
         // Create new token
         $token = $user->createToken('auth-token', ['*'], now()->addDays(7));
 
