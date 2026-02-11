@@ -14,6 +14,7 @@ class GovernanceAttachment extends Model
         'file_path',
         'file_size',
         'mime_type',
+        'version',
         'uploaded_by',
     ];
 
@@ -21,6 +22,7 @@ class GovernanceAttachment extends Model
     {
         return [
             'file_size' => 'integer',
+            'version' => 'integer',
         ];
     }
 

@@ -8,6 +8,7 @@ use App\Models\Risk;
 use App\Models\Supplier;
 use App\Models\WorkItem;
 use App\Services\CurrencyConversionService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -31,7 +32,7 @@ class ReportController extends Controller
 
         $items = $query->orderBy('deadline')->get();
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView( /** @phpstan-ignore-line */ 'reports.work-items', [
+        $pdf = Pdf::loadView('reports.work-items', [
             'items' => $items,
             'title' => 'Work Items Report',
             'generated_at' => now(),
@@ -51,7 +52,7 @@ class ReportController extends Controller
 
         $risks = $query->orderByDesc('inherent_risk_score')->get();
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView( /** @phpstan-ignore-line */ 'reports.risks', [
+        $pdf = Pdf::loadView('reports.risks', [
             'risks' => $risks,
             'title' => 'Risk Register Report',
             'generated_at' => now(),
@@ -70,7 +71,7 @@ class ReportController extends Controller
 
         $suppliers = $query->orderBy('name')->get();
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView( /** @phpstan-ignore-line */ 'reports.suppliers', [
+        $pdf = Pdf::loadView('reports.suppliers', [
             'suppliers' => $suppliers,
             'title' => 'Suppliers Report',
             'generated_at' => now(),
@@ -90,7 +91,7 @@ class ReportController extends Controller
 
         $items = $query->orderBy('deadline')->get();
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView( /** @phpstan-ignore-line */ 'reports.governance', [
+        $pdf = Pdf::loadView('reports.governance', [
             'items' => $items,
             'title' => 'Governance Report',
             'generated_at' => now(),

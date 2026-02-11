@@ -5,6 +5,13 @@ import { Header } from '@/components/layout/header'
 import { BarChart, DoughnutChart, StatsCard, StatsGrid } from '@/components/charts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { api } from '@/lib/api'
 import { ErrorState } from '@/components/shared'
 import {
@@ -14,6 +21,7 @@ import {
   Clock,
   Target,
   TrendingUp,
+  Download,
 } from 'lucide-react'
 
 interface RiskStats {
@@ -34,6 +42,8 @@ interface RiskStats {
     appetite: number
   }>
 }
+
+const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
 
 export default function RisksDashboardPage() {
   const [stats, setStats] = useState<RiskStats | null>(null)
@@ -56,7 +66,28 @@ export default function RisksDashboardPage() {
   if (isLoading) {
     return (
       <>
-        <Header title="Dashboard" description="Statistiques Risk Management" />
+        <Header
+          title="Dashboard"
+          description="Statistiques Risk Management"
+          actions={
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Download className="mr-2 h-4 w-4" />
+                  Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => window.open(`${apiBase}/export/risks`, '_blank')}>
+                  Export Excel
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => window.open(`${apiBase}/reports/risks`, '_blank')}>
+                  Export PDF
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          }
+        />
         <div className="p-6">
           <div className="animate-pulse space-y-6">
             <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
@@ -73,7 +104,28 @@ export default function RisksDashboardPage() {
   if (!stats) {
     return (
       <>
-        <Header title="Dashboard" description="Statistiques Risk Management" />
+        <Header
+          title="Dashboard"
+          description="Statistiques Risk Management"
+          actions={
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Download className="mr-2 h-4 w-4" />
+                  Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => window.open(`${apiBase}/export/risks`, '_blank')}>
+                  Export Excel
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => window.open(`${apiBase}/reports/risks`, '_blank')}>
+                  Export PDF
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          }
+        />
         <div className="p-6">
           <ErrorState
             title="Données indisponibles"
@@ -104,7 +156,28 @@ export default function RisksDashboardPage() {
 
   return (
     <>
-      <Header title="Dashboard" description="Statistiques Risk Management" />
+      <Header
+          title="Dashboard"
+          description="Statistiques Risk Management"
+          actions={
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Download className="mr-2 h-4 w-4" />
+                  Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => window.open(`${apiBase}/export/risks`, '_blank')}>
+                  Export Excel
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => window.open(`${apiBase}/reports/risks`, '_blank')}>
+                  Export PDF
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          }
+        />
 
       <div className="p-6 space-y-6">
         {/* KPIs */}

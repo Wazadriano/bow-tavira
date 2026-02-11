@@ -26,7 +26,13 @@ class SupplierFileController extends Controller
         ]);
 
         $file = $request->file('file');
-        $path = $file->storeAs("suppliers/{$supplier->id}", $file->getClientOriginalName(), 'local');
+        $path = $file->storeAs("suppliers/{$supplier->id}", $file->getClientOriginalName());
+
+        $existingMaxVersion = $supplier->attachments()
+            ->where('original_filename', $file->getClientOriginalName())
+            ->max('version');
+
+        $version = $existingMaxVersion ? $existingMaxVersion + 1 : 1;
 
         $attachment = $supplier->attachments()->create([
             'original_filename' => $file->getClientOriginalName(),
@@ -34,6 +40,7 @@ class SupplierFileController extends Controller
             'file_size' => $file->getSize(),
             'mime_type' => $file->getMimeType(),
             'category' => $request->input('category'),
+            'version' => $version,
             'uploaded_by' => auth()->id(),
         ]);
 
@@ -42,8 +49,8 @@ class SupplierFileController extends Controller
 
     public function destroy(Supplier $supplier, SupplierAttachment $file): JsonResponse
     {
-        if (Storage::disk('local')->exists($file->stored_filename)) {
-            Storage::disk('local')->delete($file->stored_filename);
+        if (Storage::disk()->exists($file->stored_filename)) {
+            Storage::disk()->delete($file->stored_filename);
         }
 
         $file->delete();
@@ -57,11 +64,11 @@ class SupplierFileController extends Controller
             abort(404);
         }
 
-        if (! Storage::disk('local')->exists($file->stored_filename)) {
+        if (! Storage::disk()->exists($file->stored_filename)) {
             abort(404, 'File not found');
         }
 
-        return Storage::disk('local')->download(
+        return Storage::disk()->download(
             $file->stored_filename,
             $file->original_filename ?? basename($file->stored_filename)
         );

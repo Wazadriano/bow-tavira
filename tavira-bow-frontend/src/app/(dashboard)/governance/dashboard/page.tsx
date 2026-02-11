@@ -5,6 +5,13 @@ import { Header } from '@/components/layout/header'
 import { BarChart, DoughnutChart, StatsCard, StatsGrid } from '@/components/charts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { api } from '@/lib/api'
 import { safeDateString } from '@/lib/utils'
 import {
@@ -13,6 +20,7 @@ import {
   Clock,
   AlertTriangle,
   Calendar,
+  Download,
 } from 'lucide-react'
 
 interface GovernanceStats {
@@ -25,6 +33,8 @@ interface GovernanceStats {
   by_status: { completed: number; in_progress: number; pending: number; overdue: number }
   upcoming: Array<{ id: number; title: string; next_due: string; department: string }>
 }
+
+const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
 
 export default function GovernanceDashboardPage() {
   const [stats, setStats] = useState<GovernanceStats | null>(null)
@@ -47,7 +57,28 @@ export default function GovernanceDashboardPage() {
   if (isLoading || !stats) {
     return (
       <>
-        <Header title="Dashboard" description="Governance Statistics" />
+        <Header
+          title="Dashboard"
+          description="Governance Statistics"
+          actions={
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Download className="mr-2 h-4 w-4" />
+                  Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => window.open(`${apiBase}/export/governance`, '_blank')}>
+                  Export Excel
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => window.open(`${apiBase}/reports/governance`, '_blank')}>
+                  Export PDF
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          }
+        />
         <div className="p-6">
           <div className="animate-pulse space-y-6">
             <div className="grid gap-4 md:grid-cols-4">
@@ -80,7 +111,28 @@ export default function GovernanceDashboardPage() {
 
   return (
     <>
-      <Header title="Dashboard" description="Statistiques Governance" />
+      <Header
+        title="Dashboard"
+        description="Statistiques Governance"
+        actions={
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Download className="mr-2 h-4 w-4" />
+                Export
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => window.open(`${apiBase}/export/governance`, '_blank')}>
+                Export Excel
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => window.open(`${apiBase}/reports/governance`, '_blank')}>
+                Export PDF
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        }
+      />
 
       <div className="p-6 space-y-6">
         {/* KPIs */}

@@ -24,13 +24,20 @@ class RiskFileController extends Controller
         ]);
 
         $file = $request->file('file');
-        $path = $file->storeAs("risks/{$risk->id}", $file->getClientOriginalName(), 'local');
+        $path = $file->storeAs("risks/{$risk->id}", $file->getClientOriginalName());
+
+        $existingMaxVersion = $risk->attachments()
+            ->where('original_filename', $file->getClientOriginalName())
+            ->max('version');
+
+        $version = $existingMaxVersion ? $existingMaxVersion + 1 : 1;
 
         $attachment = $risk->attachments()->create([
             'original_filename' => $file->getClientOriginalName(),
             'stored_filename' => $path,
             'file_size' => $file->getSize(),
             'mime_type' => $file->getMimeType(),
+            'version' => $version,
             'uploaded_by' => auth()->id(),
         ]);
 
@@ -41,19 +48,19 @@ class RiskFileController extends Controller
     {
         $path = "risks/{$risk->id}/{$filename}";
 
-        if (! Storage::disk('local')->exists($path)) {
+        if (! Storage::disk()->exists($path)) {
             return response()->json(['message' => 'File not found'], 404);
         }
 
-        return Storage::disk('local')->download($path);
+        return Storage::disk()->download($path);
     }
 
     public function destroy(Risk $risk, string $filename): JsonResponse
     {
         $path = "risks/{$risk->id}/{$filename}";
 
-        if (Storage::disk('local')->exists($path)) {
-            Storage::disk('local')->delete($path);
+        if (Storage::disk()->exists($path)) {
+            Storage::disk()->delete($path);
         }
 
         $risk->attachments()->where('original_filename', $filename)->delete();
@@ -72,11 +79,11 @@ class RiskFileController extends Controller
             ?? $attachment->getAttribute('stored_filename')
             ?? "risks/{$risk->id}/".($attachment->getAttribute('original_filename') ?? $attachment->getAttribute('original_name') ?? $attachment->filename);
 
-        if (! Storage::disk('local')->exists($path)) {
+        if (! Storage::disk()->exists($path)) {
             return response()->json(['message' => 'File not found'], 404);
         }
 
-        return Storage::disk('local')->download(
+        return Storage::disk()->download(
             $path,
             $attachment->original_filename ?? $attachment->original_name ?? $attachment->filename ?? 'file'
         );
@@ -93,8 +100,8 @@ class RiskFileController extends Controller
             ?? $attachment->getAttribute('stored_filename')
             ?? "risks/{$risk->id}/".($attachment->getAttribute('original_filename') ?? $attachment->getAttribute('original_name') ?? $attachment->filename);
 
-        if (Storage::disk('local')->exists($path)) {
-            Storage::disk('local')->delete($path);
+        if (Storage::disk()->exists($path)) {
+            Storage::disk()->delete($path);
         }
 
         $attachment->delete();

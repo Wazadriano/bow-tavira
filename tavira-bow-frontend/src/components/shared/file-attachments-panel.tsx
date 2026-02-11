@@ -1,12 +1,13 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Paperclip, Upload, Trash2, Download, FileText, Image, FileSpreadsheet, File } from 'lucide-react'
+import { Paperclip, Upload, Trash2, Download, FileText, Image, FileSpreadsheet, File, Eye } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import type { Attachment } from '@/types'
+import { FilePreviewDialog } from './file-preview-dialog'
 
 interface FileAttachmentsPanelProps {
   files: Attachment[]
@@ -29,6 +30,7 @@ export function FileAttachmentsPanel({
   downloadUrlPrefix,
 }: FileAttachmentsPanelProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [previewFile, setPreviewFile] = useState<{ url: string; filename: string; mimeType: string } | null>(null)
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -85,13 +87,36 @@ export function FileAttachmentsPanel({
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{file.original_filename}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium truncate">{file.original_filename}</p>
+                        {typeof file.version === 'number' && file.version > 1 && (
+                          <Badge variant="outline" className="shrink-0 text-xs">
+                            v{file.version}
+                          </Badge>
+                        )}
+                      </div>
                       <p className="text-xs text-muted-foreground">
                         {file.file_size_formatted} - {formatDate(file.created_at)}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
+                    {(file.mime_type.startsWith('image/') || file.mime_type.includes('pdf')) && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() =>
+                          setPreviewFile({
+                            url: `${downloadUrlPrefix}/${file.id}`,
+                            filename: file.original_filename,
+                            mimeType: file.mime_type,
+                          })
+                        }
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"
@@ -121,6 +146,15 @@ export function FileAttachmentsPanel({
           </div>
         )}
       </CardContent>
+      {previewFile && (
+        <FilePreviewDialog
+          url={previewFile.url}
+          filename={previewFile.filename}
+          mimeType={previewFile.mimeType}
+          open={!!previewFile}
+          onClose={() => setPreviewFile(null)}
+        />
+      )}
     </Card>
   )
 }

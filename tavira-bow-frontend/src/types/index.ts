@@ -6,6 +6,7 @@ export interface User {
   role: 'admin' | 'member'
   department: string | null
   is_active: boolean
+  two_factor_confirmed_at: string | null
   created_at: string
   updated_at: string
 }
@@ -386,6 +387,7 @@ export interface Attachment {
   file_size: number
   file_size_formatted: string
   mime_type: string
+  version?: number | string
   uploaded_by_id: number | null
   uploaded_by: User | null
   created_at: string
