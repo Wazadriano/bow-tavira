@@ -31,7 +31,7 @@ class ReportController extends Controller
 
         $items = $query->orderBy('deadline')->get();
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView( /** @phpstan-ignore-line */'reports.work-items', [
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView( /** @phpstan-ignore-line */ 'reports.work-items', [
             'items' => $items,
             'title' => 'Work Items Report',
             'generated_at' => now(),
@@ -51,7 +51,7 @@ class ReportController extends Controller
 
         $risks = $query->orderByDesc('inherent_risk_score')->get();
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView( /** @phpstan-ignore-line */'reports.risks', [
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView( /** @phpstan-ignore-line */ 'reports.risks', [
             'risks' => $risks,
             'title' => 'Risk Register Report',
             'generated_at' => now(),
@@ -70,7 +70,7 @@ class ReportController extends Controller
 
         $suppliers = $query->orderBy('name')->get();
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView( /** @phpstan-ignore-line */'reports.suppliers', [
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView( /** @phpstan-ignore-line */ 'reports.suppliers', [
             'suppliers' => $suppliers,
             'title' => 'Suppliers Report',
             'generated_at' => now(),
@@ -90,7 +90,7 @@ class ReportController extends Controller
 
         $items = $query->orderBy('deadline')->get();
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView( /** @phpstan-ignore-line */'reports.governance', [
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView( /** @phpstan-ignore-line */ 'reports.governance', [
             'items' => $items,
             'title' => 'Governance Report',
             'generated_at' => now(),
