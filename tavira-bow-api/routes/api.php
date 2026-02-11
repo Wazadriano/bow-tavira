@@ -219,6 +219,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/alerts', [RiskController::class, 'alerts']);
 
         Route::get('/actions/all', [RiskActionController::class, 'all']);
+
+        // Global recalculate all risk scores
+        Route::post('/recalculate', [RiskController::class, 'recalculate']);
     });
 
     // Risks (L3)
