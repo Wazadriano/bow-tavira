@@ -2,7 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Models\User;
 use App\Models\WorkItem;
 use App\Notifications\TaskDueReminderNotification;
 use Illuminate\Console\Command;
