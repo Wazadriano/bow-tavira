@@ -2,8 +2,7 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Bell, Search, Moon, Sun, Check } from 'lucide-react'
-import { useTheme } from 'next-themes'
+import { Bell, Search, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -13,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { ThemeToggle } from '@/components/layout/theme-toggle'
 import { useNotificationsStore } from '@/stores/notifications'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -33,7 +33,6 @@ function getNotificationLabel(type: string): string {
 }
 
 export function Header({ title, description, actions }: HeaderProps) {
-  const { setTheme, theme } = useTheme()
   const router = useRouter()
   const { items, unreadCount, fetchNotifications, fetchUnreadCount, markAsRead, markAllAsRead } =
     useNotificationsStore()
@@ -65,15 +64,7 @@ export function Header({ title, description, actions }: HeaderProps) {
           <Input placeholder="Search..." className="w-64 pl-9" />
         </div>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-        >
-          <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">Toggle theme</span>
-        </Button>
+        <ThemeToggle />
 
         <DropdownMenu onOpenChange={(open) => open && handleBellOpen()}>
           <DropdownMenuTrigger asChild>

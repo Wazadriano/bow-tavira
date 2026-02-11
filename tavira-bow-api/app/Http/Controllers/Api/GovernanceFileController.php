@@ -21,18 +21,23 @@ class GovernanceFileController extends Controller
     {
         $request->validate([
             'file' => 'required|file|max:10240',
-            'version' => 'nullable|string',
         ]);
 
         $file = $request->file('file');
-        $path = $file->storeAs("governance/{$item->id}", $file->getClientOriginalName(), 'local');
+        $path = $file->storeAs("governance/{$item->id}", $file->getClientOriginalName());
+
+        $existingMaxVersion = $item->attachments()
+            ->where('original_filename', $file->getClientOriginalName())
+            ->max('version');
+
+        $version = $existingMaxVersion ? $existingMaxVersion + 1 : 1;
 
         $attachment = $item->attachments()->create([
             'original_filename' => $file->getClientOriginalName(),
             'stored_filename' => $path,
             'file_size' => $file->getSize(),
             'mime_type' => $file->getMimeType(),
-            'version' => $request->input('version', '1.0'),
+            'version' => $version,
             'uploaded_by' => auth()->id(),
         ]);
 
@@ -43,19 +48,19 @@ class GovernanceFileController extends Controller
     {
         $path = "governance/{$item->id}/{$filename}";
 
-        if (! Storage::disk('local')->exists($path)) {
+        if (! Storage::disk()->exists($path)) {
             return response()->json(['message' => 'File not found'], 404);
         }
 
-        return Storage::disk('local')->download($path);
+        return Storage::disk()->download($path);
     }
 
     public function destroy(GovernanceItem $item, string $filename): JsonResponse
     {
         $path = "governance/{$item->id}/{$filename}";
 
-        if (Storage::disk('local')->exists($path)) {
-            Storage::disk('local')->delete($path);
+        if (Storage::disk()->exists($path)) {
+            Storage::disk()->delete($path);
         }
 
         $item->attachments()->where('original_filename', $filename)->delete();

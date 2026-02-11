@@ -97,6 +97,7 @@ const navSections: NavSection[] = [
       { name: 'Teams', href: '/teams', icon: Users },
       { name: 'Users', href: '/users', icon: UserCog },
       { name: 'Settings', href: '/settings', icon: Settings },
+      { name: 'Security', href: '/settings/security', icon: Shield },
     ],
   },
 ]
@@ -120,7 +121,7 @@ export function Sidebar() {
   }
 
   const isItemActive = (href: string) => {
-    if (href === '/tasks' || href === '/governance' || href === '/suppliers' || href === '/risks') {
+    if (href === '/tasks' || href === '/governance' || href === '/suppliers' || href === '/risks' || href === '/settings') {
       return pathname === href
     }
     return pathname.startsWith(href)

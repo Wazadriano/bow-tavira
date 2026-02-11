@@ -36,6 +36,11 @@ Schedule::command('bow:recalculate-dashboard')
     ->hourly()
     ->description('Recalculate dashboard statistics cache');
 
+// Daily summary email to admins/managers at 7:00 AM
+Schedule::command('bow:send-daily-summary')
+    ->dailyAt('07:00')
+    ->description('Send daily summary email to admins and managers');
+
 // Clean old activity logs monthly
 Schedule::command('activitylog:clean')
     ->monthly()

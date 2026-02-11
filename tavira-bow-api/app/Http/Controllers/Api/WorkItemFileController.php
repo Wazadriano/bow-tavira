@@ -15,12 +15,12 @@ class WorkItemFileController extends Controller
         $files = [];
         $path = "workitems/{$workitem->id}";
 
-        if (Storage::disk('local')->exists($path)) {
-            $allFiles = Storage::disk('local')->files($path);
+        if (Storage::disk()->exists($path)) {
+            $allFiles = Storage::disk()->files($path);
             foreach ($allFiles as $file) {
                 $files[] = [
                     'name' => basename($file),
-                    'size' => Storage::disk('local')->size($file),
+                    'size' => Storage::disk()->size($file),
                     'url' => route('workitems.files.show', [$workitem->id, basename($file)]),
                 ];
             }
@@ -36,7 +36,7 @@ class WorkItemFileController extends Controller
         ]);
 
         $file = $request->file('file');
-        $path = $file->storeAs("workitems/{$workitem->id}", $file->getClientOriginalName(), 'local');
+        $path = $file->storeAs("workitems/{$workitem->id}", $file->getClientOriginalName());
 
         return response()->json([
             'name' => $file->getClientOriginalName(),
@@ -48,19 +48,19 @@ class WorkItemFileController extends Controller
     {
         $path = "workitems/{$workitem->id}/{$filename}";
 
-        if (! Storage::disk('local')->exists($path)) {
+        if (! Storage::disk()->exists($path)) {
             return response()->json(['message' => 'File not found'], 404);
         }
 
-        return Storage::disk('local')->download($path);
+        return Storage::disk()->download($path);
     }
 
     public function destroy(WorkItem $workitem, string $filename): JsonResponse
     {
         $path = "workitems/{$workitem->id}/{$filename}";
 
-        if (Storage::disk('local')->exists($path)) {
-            Storage::disk('local')->delete($path);
+        if (Storage::disk()->exists($path)) {
+            Storage::disk()->delete($path);
         }
 
         return response()->json(null, 204);

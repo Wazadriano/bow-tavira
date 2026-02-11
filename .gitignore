@@ -57,3 +57,13 @@ coverage/
 
 # --- Docker overrides ---
 docker-compose.override.yml
+
+# --- Build artifacts ---
+tsconfig.tsbuildinfo
+tavira-bow-frontend/tsconfig.tsbuildinfo
+
+# --- Project documents (non-code) ---
+*.xlsx
+
+# --- BYAN root deps (meta-agent tool) ---
+/package-lock.json

@@ -19,3 +19,7 @@ Route::get('/', function () {
         'documentation' => '/api/documentation',
     ]);
 });
+
+// Horizon dashboard - only accessible in local environment or by admin users
+// Access via: /horizon
+// Auth gate configured in App\Providers\HorizonServiceProvider

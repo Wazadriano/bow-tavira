@@ -5,6 +5,13 @@ import { Header } from '@/components/layout/header'
 import { BarChart, DoughnutChart, StatsCard, StatsGrid } from '@/components/charts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { api } from '@/lib/api'
 import {
   ClipboardList,
@@ -13,6 +20,7 @@ import {
   AlertTriangle,
   Flag,
   TrendingUp,
+  Download,
 } from 'lucide-react'
 
 interface DashboardStats {
@@ -27,6 +35,8 @@ interface DashboardStats {
   by_rag: { blue: number; green: number; amber: number; red: number }
   priority_by_dept: Array<{ department: string; total: number; priority: number }>
 }
+
+const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
 
 export default function TasksDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
@@ -49,7 +59,28 @@ export default function TasksDashboardPage() {
   if (isLoading || !stats) {
     return (
       <>
-        <Header title="Dashboard" description="Book of Work Statistics" />
+        <Header
+          title="Dashboard"
+          description="Book of Work Statistics"
+          actions={
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Download className="mr-2 h-4 w-4" />
+                  Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => window.open(`${apiBase}/export/workitems`, '_blank')}>
+                  Export Excel
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => window.open(`${apiBase}/reports/work-items`, '_blank')}>
+                  Export PDF
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          }
+        />
         <div className="p-6">
           <div className="animate-pulse space-y-6">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
@@ -83,7 +114,28 @@ export default function TasksDashboardPage() {
 
   return (
     <>
-      <Header title="Dashboard" description="Book of Work Statistics" />
+      <Header
+          title="Dashboard"
+          description="Book of Work Statistics"
+          actions={
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Download className="mr-2 h-4 w-4" />
+                  Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => window.open(`${apiBase}/export/workitems`, '_blank')}>
+                  Export Excel
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => window.open(`${apiBase}/reports/work-items`, '_blank')}>
+                  Export PDF
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          }
+        />
 
       <div className="p-6 space-y-6">
         {/* KPIs */}
