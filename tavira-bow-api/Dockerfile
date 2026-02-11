@@ -4,6 +4,7 @@ FROM php:8.3-fpm-alpine
 # Install system dependencies
 RUN apk add --no-cache \
     postgresql-dev \
+    postgresql-client \
     libzip-dev \
     zip \
     unzip \
@@ -46,6 +47,8 @@ COPY . .
 # Create necessary directories BEFORE composer install (Laravel needs bootstrap/cache)
 RUN mkdir -p \
     storage/app/public \
+    storage/app/backups \
+    storage/app/backup-temp \
     storage/framework/cache/data \
     storage/framework/sessions \
     storage/framework/views \
