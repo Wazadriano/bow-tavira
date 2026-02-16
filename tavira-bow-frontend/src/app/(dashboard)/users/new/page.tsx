@@ -1,7 +1,5 @@
-'use client'
-
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Header } from '@/components/layout/header'
 import { Button } from '@/components/ui/button'
 import { UserForm } from '@/components/users'
@@ -10,14 +8,14 @@ import { ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function NewUserPage() {
-  const router = useRouter()
+  const navigate = useNavigate()
   const { create, isSaving } = useUsersStore()
 
   const handleSubmit = async (data: UserFormData) => {
     try {
       await create(data)
       toast.success('User created successfully')
-      router.push('/users')
+      navigate('/users')
     } catch {
       toast.error('Error during creation')
     }
@@ -33,7 +31,7 @@ export default function NewUserPage() {
       <div className="p-6">
         <div className="mb-6">
           <Button variant="ghost" asChild>
-            <Link href="/users">
+            <Link to="/users">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to list
             </Link>

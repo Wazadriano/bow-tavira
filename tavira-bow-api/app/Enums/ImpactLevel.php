@@ -11,9 +11,9 @@ enum ImpactLevel: string
     public function label(): string
     {
         return match ($this) {
-            self::HIGH => 'Élevé',
-            self::MEDIUM => 'Moyen',
-            self::LOW => 'Faible',
+            self::HIGH => 'High',
+            self::MEDIUM => 'Medium',
+            self::LOW => 'Low',
         };
     }
 

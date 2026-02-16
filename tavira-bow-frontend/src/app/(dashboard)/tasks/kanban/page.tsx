@@ -1,7 +1,5 @@
-'use client'
-
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Header } from '@/components/layout/header'
 import { Card, CardContent } from '@/components/ui/card'
@@ -21,7 +19,7 @@ const COLUMNS = [
 ]
 
 export default function KanbanPage() {
-  const router = useRouter()
+  const navigate = useNavigate()
   const { updateStatus } = useWorkItemsStore()
   const [draggedItem, setDraggedItem] = useState<number | null>(null)
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null)
@@ -116,7 +114,7 @@ export default function KanbanPage() {
                           'cursor-grab active:cursor-grabbing transition-opacity',
                           draggedItem === item.id && 'opacity-50'
                         )}
-                        onClick={() => router.push(`/tasks/${item.id}`)}
+                        onClick={() => navigate(`/tasks/${item.id}`)}
                       >
                         <CardContent className="p-3">
                           <div className="flex items-start justify-between gap-2">

@@ -1,8 +1,6 @@
-'use client'
-
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Header } from '@/components/layout/header'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -57,7 +55,7 @@ const ROLE_COLORS: Record<string, string> = {
 }
 
 export default function UsersPage() {
-  const router = useRouter()
+  const navigate = useNavigate()
   const {
     users,
     isLoading,
@@ -109,7 +107,7 @@ export default function UsersPage() {
         description="Manage users and their permissions"
         actions={
           <Button asChild>
-            <Link href="/users/new">
+            <Link to="/users/new">
               <Plus className="mr-2 h-4 w-4" />
               New User
             </Link>
@@ -185,7 +183,7 @@ export default function UsersPage() {
             title="No users found"
             description="Start by creating a user"
             actionLabel="New User"
-            onAction={() => router.push('/users/new')}
+            onAction={() => navigate('/users/new')}
           />
         ) : (
           <>
@@ -266,13 +264,13 @@ export default function UsersPage() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem asChild>
-                              <Link href={`/users/${user.id}`}>
+                              <Link to={`/users/${user.id}`}>
                                 <Eye className="mr-2 h-4 w-4" />
                                 View
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
-                              <Link href={`/users/${user.id}/edit`}>
+                              <Link to={`/users/${user.id}/edit`}>
                                 <Edit className="mr-2 h-4 w-4" />
                                 Edit
                               </Link>

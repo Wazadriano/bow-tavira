@@ -1,8 +1,6 @@
-'use client'
-
 import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { useParams, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Header } from '@/components/layout/header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -46,7 +44,7 @@ const departments = ['IT', 'Finance', 'Operations', 'Compliance', 'HR', 'Legal',
 
 export default function UserDetailPage() {
   const params = useParams()
-  const router = useRouter()
+  const navigate = useNavigate()
   const id = Number(params.id)
   const [isAddingPermission, setIsAddingPermission] = useState(false)
   const [selectedDept, setSelectedDept] = useState('')
@@ -83,7 +81,7 @@ export default function UserDetailPage() {
         try {
           await remove(id)
           toast.success('User deleted')
-          router.push('/users')
+          navigate('/users')
         } catch {
           toast.error('Error during deletion')
         }
@@ -149,28 +147,26 @@ export default function UserDetailPage() {
 
       <div className="p-6">
         <div className="mb-6 flex items-center justify-between">
-          <Button variant="ghost" asChild>
-            <Link href="/users">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to list
-            </Link>
+          <Button variant="ghost" onClick={() => navigate(-1)}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
           </Button>
           <div className="flex gap-2">
             <Button variant="outline" onClick={handleToggleActive}>
               {user.is_active ? (
                 <>
                   <UserX className="mr-2 h-4 w-4" />
-                  Desactiver
+                  Deactivate
                 </>
               ) : (
                 <>
                   <UserCheck className="mr-2 h-4 w-4" />
-                  Activer
+                  Activate
                 </>
               )}
             </Button>
             <Button variant="outline" asChild>
-              <Link href={`/users/${id}/edit`}>
+              <Link to={`/users/${id}/edit`}>
                 <Edit className="mr-2 h-4 w-4" />
                 Edit
               </Link>
@@ -202,7 +198,7 @@ export default function UserDetailPage() {
                     <p className="text-muted-foreground">@{user.email}</p>
                     {user.full_name && (
                       <p className="text-sm text-muted-foreground">
-                        Affiche comme: {user.full_name}
+                        Display name: {user.full_name}
                       </p>
                     )}
                   </div>
@@ -230,7 +226,7 @@ export default function UserDetailPage() {
                   </div>
 
                   <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Cree le</h4>
+                    <h4 className="text-sm font-medium text-muted-foreground">Created</h4>
                     <p className="mt-1 flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                       {formatDate(user.created_at)}
@@ -238,7 +234,7 @@ export default function UserDetailPage() {
                   </div>
 
                   <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Modifie le</h4>
+                    <h4 className="text-sm font-medium text-muted-foreground">Modified</h4>
                     <p className="mt-1 flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                       {formatDate(user.updated_at)}
@@ -283,14 +279,14 @@ export default function UserDetailPage() {
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Niveau d&apos;acces</label>
+                        <label className="text-sm font-medium">Access level</label>
                         <Select value={selectedLevel} onValueChange={setSelectedLevel}>
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="read">Lecture</SelectItem>
-                            <SelectItem value="write">Lecture/Ecriture</SelectItem>
+                            <SelectItem value="read">Read</SelectItem>
+                            <SelectItem value="write">Read/Write</SelectItem>
                             <SelectItem value="admin">Administration</SelectItem>
                           </SelectContent>
                         </Select>
@@ -337,8 +333,8 @@ export default function UserDetailPage() {
                             {perm.access_level === 'admin'
                               ? 'Admin'
                               : perm.access_level === 'write'
-                              ? 'Ecriture'
-                              : 'Lecture'}
+                              ? 'Write'
+                              : 'Read'}
                           </Badge>
                           <Button
                             variant="ghost"
@@ -361,7 +357,7 @@ export default function UserDetailPage() {
             {/* Status */}
             <Card>
               <CardHeader>
-                <CardTitle>Statut</CardTitle>
+                <CardTitle>Status</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -374,12 +370,12 @@ export default function UserDetailPage() {
                     }
                   >
                     {user.role === 'admin' && <Shield className="mr-1 h-3 w-3" />}
-                    {user.role === 'admin' ? 'Administrateur' : 'Membre'}
+                    {user.role === 'admin' ? 'Administrator' : 'Member'}
                   </Badge>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Compte</span>
+                  <span className="text-sm text-muted-foreground">Account</span>
                   <Badge
                     className={
                       user.is_active
@@ -390,12 +386,12 @@ export default function UserDetailPage() {
                     {user.is_active ? (
                       <>
                         <UserCheck className="mr-1 h-3 w-3" />
-                        Actif
+                        Active
                       </>
                     ) : (
                       <>
                         <UserX className="mr-1 h-3 w-3" />
-                        Inactif
+                        Inactive
                       </>
                     )}
                   </Badge>

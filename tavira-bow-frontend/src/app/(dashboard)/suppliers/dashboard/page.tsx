@@ -1,5 +1,3 @@
-'use client'
-
 import { useEffect, useState } from 'react'
 import { Header } from '@/components/layout/header'
 import { BarChart, DoughnutChart, StatsCard, StatsGrid } from '@/components/charts'
@@ -43,7 +41,7 @@ interface SupplierStats {
   }>
 }
 
-const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
+const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 
 export default function SuppliersDashboardPage() {
   const [stats, setStats] = useState<SupplierStats | null>(null)
@@ -128,8 +126,8 @@ export default function SuppliersDashboardPage() {
         />
         <div className="p-6">
           <ErrorState
-            title="Données indisponibles"
-            description="Impossible de charger les statistiques fournisseurs. Vérifiez la connexion à l'API."
+            title="Data unavailable"
+            description="Unable to load supplier statistics. Check the API connection."
           />
         </div>
       </>

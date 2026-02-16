@@ -11,7 +11,7 @@ enum BAUType: string
     {
         return match ($this) {
             self::BAU => 'Business As Usual',
-            self::NON_BAU => 'Transformation / Projet',
+            self::NON_BAU => 'Transformation / Project',
         };
     }
 

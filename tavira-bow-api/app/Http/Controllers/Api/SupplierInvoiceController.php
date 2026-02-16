@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreSupplierInvoiceRequest;
+use App\Http\Requests\UpdateSupplierInvoiceRequest;
 use App\Http\Resources\SupplierInvoiceResource;
 use App\Models\Supplier;
 use App\Models\SupplierInvoice;
@@ -88,22 +90,9 @@ class SupplierInvoiceController extends Controller
     /**
      * Create new invoice
      */
-    public function store(Request $request, Supplier $supplier): JsonResponse
+    public function store(StoreSupplierInvoiceRequest $request, Supplier $supplier): JsonResponse
     {
         $this->authorize('update', $supplier);
-
-        $request->validate([
-            'invoice_ref' => 'required|string|max:100',
-            'description' => 'nullable|string',
-            'amount' => 'required|numeric|min:0',
-            'currency' => 'nullable|string|max:3',
-            'invoice_date' => 'required|date',
-            'due_date' => 'nullable|date',
-            'paid_date' => 'nullable|date',
-            'frequency' => 'nullable|string',
-            'status' => 'nullable|string',
-            'notes' => 'nullable|string',
-        ]);
 
         $invoice = SupplierInvoice::create([
             'supplier_id' => $supplier->id,
@@ -135,26 +124,13 @@ class SupplierInvoiceController extends Controller
     /**
      * Update invoice
      */
-    public function update(Request $request, Supplier $supplier, SupplierInvoice $invoice): JsonResponse
+    public function update(UpdateSupplierInvoiceRequest $request, Supplier $supplier, SupplierInvoice $invoice): JsonResponse
     {
         $this->authorize('update', $supplier);
 
         if ($invoice->supplier_id !== $supplier->id) {
             abort(404);
         }
-
-        $request->validate([
-            'invoice_ref' => 'sometimes|string|max:100',
-            'description' => 'nullable|string',
-            'amount' => 'sometimes|numeric|min:0',
-            'currency' => 'nullable|string|max:3',
-            'invoice_date' => 'sometimes|date',
-            'due_date' => 'nullable|date',
-            'paid_date' => 'nullable|date',
-            'frequency' => 'nullable|string',
-            'status' => 'nullable|string',
-            'notes' => 'nullable|string',
-        ]);
 
         $invoice->update($request->all());
 

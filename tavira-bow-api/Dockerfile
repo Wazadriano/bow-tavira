@@ -82,9 +82,12 @@ RUN echo "opcache.enable=1" >> "$PHP_INI_DIR/conf.d/opcache.ini" \
     && echo "opcache.validate_timestamps=1" >> "$PHP_INI_DIR/conf.d/opcache.ini" \
     && echo "opcache.revalidate_freq=2" >> "$PHP_INI_DIR/conf.d/opcache.ini"
 
+# Copy entrypoint script
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 # Expose port
 EXPOSE 8000
 
-# Start PHP built-in server (for development)
-# In production, use PHP-FPM with Nginx
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+# Entrypoint: migrations + seeds + server
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

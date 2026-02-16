@@ -1,8 +1,6 @@
-'use client'
-
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -50,7 +48,7 @@ const BAU_OPTIONS = [
 ]
 
 export function WorkItemForm({ workItem, mode }: WorkItemFormProps) {
-  const router = useRouter()
+  const navigate = useNavigate()
   const { create, update, isSaving } = useWorkItemsStore()
 
   const { data: users } = useQuery({
@@ -105,7 +103,7 @@ export function WorkItemForm({ workItem, mode }: WorkItemFormProps) {
         await update(workItem.id, data)
         toast.success('Work item updated successfully')
       }
-      router.push('/tasks')
+      navigate('/tasks')
     } catch (error: unknown) {
       const axiosError = error as { response?: { status?: number; data?: { message?: string; errors?: Record<string, string[]> } } }
       if (axiosError.response?.status === 422 && axiosError.response.data?.errors) {
@@ -382,7 +380,7 @@ export function WorkItemForm({ workItem, mode }: WorkItemFormProps) {
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push('/tasks')}
+          onClick={() => navigate('/tasks')}
         >
           Cancel
         </Button>

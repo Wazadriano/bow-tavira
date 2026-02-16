@@ -12,10 +12,10 @@ enum CurrentStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::NOT_STARTED => 'Non démarré',
-            self::IN_PROGRESS => 'En cours',
-            self::COMPLETED => 'Terminé',
-            self::ON_HOLD => 'En attente',
+            self::NOT_STARTED => 'Not Started',
+            self::IN_PROGRESS => 'In Progress',
+            self::COMPLETED => 'Completed',
+            self::ON_HOLD => 'On Hold',
         };
     }
 

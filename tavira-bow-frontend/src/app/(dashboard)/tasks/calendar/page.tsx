@@ -1,9 +1,8 @@
-'use client'
-
 import { useEffect, useState, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom'
 import { Header } from '@/components/layout/header'
 import { CalendarView, type CalendarEvent } from '@/components/calendar'
+import { WorkItemQuickView } from '@/components/workitems/quick-view'
 import { useWorkItemsStore } from '@/stores/workitems'
 import { api } from '@/lib/api'
 import { safeParseDate } from '@/lib/utils'
@@ -33,13 +32,15 @@ const RAG_OPTIONS = [
 ]
 
 export default function TasksCalendarPage() {
-  const router = useRouter()
+  const navigate = useNavigate()
   const { items, fetchItems, isLoading } = useWorkItemsStore()
   const [milestones, setMilestones] = useState<TaskMilestone[]>([])
   const [events, setEvents] = useState<CalendarEvent[]>([])
   const [statusFilter, setStatusFilter] = useState('all')
   const [ragFilter, setRagFilter] = useState('all')
   const [departmentFilter, setDepartmentFilter] = useState('all')
+  const [quickViewId, setQuickViewId] = useState<number | null>(null)
+  const [quickViewOpen, setQuickViewOpen] = useState(false)
 
   useEffect(() => {
     fetchItems(1)
@@ -94,9 +95,12 @@ export default function TasksCalendarPage() {
   }, [events, statusFilter, ragFilter, departmentFilter])
 
   const handleEventClick = (event: CalendarEvent) => {
-    if (event.href) {
-      router.push(event.href)
+    if (event.eventKind === 'milestone' && event.href) {
+      navigate(event.href)
+      return
     }
+    setQuickViewId(event.id)
+    setQuickViewOpen(true)
   }
 
   return (
@@ -161,6 +165,12 @@ export default function TasksCalendarPage() {
           />
         )}
       </div>
+
+      <WorkItemQuickView
+        workItemId={quickViewId}
+        open={quickViewOpen}
+        onOpenChange={setQuickViewOpen}
+      />
     </>
   )
 }

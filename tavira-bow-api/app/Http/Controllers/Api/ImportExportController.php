@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Import\ConfirmImportRequest;
 use App\Http\Requests\Import\PreviewImportRequest;
+use App\Jobs\ProcessExportFile;
 use App\Jobs\ProcessImportFile;
 use App\Services\ImportNormalizationService;
 use Illuminate\Http\JsonResponse;
@@ -249,94 +250,96 @@ class ImportExportController extends Controller
     }
 
     /**
-     * Export work items
+     * Export work items (async)
      */
-    public function exportWorkItems(Request $request): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    public function exportWorkItems(Request $request): JsonResponse
     {
-        return $this->export($request, 'workitems');
+        return $this->dispatchExport($request, 'workitems');
     }
 
     /**
-     * Export governance items
+     * Export governance items (async)
      */
-    public function exportGovernance(Request $request): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    public function exportGovernance(Request $request): JsonResponse
     {
-        return $this->export($request, 'governance');
+        return $this->dispatchExport($request, 'governance');
     }
 
     /**
-     * Export suppliers
+     * Export suppliers (async)
      */
-    public function exportSuppliers(Request $request): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    public function exportSuppliers(Request $request): JsonResponse
     {
-        return $this->export($request, 'suppliers');
+        return $this->dispatchExport($request, 'suppliers');
     }
 
     /**
-     * Export risks
+     * Export risks (async)
      */
-    public function exportRisks(Request $request): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    public function exportRisks(Request $request): JsonResponse
     {
-        return $this->export($request, 'risks');
+        return $this->dispatchExport($request, 'risks');
     }
 
     /**
-     * Export invoices
+     * Export invoices (async)
      */
-    public function exportInvoices(Request $request): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    public function exportInvoices(Request $request): JsonResponse
     {
-        return $this->export($request, 'invoices');
+        return $this->dispatchExport($request, 'invoices');
     }
 
     /**
-     * Export data
+     * Get export job status
      */
-    private function export(Request $request, string $type): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    public function exportStatus(string $jobId): JsonResponse
     {
-        $data = $this->getExportData($type, $request);
+        $progress = Cache::get("export_progress_{$jobId}");
 
-        if (empty($data)) {
-            abort(404, 'No data to export');
+        if (! $progress) {
+            return response()->json([
+                'status' => 'unknown',
+                'message' => 'Job not found or not yet started.',
+            ]);
         }
 
-        $spreadsheet = new Spreadsheet;
-        $sheet = $spreadsheet->getActiveSheet();
+        return response()->json($progress);
+    }
 
-        // Add headers
-        $headers = array_keys($data[0]);
-        foreach ($headers as $col => $header) {
-            $sheet->setCellValueByColumnAndRow($col + 1, 1, $header);
+    /**
+     * Download completed export file
+     */
+    public function exportDownload(string $jobId): \Symfony\Component\HttpFoundation\BinaryFileResponse|JsonResponse
+    {
+        $progress = Cache::get("export_progress_{$jobId}");
+
+        if (! $progress || $progress['status'] !== 'completed' || empty($progress['file'])) {
+            return response()->json(['message' => 'Export not ready or not found.'], 404);
         }
 
-        // Add data
-        foreach ($data as $rowNum => $row) {
-            foreach (array_values($row) as $col => $value) {
-                $sheet->setCellValueByColumnAndRow($col + 1, $rowNum + 2, $value);
-            }
+        $filePath = storage_path("app/{$progress['file']}");
+
+        if (! file_exists($filePath)) {
+            return response()->json(['message' => 'Export file not found.'], 404);
         }
 
-        // Style headers
-        $lastCol = chr(65 + min(count($headers) - 1, 25));
-        $headerRange = "A1:{$lastCol}1";
-        $sheet->getStyle($headerRange)->getFont()->setBold(true);
+        return response()->download($filePath, $progress['filename'] ?? basename($filePath));
+    }
 
-        // Auto-size columns
-        foreach (range('A', $lastCol) as $col) {
-            $sheet->getColumnDimension($col)->setAutoSize(true);
-        }
+    /**
+     * Dispatch async export job
+     */
+    private function dispatchExport(Request $request, string $type): JsonResponse
+    {
+        $jobId = uniqid('export_', true);
 
-        // Create file
-        $filename = "{$type}_export_".date('Y-m-d_His').'.xlsx';
-        $tempPath = storage_path("app/temp/{$filename}");
+        ProcessExportFile::dispatch($type, $jobId, $request->user()->id);
 
-        if (! file_exists(dirname($tempPath))) {
-            mkdir(dirname($tempPath), 0755, true);
-        }
-
-        $writer = new Xlsx($spreadsheet);
-        $writer->save($tempPath);
-
-        return response()->download($tempPath, $filename)->deleteFileAfterSend();
+        return response()->json([
+            'message' => 'Export queued successfully.',
+            'job_id' => $jobId,
+            'job_status' => 'queued',
+        ], 202);
     }
 
     /**
@@ -406,119 +409,5 @@ class ImportExportController extends Controller
         }
 
         return $result;
-    }
-
-    /**
-     * Get export data for type
-     */
-    private function getExportData(string $type, Request $request): array
-    {
-        return match ($type) {
-            'workitems' => \App\Models\WorkItem::query()
-                ->with(['responsibleParty', 'departmentHead'])
-                ->get()
-                ->map(fn ($item) => [
-                    'ref_no' => $item->ref_no,
-                    'type' => $item->type,
-                    'activity' => $item->activity,
-                    'department' => $item->department,
-                    'description' => $item->description,
-                    'goal' => $item->goal,
-                    'bau_or_transformative' => $item->bau_or_transformative?->value,
-                    'impact_level' => $item->impact_level?->value,
-                    'current_status' => $item->current_status?->value,
-                    'rag_status' => $item->rag_status?->value,
-                    'deadline' => $item->deadline?->toDateString(),
-                    'completion_date' => $item->completion_date?->toDateString(),
-                    'monthly_update' => $item->monthly_update,
-                    'comments' => $item->comments,
-                    'update_frequency' => $item->update_frequency?->value,
-                    'responsible_party' => $item->responsibleParty?->full_name,
-                    'department_head' => $item->departmentHead?->full_name,
-                    'tags' => implode(', ', $item->tags ?? []),
-                    'priority_item' => $item->priority_item ? 'Yes' : 'No',
-                    'cost_savings' => $item->cost_savings,
-                    'cost_efficiency_fte' => $item->cost_efficiency_fte,
-                    'expected_cost' => $item->expected_cost,
-                    'revenue_potential' => $item->revenue_potential,
-                ])
-                ->toArray(),
-            'suppliers' => \App\Models\Supplier::query()
-                ->with(['sageCategory', 'responsibleParty', 'entities'])
-                ->get()
-                ->map(fn ($item) => [
-                    'ref_no' => $item->ref_no,
-                    'name' => $item->name,
-                    'sage_category' => $item->sageCategory?->name,
-                    'location' => $item->location?->value,
-                    'is_common_provider' => $item->is_common_provider ? 'Yes' : 'No',
-                    'status' => $item->status?->value,
-                    'responsible_party' => $item->responsibleParty?->full_name,
-                    'entities' => $item->entities->pluck('entity')->implode(', '),
-                    'notes' => $item->notes,
-                ])
-                ->toArray(),
-            'risks' => \App\Models\Risk::query()
-                ->with(['category.theme', 'owner', 'responsibleParty'])
-                ->get()
-                ->map(fn ($item) => [
-                    'ref_no' => $item->ref_no,
-                    'theme' => $item->category?->theme?->name,
-                    'category' => $item->category?->name,
-                    'name' => $item->name,
-                    'description' => $item->description,
-                    'tier' => $item->tier?->value,
-                    'owner' => $item->owner?->full_name,
-                    'responsible_party' => $item->responsibleParty?->full_name,
-                    'financial_impact' => $item->financial_impact,
-                    'regulatory_impact' => $item->regulatory_impact,
-                    'reputational_impact' => $item->reputational_impact,
-                    'inherent_probability' => $item->inherent_probability,
-                    'inherent_risk_score' => $item->inherent_risk_score,
-                    'inherent_rag' => $item->inherent_rag?->value,
-                    'residual_risk_score' => $item->residual_risk_score,
-                    'residual_rag' => $item->residual_rag?->value,
-                    'appetite_status' => $item->appetite_status?->value,
-                ])
-                ->toArray(),
-            'governance' => \App\Models\GovernanceItem::query()
-                ->with('responsibleParty')
-                ->get()
-                ->map(fn ($item) => [
-                    'ref_no' => $item->ref_no,
-                    'activity' => $item->activity,
-                    'description' => $item->description,
-                    'department' => $item->department,
-                    'frequency' => $item->frequency?->value,
-                    'location' => $item->location?->value,
-                    'current_status' => $item->current_status?->value,
-                    'rag_status' => $item->rag_status?->value,
-                    'deadline' => $item->deadline?->toDateString(),
-                    'completion_date' => $item->completion_date?->toDateString(),
-                    'responsible_party' => $item->responsibleParty?->full_name,
-                    'monthly_update' => $item->monthly_update,
-                    'tags' => implode(', ', $item->tags ?? []),
-                ])
-                ->toArray(),
-            'invoices' => \App\Models\SupplierInvoice::query()
-                ->with('supplier:id,name')
-                ->orderBy('invoice_date', 'desc')
-                ->get()
-                ->map(fn ($item) => [
-                    'supplier_name' => $item->supplier?->name,
-                    'invoice_ref' => $item->invoice_ref,
-                    'description' => $item->description,
-                    'amount' => $item->amount,
-                    'currency' => $item->currency,
-                    'invoice_date' => $item->invoice_date?->toDateString(),
-                    'due_date' => $item->due_date?->toDateString(),
-                    'paid_date' => $item->paid_date?->toDateString(),
-                    'status' => $item->status?->value ?? $item->status,
-                    'frequency' => $item->frequency?->value ?? $item->frequency,
-                    'notes' => $item->notes,
-                ])
-                ->toArray(),
-            default => [],
-        };
     }
 }

@@ -16,12 +16,12 @@ enum GovernanceLocation: string
     {
         return match ($this) {
             self::GLOBAL => 'Global',
-            self::UK => 'Royaume-Uni',
-            self::DUBAI => 'Dubaï',
+            self::UK => 'UK',
+            self::DUBAI => 'Dubai',
             self::MONACO => 'Monaco',
             self::FRANCE => 'France',
-            self::SINGAPORE => 'Singapour',
-            self::AUSTRALIA => 'Australie',
+            self::SINGAPORE => 'Singapore',
+            self::AUSTRALIA => 'Australia',
         };
     }
 }

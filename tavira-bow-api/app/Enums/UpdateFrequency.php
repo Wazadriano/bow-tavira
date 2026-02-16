@@ -13,11 +13,11 @@ enum UpdateFrequency: string
     public function label(): string
     {
         return match ($this) {
-            self::ANNUALLY => 'Annuel',
-            self::SEMI_ANNUALLY => 'Semestriel',
-            self::QUARTERLY => 'Trimestriel',
-            self::MONTHLY => 'Mensuel',
-            self::WEEKLY => 'Hebdomadaire',
+            self::ANNUALLY => 'Annually',
+            self::SEMI_ANNUALLY => 'Semi-Annually',
+            self::QUARTERLY => 'Quarterly',
+            self::MONTHLY => 'Monthly',
+            self::WEEKLY => 'Weekly',
         };
     }
 

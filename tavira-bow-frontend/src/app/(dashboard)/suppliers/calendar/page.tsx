@@ -1,7 +1,5 @@
-'use client'
-
 import { useEffect, useState, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Header } from '@/components/layout/header'
 import { CalendarView, type CalendarEvent } from '@/components/calendar'
@@ -35,7 +33,7 @@ interface SupplierCalendarEvent extends CalendarEvent {
 }
 
 export default function SuppliersCalendarPage() {
-  const router = useRouter()
+  const navigate = useNavigate()
   const [events, setEvents] = useState<SupplierCalendarEvent[]>([])
   const [statusFilter, setStatusFilter] = useState('all')
   const [locationFilter, setLocationFilter] = useState('all')
@@ -92,7 +90,7 @@ export default function SuppliersCalendarPage() {
 
   const handleEventClick = (event: CalendarEvent) => {
     if (event.href) {
-      router.push(event.href)
+      navigate(event.href)
     }
   }
 

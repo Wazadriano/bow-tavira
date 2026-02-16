@@ -1,8 +1,6 @@
-'use client'
-
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom'
 import { Header } from '@/components/layout/header'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -36,7 +34,7 @@ function getRagColor(rag: string | null): string {
 }
 
 export default function GanttPage() {
-  const router = useRouter()
+  const navigate = useNavigate()
 
   const { data, isLoading } = useQuery({
     queryKey: ['workitems-gantt'],
@@ -145,7 +143,7 @@ export default function GanttPage() {
                       <div
                         key={item.id}
                         className="flex border-b hover:bg-muted/30 transition-colors cursor-pointer"
-                        onClick={() => router.push(`/tasks/${item.id}`)}
+                        onClick={() => navigate(`/tasks/${item.id}`)}
                       >
                         <div className="w-64 shrink-0 border-r p-2 flex items-center gap-2">
                           <span className="text-xs font-mono text-muted-foreground">

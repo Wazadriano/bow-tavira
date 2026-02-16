@@ -1,7 +1,5 @@
-'use client'
-
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom'
 import { Bell, Search, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -33,7 +31,7 @@ function getNotificationLabel(type: string): string {
 }
 
 export function Header({ title, description, actions }: HeaderProps) {
-  const router = useRouter()
+  const navigate = useNavigate()
   const { items, unreadCount, fetchNotifications, fetchUnreadCount, markAsRead, markAllAsRead } =
     useNotificationsStore()
 
@@ -119,7 +117,7 @@ export function Header({ title, description, actions }: HeaderProps) {
                     Mark all as read
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuItem onClick={() => router.push('/notifications')}>
+                <DropdownMenuItem onClick={() => navigate('/notifications')}>
                   View all notifications
                 </DropdownMenuItem>
               </>

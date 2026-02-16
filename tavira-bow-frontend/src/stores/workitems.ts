@@ -156,16 +156,16 @@ export const useWorkItemsStore = create<WorkItemsState>((set, get) => ({
       const data = response.data as { work_item?: WorkItem } & Record<string, unknown>
       const item = data.work_item ?? (data as unknown as WorkItem)
       if (!item || typeof item !== 'object' || !('id' in item)) {
-        set({ error: 'Réponse invalide du serveur', isLoadingItem: false })
+        set({ error: 'Invalid server response', isLoadingItem: false })
         throw new Error('Invalid work item response')
       }
       set({ selectedItem: item, isLoadingItem: false })
       return item
     } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : 'Impossible de charger la tâche'
+      const msg = error instanceof Error ? error.message : 'Failed to load work item'
       const is404 = typeof error === 'object' && error !== null && (error as { response?: { status?: number } }).response?.status === 404
       set({
-        error: is404 ? 'Cette tâche est introuvable ou a été supprimée.' : msg,
+        error: is404 ? 'This work item was not found or has been deleted.' : msg,
         isLoadingItem: false,
         selectedItem: null,
       })

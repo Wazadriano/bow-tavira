@@ -1,8 +1,5 @@
-'use client'
-
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import {
   Home,
   LayoutDashboard,
@@ -27,16 +24,14 @@ import {
   ChevronDown,
   ChevronLeft,
   LogOut,
-  Moon,
-  Sun,
   Lock,
   Bell,
+  Menu,
+  X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
 import { useAuthUser, useAuthActions } from '@/stores/auth'
-import { useTheme } from 'next-themes'
 
 interface NavSection {
   title: string
@@ -93,6 +88,7 @@ const navSections: NavSection[] = [
     items: [
       { name: 'Import / Export', href: '/import-export', icon: FileSpreadsheet },
       { name: 'Audit Trail', href: '/audit', icon: ClipboardList },
+      { name: 'Login History', href: '/admin/login-history', icon: ClipboardList },
       { name: 'Notifications', href: '/notifications', icon: Bell },
       { name: 'Teams', href: '/teams', icon: Users },
       { name: 'Users', href: '/users', icon: UserCog },
@@ -102,15 +98,44 @@ const navSections: NavSection[] = [
   },
 ]
 
+export function MobileMenuButton({ onClick }: { onClick: () => void }) {
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="md:hidden h-8 w-8"
+      onClick={onClick}
+    >
+      <Menu className="h-5 w-5" />
+    </Button>
+  )
+}
+
 export function Sidebar() {
-  const pathname = usePathname()
+  const { pathname } = useLocation()
   const user = useAuthUser()
   const { logout } = useAuthActions()
-  const { theme, setTheme } = useTheme()
   const [collapsed, setCollapsed] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
   const [expandedSections, setExpandedSections] = useState<string[]>(
     navSections.map((s) => s.title)
   )
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileOpen(false)
+  }, [pathname])
+
+  // Close mobile menu on resize to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setMobileOpen(false)
+      }
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const toggleSection = (title: string) => {
     setExpandedSections((prev) =>
@@ -131,162 +156,198 @@ export function Sidebar() {
     return section.items.some((item) => pathname.startsWith(item.href.split('/').slice(0, 2).join('/')))
   }
 
-  return (
-    <aside
-      className={cn(
-        'flex h-screen flex-col border-r bg-card transition-all duration-300',
-        collapsed ? 'w-16' : 'w-64'
-      )}
-    >
-      {/* Logo */}
-      <div className="flex h-14 items-center justify-between border-b px-3">
-        {!collapsed && (
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="flex h-8 w-10 items-center justify-center rounded bg-primary text-xs font-bold text-primary-foreground">
-              BOW
-            </div>
-            <span className="font-semibold">Tavira</span>
-          </Link>
-        )}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setCollapsed(!collapsed)}
-          className={cn('h-8 w-8', collapsed && 'mx-auto')}
-        >
-          <ChevronLeft
-            className={cn('h-4 w-4 transition-transform', collapsed && 'rotate-180')}
-          />
-        </Button>
-      </div>
+  const sidebarContent = (isMobile: boolean) => {
+    const isCollapsed = isMobile ? false : collapsed
 
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-2">
-        {/* Home link */}
-        <div className="mb-1 px-2">
-          <Link
-            href="/dashboard"
+    return (
+      <>
+        {/* Logo */}
+        <div className="flex h-14 items-center justify-between border-b px-3">
+          {(!isCollapsed) && (
+            <Link to="/dashboard" className="flex items-center gap-2">
+              <div className="flex h-8 w-10 items-center justify-center rounded bg-primary text-xs font-bold text-primary-foreground">
+                BOW
+              </div>
+              <span className="font-semibold">Tavira</span>
+            </Link>
+          )}
+          {isMobile ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setMobileOpen(false)}
+              className="h-8 w-8"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setCollapsed(!collapsed)}
+              className={cn('h-8 w-8', isCollapsed && 'mx-auto')}
+            >
+              <ChevronLeft
+                className={cn('h-4 w-4 transition-transform', isCollapsed && 'rotate-180')}
+              />
+            </Button>
+          )}
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto py-2">
+          {/* Home link */}
+          <div className="mb-1 px-2">
+            <Link
+              to="/dashboard"
+              className={cn(
+                'flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
+                pathname === '/dashboard'
+                  ? 'bg-accent text-accent-foreground font-medium'
+                  : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
+                isCollapsed && 'justify-center px-2'
+              )}
+              title={isCollapsed ? 'Home' : undefined}
+            >
+              <Home className="h-4 w-4 shrink-0" />
+              {!isCollapsed && <span>Home</span>}
+            </Link>
+          </div>
+
+          {navSections.map((section) => {
+            const isExpanded = expandedSections.includes(section.title)
+            const sectionActive = isSectionActive(section)
+
+            return (
+              <div key={section.title} className="mb-1">
+                {/* Section Header */}
+                <button
+                  onClick={() => !isCollapsed && toggleSection(section.title)}
+                  className={cn(
+                    'flex w-full items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wider transition-colors',
+                    sectionActive
+                      ? 'text-foreground'
+                      : 'text-muted-foreground hover:text-foreground',
+                    isCollapsed && 'justify-center'
+                  )}
+                >
+                  {!isCollapsed && <span>{section.title}</span>}
+                  {!isCollapsed && (
+                    <ChevronDown
+                      className={cn(
+                        'h-4 w-4 transition-transform',
+                        !isExpanded && '-rotate-90'
+                      )}
+                    />
+                  )}
+                </button>
+
+                {/* Section Items */}
+                {(isExpanded || isCollapsed) && (
+                  <div className={cn('space-y-0.5', !isCollapsed && 'pl-2')}>
+                    {section.items.map((item) => {
+                      const isActive = isItemActive(item.href)
+                      return (
+                        <Link
+                          key={item.href}
+                          to={item.href}
+                          className={cn(
+                            'flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
+                            isActive
+                              ? 'bg-accent text-accent-foreground font-medium'
+                              : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
+                            isCollapsed && 'justify-center px-2'
+                          )}
+                          title={isCollapsed ? item.name : undefined}
+                        >
+                          <item.icon className="h-4 w-4 shrink-0" />
+                          {!isCollapsed && <span>{item.name}</span>}
+                        </Link>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </nav>
+
+        {/* User section */}
+        <div className="border-t p-3">
+          <div
             className={cn(
-              'flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
-              pathname === '/dashboard'
-                ? 'bg-accent text-accent-foreground font-medium'
-                : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
-              collapsed && 'justify-center px-2'
+              'flex items-center gap-3',
+              isCollapsed && 'flex-col gap-2'
             )}
-            title={collapsed ? 'Home' : undefined}
           >
-            <Home className="h-4 w-4 shrink-0" />
-            {!collapsed && <span>Home</span>}
-          </Link>
-        </div>
-
-        {navSections.map((section) => {
-          const isExpanded = expandedSections.includes(section.title)
-          const sectionActive = isSectionActive(section)
-
-          return (
-            <div key={section.title} className="mb-1">
-              {/* Section Header */}
-              <button
-                onClick={() => !collapsed && toggleSection(section.title)}
-                className={cn(
-                  'flex w-full items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wider transition-colors',
-                  sectionActive
-                    ? 'text-foreground'
-                    : 'text-muted-foreground hover:text-foreground',
-                  collapsed && 'justify-center'
-                )}
-              >
-                {!collapsed && <span>{section.title}</span>}
-                {!collapsed && (
-                  <ChevronDown
-                    className={cn(
-                      'h-4 w-4 transition-transform',
-                      !isExpanded && '-rotate-90'
-                    )}
-                  />
-                )}
-              </button>
-
-              {/* Section Items */}
-              {(isExpanded || collapsed) && (
-                <div className={cn('space-y-0.5', !collapsed && 'pl-2')}>
-                  {section.items.map((item) => {
-                    const isActive = isItemActive(item.href)
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        className={cn(
-                          'flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
-                          isActive
-                            ? 'bg-accent text-accent-foreground font-medium'
-                            : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
-                          collapsed && 'justify-center px-2'
-                        )}
-                        title={collapsed ? item.name : undefined}
-                      >
-                        <item.icon className="h-4 w-4 shrink-0" />
-                        {!collapsed && <span>{item.name}</span>}
-                      </Link>
-                    )
-                  })}
-                </div>
-              )}
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-medium">
+              {user?.full_name?.charAt(0).toUpperCase() || 'A'}
             </div>
-          )
-        })}
-      </nav>
-
-      {/* Dark Mode Toggle */}
-      {!collapsed && (
-        <div className="border-t px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm">
-              {theme === 'dark' ? (
-                <Moon className="h-4 w-4" />
-              ) : (
-                <Sun className="h-4 w-4" />
-              )}
-              <span>Dark Mode</span>
-            </div>
-            <Switch
-              checked={theme === 'dark'}
-              onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
-            />
+            {!isCollapsed && (
+              <div className="flex-1 min-w-0">
+                <p className="truncate text-sm font-medium">
+                  {user?.full_name || 'Administrator'}
+                </p>
+              </div>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => logout()}
+              title="Logout"
+              className="h-8 w-8 shrink-0"
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
           </div>
         </div>
+      </>
+    )
+  }
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside
+        className={cn(
+          'hidden md:flex h-screen flex-col border-r bg-card transition-all duration-300',
+          collapsed ? 'w-16' : 'w-64'
+        )}
+      >
+        {sidebarContent(false)}
+      </aside>
+
+      {/* Mobile hamburger button (positioned in header area) */}
+      <div className="fixed top-3 left-3 z-50 md:hidden">
+        {!mobileOpen && (
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setMobileOpen(true)}
+            className="h-9 w-9 bg-card shadow-md"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+        )}
+      </div>
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
       )}
 
-      {/* User section */}
-      <div className="border-t p-3">
-        <div
-          className={cn(
-            'flex items-center gap-3',
-            collapsed && 'flex-col gap-2'
-          )}
-        >
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-medium">
-            {user?.full_name?.charAt(0).toUpperCase() || 'A'}
-          </div>
-          {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="truncate text-sm font-medium">
-                {user?.full_name || 'Administrator'}
-              </p>
-            </div>
-          )}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => logout()}
-            title="Logout"
-            className="h-8 w-8 shrink-0"
-          >
-            <LogOut className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-    </aside>
+      {/* Mobile sidebar */}
+      <aside
+        className={cn(
+          'fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-card shadow-xl transition-transform duration-300 md:hidden',
+          mobileOpen ? 'translate-x-0' : '-translate-x-full'
+        )}
+      >
+        {sidebarContent(true)}
+      </aside>
+    </>
   )
 }

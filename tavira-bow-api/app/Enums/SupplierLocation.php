@@ -15,12 +15,12 @@ enum SupplierLocation: string
     public function label(): string
     {
         return match ($this) {
-            self::LONDON => 'Londres',
+            self::LONDON => 'London',
             self::MONACO => 'Monaco',
-            self::DUBAI => 'Dubaï',
-            self::AUSTRALIA => 'Australie',
+            self::DUBAI => 'Dubai',
+            self::AUSTRALIA => 'Australia',
             self::GLOBAL => 'Global',
-            self::SINGAPORE => 'Singapour',
+            self::SINGAPORE => 'Singapore',
             self::FRANCE => 'France',
         };
     }

@@ -1,5 +1,3 @@
-'use client'
-
 import { Loader2, CheckCircle, AlertCircle, Upload, FileSearch } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 import type { ImportProgress as ImportProgressType } from '@/stores/import'

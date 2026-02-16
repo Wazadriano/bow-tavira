@@ -1,7 +1,5 @@
-'use client'
-
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom'
 import { Header } from '@/components/layout/header'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -40,7 +38,7 @@ interface Contract {
 }
 
 export default function ContractsPage() {
-  const router = useRouter()
+  const navigate = useNavigate()
   const [contracts, setContracts] = useState<Contract[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -121,7 +119,7 @@ export default function ContractsPage() {
         title="Contracts"
         description="Supplier contracts management"
         actions={
-          <Button onClick={() => router.push('/suppliers/contracts/new')}>
+          <Button onClick={() => navigate('/suppliers/contracts/new')}>
             <Plus className="h-4 w-4 mr-2" />
             New Contract
           </Button>
@@ -194,7 +192,7 @@ export default function ContractsPage() {
                         key={contract.id}
                         className="cursor-pointer hover:bg-muted/50"
                         onClick={() =>
-                          router.push(`/suppliers/${contract.supplier_id}`)
+                          navigate(`/suppliers/${contract.supplier_id}`)
                         }
                       >
                         <TableCell>{getRagBadge(contract.rag_status)}</TableCell>

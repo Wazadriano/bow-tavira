@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreRiskRequest;
+use App\Http\Requests\UpdateRiskRequest;
 use App\Http\Resources\RiskResource;
 use App\Models\Risk;
 use App\Models\RiskCategory;
@@ -96,23 +98,8 @@ class RiskController extends Controller
     /**
      * Create new risk
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreRiskRequest $request): JsonResponse
     {
-        $request->validate([
-            'category_id' => 'required|exists:risk_categories,id',
-            'ref_no' => 'required|string|max:50|unique:risks,ref_no',
-            'name' => 'required|string|max:200',
-            'description' => 'nullable|string',
-            'tier' => 'nullable|string',
-            'owner_id' => 'nullable|exists:users,id',
-            'responsible_party_id' => 'nullable|exists:users,id',
-            'financial_impact' => 'nullable|integer|min:1|max:5',
-            'regulatory_impact' => 'nullable|integer|min:1|max:5',
-            'reputational_impact' => 'nullable|integer|min:1|max:5',
-            'inherent_probability' => 'nullable|integer|min:1|max:5',
-            'is_active' => 'sometimes|boolean',
-        ]);
-
         // Check theme permission
         $category = RiskCategory::findOrFail($request->category_id);
         $this->authorize('createInTheme', [Risk::class, $category->theme_id]);
@@ -157,24 +144,8 @@ class RiskController extends Controller
     /**
      * Update risk
      */
-    public function update(Request $request, Risk $risk): JsonResponse
+    public function update(UpdateRiskRequest $request, Risk $risk): JsonResponse
     {
-        $request->validate([
-            'category_id' => 'sometimes|exists:risk_categories,id',
-            'ref_no' => 'sometimes|string|max:50|unique:risks,ref_no,'.$risk->id,
-            'name' => 'sometimes|string|max:200',
-            'description' => 'nullable|string',
-            'tier' => 'nullable|string',
-            'owner_id' => 'nullable|exists:users,id',
-            'responsible_party_id' => 'nullable|exists:users,id',
-            'financial_impact' => 'nullable|integer|min:1|max:5',
-            'regulatory_impact' => 'nullable|integer|min:1|max:5',
-            'reputational_impact' => 'nullable|integer|min:1|max:5',
-            'inherent_probability' => 'nullable|integer|min:1|max:5',
-            'monthly_update' => 'nullable|string',
-            'is_active' => 'sometimes|boolean',
-        ]);
-
         DB::transaction(function () use ($request, $risk) {
             $risk->update($request->all());
             $risk->calculateScores();

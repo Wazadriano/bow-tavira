@@ -32,6 +32,11 @@ it('sends daily summary to admin users', function () {
 it('does not send if nothing to report', function () {
     Notification::fake();
 
+    // Clear any pre-existing data that would trigger a report
+    WorkItem::query()->update(['deadline' => now()->addYear(), 'current_status' => 'Completed']);
+    Risk::query()->update(['inherent_rag' => 'Green']);
+    SupplierContract::query()->update(['end_date' => now()->addYear()]);
+
     $admin = User::factory()->admin()->create();
 
     $this->artisan('bow:send-daily-summary')
@@ -43,6 +48,11 @@ it('does not send if nothing to report', function () {
 
 it('includes correct counts in summary', function () {
     Notification::fake();
+
+    // Clear pre-existing data to control exact counts
+    WorkItem::query()->update(['deadline' => now()->addYear(), 'current_status' => 'Completed']);
+    Risk::query()->update(['inherent_rag' => 'Green']);
+    SupplierContract::query()->update(['end_date' => now()->addYear()]);
 
     $admin = User::factory()->admin()->create();
 
@@ -72,15 +82,14 @@ it('includes correct counts in summary', function () {
     ]);
 
     // 1 high risk (RED)
-    $theme = RiskTheme::create([
-        'code' => 'REG',
-        'name' => 'Regulatory',
-    ]);
-    $category = RiskCategory::create([
-        'theme_id' => $theme->id,
-        'code' => 'P-REG-01',
-        'name' => 'Compliance',
-    ]);
+    $theme = RiskTheme::firstOrCreate(
+        ['code' => 'REG'],
+        ['name' => 'Regulatory']
+    );
+    $category = RiskCategory::firstOrCreate(
+        ['code' => 'P-REG-01'],
+        ['theme_id' => $theme->id, 'name' => 'Compliance']
+    );
     Risk::create([
         'ref_no' => 'R-RED-01',
         'category_id' => $category->id,

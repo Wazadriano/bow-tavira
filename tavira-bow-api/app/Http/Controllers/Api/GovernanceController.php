@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreGovernanceItemRequest;
+use App\Http\Requests\UpdateGovernanceItemRequest;
 use App\Http\Resources\GovernanceItemResource;
 use App\Models\GovernanceItem;
 use App\Models\GovernanceItemAccess;
@@ -81,22 +83,8 @@ class GovernanceController extends Controller
     /**
      * Create new governance item
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreGovernanceItemRequest $request): JsonResponse
     {
-        $request->validate([
-            'ref_no' => 'required|string|max:50|unique:governance_items,ref_no',
-            'activity' => 'nullable|string|max:100',
-            'description' => 'required|string',
-            'frequency' => 'nullable|string',
-            'location' => 'nullable|string',
-            'department' => 'required|string|max:100',
-            'responsible_party_id' => 'nullable|exists:users,id',
-            'current_status' => 'nullable|string',
-            'rag_status' => 'nullable|string',
-            'deadline' => 'nullable|date',
-            'tags' => 'nullable|array',
-        ]);
-
         $item = DB::transaction(function () use ($request) {
             return GovernanceItem::create($request->all());
         });
@@ -129,24 +117,8 @@ class GovernanceController extends Controller
     /**
      * Update governance item
      */
-    public function update(Request $request, GovernanceItem $item): JsonResponse
+    public function update(UpdateGovernanceItemRequest $request, GovernanceItem $item): JsonResponse
     {
-        $request->validate([
-            'ref_no' => 'sometimes|string|max:50|unique:governance_items,ref_no,'.$item->id,
-            'activity' => 'nullable|string|max:100',
-            'description' => 'sometimes|string',
-            'frequency' => 'nullable|string',
-            'location' => 'nullable|string',
-            'department' => 'sometimes|string|max:100',
-            'responsible_party_id' => 'nullable|exists:users,id',
-            'current_status' => 'nullable|string',
-            'rag_status' => 'nullable|string',
-            'deadline' => 'nullable|date',
-            'completion_date' => 'nullable|date',
-            'monthly_update' => 'nullable|string',
-            'tags' => 'nullable|array',
-        ]);
-
         $item->update($request->all());
         $item->load(['responsibleParty']);
 

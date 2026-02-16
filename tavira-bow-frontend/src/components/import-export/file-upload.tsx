@@ -1,5 +1,3 @@
-'use client'
-
 import { useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Upload, FileSpreadsheet, X } from 'lucide-react'
@@ -87,14 +85,14 @@ export function FileUpload({
       <input {...getInputProps()} />
       <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-4" />
       {isDragActive ? (
-        <p className="text-primary font-medium">Deposez le fichier ici...</p>
+        <p className="text-primary font-medium">Drop file here...</p>
       ) : (
         <>
           <p className="font-medium mb-1">
-            Glissez-deposez un fichier ici, ou cliquez pour selectionner
+            Drag and drop a file here, or click to select
           </p>
           <p className="text-sm text-muted-foreground">
-            Formats acceptes: CSV, XLS, XLSX
+            Accepted formats: CSV, XLS, XLSX
           </p>
         </>
       )}

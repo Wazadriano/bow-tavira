@@ -1,5 +1,3 @@
-'use client'
-
 import { useEffect, useState } from 'react'
 import { Header } from '@/components/layout/header'
 import { Button } from '@/components/ui/button'
@@ -62,7 +60,7 @@ export default function SettingsPage() {
 
   const handleCreate = async () => {
     if (!newValue.trim() || !newLabel.trim()) {
-      toast.error('Valeur et libelle requis')
+      toast.error('Value and label required')
       return
     }
     try {
@@ -82,7 +80,7 @@ export default function SettingsPage() {
 
   const handleUpdate = async (id: number) => {
     if (!editValue.trim() || !editLabel.trim()) {
-      toast.error('Valeur et libelle requis')
+      toast.error('Value and label required')
       return
     }
     try {
@@ -132,11 +130,11 @@ export default function SettingsPage() {
           <TabsList>
             <TabsTrigger value="lists" className="flex items-center gap-2">
               <List className="h-4 w-4" />
-              Listes
+              Lists
             </TabsTrigger>
             <TabsTrigger value="system" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
-              Systeme
+              System
             </TabsTrigger>
           </TabsList>
 
@@ -145,7 +143,7 @@ export default function SettingsPage() {
               {/* Type selector */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Types de listes</CardTitle>
+                  <CardTitle>List Types</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
@@ -174,20 +172,20 @@ export default function SettingsPage() {
                       {LIST_TYPES.find((t) => t.value === selectedType)?.label}
                     </CardTitle>
                     <CardDescription>
-                      Gerer les valeurs de cette liste
+                      Manage values for this list
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     {/* Add new */}
                     <div className="mb-4 flex gap-2">
                       <Input
-                        placeholder="Valeur (code)"
+                        placeholder="Value (code)"
                         value={newValue}
                         onChange={(e) => setNewValue(e.target.value)}
                         className="max-w-[150px]"
                       />
                       <Input
-                        placeholder="Libelle"
+                        placeholder="Label"
                         value={newLabel}
                         onChange={(e) => setNewLabel(e.target.value)}
                       />
@@ -245,7 +243,7 @@ export default function SettingsPage() {
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <Badge variant={item.is_active ? 'default' : 'secondary'}>
-                                    {item.is_active ? 'Actif' : 'Inactif'}
+                                    {item.is_active ? 'Active' : 'Inactive'}
                                   </Badge>
                                   <Button
                                     size="sm"

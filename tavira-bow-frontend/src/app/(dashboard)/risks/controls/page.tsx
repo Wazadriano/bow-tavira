@@ -1,7 +1,5 @@
-'use client'
-
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom'
 import { Header } from '@/components/layout/header'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -38,7 +36,7 @@ interface ControlLibraryItem {
 }
 
 export default function ControlLibraryPage() {
-  const router = useRouter()
+  const navigate = useNavigate()
   const [controls, setControls] = useState<ControlLibraryItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [search, setSearch] = useState('')

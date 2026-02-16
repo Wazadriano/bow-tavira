@@ -1,5 +1,3 @@
-'use client'
-
 import { AlertCircle, AlertTriangle, CheckCircle } from 'lucide-react'
 import {
   Table,
@@ -30,20 +28,20 @@ export function PreviewTable({ preview, mapping }: PreviewTableProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold">Apercu des donnees</h3>
+        <h3 className="font-semibold">Data Preview</h3>
         <div className="flex items-center gap-4 text-sm">
           <span className="flex items-center gap-1">
             <CheckCircle className="h-4 w-4 text-green-500" />
-            {preview.valid_rows} valides
+            {preview.valid_rows} valid
           </span>
           {preview.error_rows > 0 && (
             <span className="flex items-center gap-1 text-destructive">
               <AlertCircle className="h-4 w-4" />
-              {preview.error_rows} erreurs
+              {preview.error_rows} errors
             </span>
           )}
           <span className="text-muted-foreground">
-            Total: {preview.total_rows} lignes
+            Total: {preview.total_rows} rows
           </span>
         </div>
       </div>
@@ -54,7 +52,7 @@ export function PreviewTable({ preview, mapping }: PreviewTableProps) {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-16">#</TableHead>
-                <TableHead className="w-24">Statut</TableHead>
+                <TableHead className="w-24">Status</TableHead>
                 {mappedColumns.map((col) => (
                   <TableHead key={col.sourceColumn}>
                     <div className="flex flex-col">
@@ -90,7 +88,7 @@ export function PreviewTable({ preview, mapping }: PreviewTableProps) {
                             <TooltipTrigger>
                               <Badge variant="destructive" className="gap-1">
                                 <AlertCircle className="h-3 w-3" />
-                                Erreur
+                                Error
                               </Badge>
                             </TooltipTrigger>
                             <TooltipContent>
@@ -111,7 +109,7 @@ export function PreviewTable({ preview, mapping }: PreviewTableProps) {
                                 className="gap-1 border-yellow-500 text-yellow-600"
                               >
                                 <AlertTriangle className="h-3 w-3" />
-                                Attention
+                                Warning
                               </Badge>
                             </TooltipTrigger>
                             <TooltipContent>
@@ -151,7 +149,7 @@ export function PreviewTable({ preview, mapping }: PreviewTableProps) {
 
       {preview.preview_data.length < preview.total_rows && (
         <p className="text-sm text-muted-foreground text-center">
-          Affichage des {preview.preview_data.length} premieres lignes sur{' '}
+          Showing first {preview.preview_data.length} rows of{' '}
           {preview.total_rows}
         </p>
       )}

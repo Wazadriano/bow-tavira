@@ -10,8 +10,8 @@ enum AssignmentType: string
     public function label(): string
     {
         return match ($this) {
-            self::OWNER => 'Propriétaire',
-            self::MEMBER => 'Membre',
+            self::OWNER => 'Owner',
+            self::MEMBER => 'Member',
         };
     }
 

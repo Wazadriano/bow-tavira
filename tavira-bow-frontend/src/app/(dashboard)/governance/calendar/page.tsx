@@ -1,7 +1,5 @@
-'use client'
-
 import { useEffect, useState, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom'
 import { Header } from '@/components/layout/header'
 import { CalendarView, type CalendarEvent } from '@/components/calendar'
 import { useGovernanceStore } from '@/stores/governance'
@@ -44,7 +42,7 @@ interface GovernanceCalendarEvent extends CalendarEvent {
 }
 
 export default function GovernanceCalendarPage() {
-  const router = useRouter()
+  const navigate = useNavigate()
   const { items, fetchItems, isLoading } = useGovernanceStore()
   const [events, setEvents] = useState<GovernanceCalendarEvent[]>([])
   const [statusFilter, setStatusFilter] = useState('all')
@@ -90,7 +88,7 @@ export default function GovernanceCalendarPage() {
 
   const handleEventClick = (event: CalendarEvent) => {
     if (event.href) {
-      router.push(event.href)
+      navigate(event.href)
     }
   }
 

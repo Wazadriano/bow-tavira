@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\GovernanceController;
 use App\Http\Controllers\Api\GovernanceFileController;
 use App\Http\Controllers\Api\GovernanceMilestoneController;
 use App\Http\Controllers\Api\ImportExportController;
+use App\Http\Controllers\Api\LoginHistoryController;
 use App\Http\Controllers\Api\MilestoneController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ReportController;
@@ -43,24 +44,51 @@ use Illuminate\Support\Facades\Route;
 */
 
 // ============================================
+// Health Check (public)
+// ============================================
+Route::get('/health', function () {
+    $status = ['status' => 'ok', 'timestamp' => now()->toIso8601String()];
+
+    try {
+        \Illuminate\Support\Facades\DB::select('SELECT 1');
+        $status['database'] = 'connected';
+    } catch (\Throwable) {
+        $status['database'] = 'disconnected';
+        $status['status'] = 'degraded';
+    }
+
+    try {
+        \Illuminate\Support\Facades\Redis::ping();
+        $status['redis'] = 'connected';
+    } catch (\Throwable) {
+        $status['redis'] = 'disconnected';
+        $status['status'] = 'degraded';
+    }
+
+    $code = $status['status'] === 'ok' ? 200 : 503;
+
+    return response()->json($status, $code);
+});
+
+// ============================================
 // Authentication (public)
 // ============================================
 Route::prefix('auth')->group(function () {
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
     Route::post('/refresh', [AuthController::class, 'refresh']);
 
     // Protected auth routes (accepts 2fa-pending tokens)
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/me', [AuthController::class, 'me']);
-        Route::post('/2fa/verify', [TwoFactorController::class, 'verify']);
+        Route::post('/2fa/verify', [TwoFactorController::class, 'verify'])->middleware('throttle:5,1');
     });
 });
 
 // ============================================
 // Protected Routes
 // ============================================
-Route::middleware(['auth:sanctum', EnsureTwoFactorComplete::class])->group(function () {
+Route::middleware(['auth:sanctum', EnsureTwoFactorComplete::class, 'throttle:api'])->group(function () {
 
     // ----------------------------------------
     // 2FA Management
@@ -308,6 +336,8 @@ Route::middleware(['auth:sanctum', EnsureTwoFactorComplete::class])->group(funct
         Route::get('/suppliers', [ImportExportController::class, 'exportSuppliers']);
         Route::get('/risks', [ImportExportController::class, 'exportRisks']);
         Route::get('/invoices', [ImportExportController::class, 'exportInvoices']);
+        Route::get('/status/{jobId}', [ImportExportController::class, 'exportStatus']);
+        Route::get('/download/{jobId}', [ImportExportController::class, 'exportDownload']);
     });
 
     // ----------------------------------------
@@ -328,6 +358,11 @@ Route::middleware(['auth:sanctum', EnsureTwoFactorComplete::class])->group(funct
         Route::get('/stats', [AuditController::class, 'stats']);
         Route::get('/{type}/{id}', [AuditController::class, 'forSubject']);
     });
+
+    // ----------------------------------------
+    // Admin - Login History
+    // ----------------------------------------
+    Route::get('/admin/login-history', [LoginHistoryController::class, 'index']);
 
     // ----------------------------------------
     // Notifications

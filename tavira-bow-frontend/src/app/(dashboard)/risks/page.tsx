@@ -1,8 +1,6 @@
-'use client'
-
 import { useQuery } from '@tanstack/react-query'
 import { ColumnDef } from '@tanstack/react-table'
-import Link from 'next/link'
+import { Link } from 'react-router-dom'
 import { useState } from 'react'
 import { Header } from '@/components/layout/header'
 import { Button } from '@/components/ui/button'
@@ -43,7 +41,7 @@ function useRiskColumns(): ColumnDef<Risk>[] {
       header: 'Reference',
       cell: ({ row }) => (
         <Link
-          href={`/risks/${row.original.id}`}
+          to={`/risks/${row.original.id}`}
           className="font-medium text-primary hover:underline"
         >
           {row.getValue('ref_no')}
@@ -142,13 +140,13 @@ function useRiskColumns(): ColumnDef<Risk>[] {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem asChild>
-              <Link href={`/risks/${row.original.id}`}>
+              <Link to={`/risks/${row.original.id}`}>
                 <Eye className="mr-2 h-4 w-4" />
                 View
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href={`/risks/${row.original.id}/edit`}>
+              <Link to={`/risks/${row.original.id}/edit`}>
                 <Edit className="mr-2 h-4 w-4" />
                 Edit
               </Link>
@@ -306,7 +304,7 @@ export default function RisksPage() {
             </TabsList>
           </Tabs>
           <Button asChild>
-            <Link href="/risks/new">
+            <Link to="/risks/new">
               <Plus className="mr-2 h-4 w-4" />
               Add Risk
             </Link>

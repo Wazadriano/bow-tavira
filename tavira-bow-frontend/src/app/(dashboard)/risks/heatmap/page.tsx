@@ -1,7 +1,5 @@
-'use client'
-
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom'
 import { Header } from '@/components/layout/header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -34,7 +32,7 @@ interface HeatmapData {
 }
 
 export default function RiskHeatmapPage() {
-  const router = useRouter()
+  const navigate = useNavigate()
   const [heatmapData, setHeatmapData] = useState<HeatmapData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [heatmapType, setHeatmapType] = useState<'inherent' | 'residual'>('inherent')
@@ -248,7 +246,7 @@ export default function RiskHeatmapPage() {
                           <div
                             key={risk.id}
                             className="p-3 rounded-lg border cursor-pointer hover:bg-muted/50"
-                            onClick={() => router.push(`/risks/${risk.id}`)}
+                            onClick={() => navigate(`/risks/${risk.id}`)}
                           >
                             <div className="flex items-center justify-between">
                               <Badge variant="outline" className="font-mono">

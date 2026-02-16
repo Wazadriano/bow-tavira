@@ -1,5 +1,3 @@
-'use client'
-
 import { Check, AlertCircle, HelpCircle } from 'lucide-react'
 import {
   Select,
@@ -48,17 +46,17 @@ export function ColumnMapper({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold">Mapping des colonnes</h3>
+        <h3 className="font-semibold">Column Mapping</h3>
         <div className="flex items-center gap-2">
           {allRequiredMapped ? (
             <Badge variant="default" className="bg-green-500">
               <Check className="h-3 w-3 mr-1" />
-              Champs requis mappes
+              Required fields mapped
             </Badge>
           ) : (
             <Badge variant="destructive">
               <AlertCircle className="h-3 w-3 mr-1" />
-              {requiredFields.length - mappedRequired.length} champs requis manquants
+              {requiredFields.length - mappedRequired.length} required fields missing
             </Badge>
           )}
         </div>
@@ -66,9 +64,9 @@ export function ColumnMapper({
 
       <div className="border rounded-lg divide-y">
         <div className="grid grid-cols-3 gap-4 p-3 bg-muted/50 font-medium text-sm">
-          <div>Colonne source</div>
-          <div>Champ cible</div>
-          <div>Statut</div>
+          <div>Source Column</div>
+          <div>Target Field</div>
+          <div>Status</div>
         </div>
 
         {mapping.map((m, index) => {
@@ -108,18 +106,18 @@ export function ColumnMapper({
               </div>
               <div className="flex items-center gap-2">
                 {status === 'unmapped' && (
-                  <Badge variant="secondary">Non mappe</Badge>
+                  <Badge variant="secondary">Unmapped</Badge>
                 )}
                 {status === 'required-mapped' && (
                   <Badge variant="default" className="bg-green-500">
                     <Check className="h-3 w-3 mr-1" />
-                    Requis
+                    Required
                   </Badge>
                 )}
                 {status === 'optional-mapped' && (
                   <Badge variant="outline">
                     <Check className="h-3 w-3 mr-1" />
-                    Optionnel
+                    Optional
                   </Badge>
                 )}
                 {m.detected && (
@@ -129,7 +127,7 @@ export function ColumnMapper({
                         <HelpCircle className="h-4 w-4 text-muted-foreground" />
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Mapping detecte automatiquement</p>
+                        <p>Automatically detected mapping</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -141,7 +139,7 @@ export function ColumnMapper({
       </div>
 
       <div className="text-sm text-muted-foreground">
-        <p>* Champs obligatoires</p>
+        <p>* Required fields</p>
       </div>
     </div>
   )
