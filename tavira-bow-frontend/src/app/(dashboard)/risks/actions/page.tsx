@@ -1,7 +1,5 @@
-'use client'
-
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom'
 import { Header } from '@/components/layout/header'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -40,7 +38,7 @@ interface RiskAction {
 }
 
 export default function RiskActionsPage() {
-  const router = useRouter()
+  const navigate = useNavigate()
   const [actions, setActions] = useState<RiskAction[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -247,7 +245,7 @@ export default function RiskActionsPage() {
                     <TableRow
                       key={action.id}
                       className="cursor-pointer hover:bg-muted/50"
-                      onClick={() => router.push(`/risks/${action.risk_id}`)}
+                      onClick={() => navigate(`/risks/${action.risk_id}`)}
                     >
                       <TableCell className="font-medium">
                         {action.title}

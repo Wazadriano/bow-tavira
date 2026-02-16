@@ -1,8 +1,6 @@
-'use client'
-
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -36,7 +34,7 @@ const FREQUENCY_OPTIONS = [
 ]
 
 export function GovernanceForm({ item, mode }: GovernanceFormProps) {
-  const router = useRouter()
+  const navigate = useNavigate()
   const { create, update, isSaving } = useGovernanceStore()
 
   const { data: users } = useQuery({
@@ -84,7 +82,7 @@ export function GovernanceForm({ item, mode }: GovernanceFormProps) {
         await update(item.id, data)
         toast.success('Governance item updated')
       }
-      router.push('/governance')
+      navigate('/governance')
     } catch (error: unknown) {
       const axiosError = error as { response?: { status?: number; data?: { message?: string; errors?: Record<string, string[]> } } }
       if (axiosError.response?.status === 422 && axiosError.response.data?.errors) {
@@ -233,7 +231,7 @@ export function GovernanceForm({ item, mode }: GovernanceFormProps) {
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push('/governance')}
+          onClick={() => navigate('/governance')}
         >
           Cancel
         </Button>

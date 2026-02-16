@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreSupplierRequest;
+use App\Http\Requests\UpdateSupplierRequest;
 use App\Http\Resources\SupplierResource;
 use App\Models\Supplier;
 use App\Models\SupplierAccess;
@@ -83,21 +85,8 @@ class SupplierController extends Controller
     /**
      * Create new supplier
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreSupplierRequest $request): JsonResponse
     {
-        $request->validate([
-            'ref_no' => 'required|string|max:50|unique:suppliers,ref_no',
-            'name' => 'required|string|max:200',
-            'sage_category_id' => 'nullable|exists:sage_categories,id',
-            'responsible_party_id' => 'nullable|exists:users,id',
-            'location' => 'nullable|string',
-            'is_common_provider' => 'sometimes|boolean',
-            'status' => 'nullable|string',
-            'notes' => 'nullable|string',
-            'entities' => 'nullable|array',
-            'entities.*' => 'string',
-        ]);
-
         $supplier = DB::transaction(function () use ($request) {
             $supplier = Supplier::create($request->except('entities'));
 
@@ -145,21 +134,8 @@ class SupplierController extends Controller
     /**
      * Update supplier
      */
-    public function update(Request $request, Supplier $supplier): JsonResponse
+    public function update(UpdateSupplierRequest $request, Supplier $supplier): JsonResponse
     {
-        $request->validate([
-            'ref_no' => 'sometimes|string|max:50|unique:suppliers,ref_no,'.$supplier->id,
-            'name' => 'sometimes|string|max:200',
-            'sage_category_id' => 'nullable|exists:sage_categories,id',
-            'responsible_party_id' => 'nullable|exists:users,id',
-            'location' => 'nullable|string',
-            'is_common_provider' => 'sometimes|boolean',
-            'status' => 'nullable|string',
-            'notes' => 'nullable|string',
-            'entities' => 'nullable|array',
-            'entities.*' => 'string',
-        ]);
-
         DB::transaction(function () use ($request, $supplier) {
             $supplier->update($request->except('entities'));
 

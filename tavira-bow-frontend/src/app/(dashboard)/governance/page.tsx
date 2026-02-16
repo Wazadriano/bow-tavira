@@ -1,10 +1,8 @@
-'use client'
-
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { ColumnDef } from '@tanstack/react-table'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Header } from '@/components/layout/header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -55,7 +53,7 @@ const FREQUENCY_OPTIONS = [
 ]
 
 export default function GovernancePage() {
-  const router = useRouter()
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { remove } = useGovernanceStore()
   const { showConfirm } = useUIStore()
@@ -127,7 +125,7 @@ export default function GovernancePage() {
       cell: ({ row }) => (
         <div className="min-w-[200px]">
           <Link
-            href={`/governance/${row.original.id}`}
+            to={`/governance/${row.original.id}`}
             className="font-medium text-primary hover:underline"
           >
             {row.getValue('activity') || row.original.ref_no}
@@ -196,8 +194,8 @@ export default function GovernancePage() {
       header: '',
       cell: ({ row }) => (
         <ActionButtons
-          onView={() => router.push(`/governance/${row.original.id}`)}
-          onEdit={() => router.push(`/governance/${row.original.id}/edit`)}
+          onView={() => navigate(`/governance/${row.original.id}`)}
+          onEdit={() => navigate(`/governance/${row.original.id}/edit`)}
           onDelete={() => {
             showConfirm({
               title: 'Delete this governance item',
@@ -320,7 +318,7 @@ export default function GovernancePage() {
 
             {/* New Item Button */}
             <Button asChild>
-              <Link href="/governance/new">
+              <Link to="/governance/new">
                 <Plus className="mr-2 h-4 w-4" />
                 New Item
               </Link>

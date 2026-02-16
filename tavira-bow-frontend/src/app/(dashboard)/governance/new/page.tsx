@@ -1,6 +1,4 @@
-'use client'
-
-import Link from 'next/link'
+import { Link } from 'react-router-dom'
 import { Header } from '@/components/layout/header'
 import { Button } from '@/components/ui/button'
 import { GovernanceForm } from '@/components/governance/governance-form'
@@ -17,7 +15,7 @@ export default function NewGovernancePage() {
       <div className="p-6">
         <div className="mb-6">
           <Button variant="ghost" asChild>
-            <Link href="/governance">
+            <Link to="/governance">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to list
             </Link>

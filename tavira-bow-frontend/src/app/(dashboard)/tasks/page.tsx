@@ -1,10 +1,8 @@
-'use client'
-
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { ColumnDef } from '@tanstack/react-table'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Header } from '@/components/layout/header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -54,7 +52,7 @@ const PRIORITY_OPTIONS = [
 ]
 
 export default function TasksPage() {
-  const router = useRouter()
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { remove } = useWorkItemsStore()
   const { showConfirm } = useUIStore()
@@ -148,7 +146,7 @@ export default function TasksPage() {
       cell: ({ row }) => (
         <div className="min-w-[200px]">
           <Link
-            href={`/tasks/${row.original.id}`}
+            to={`/tasks/${row.original.id}`}
             className="font-medium text-primary hover:underline"
           >
             {row.getValue('ref_no')}
@@ -213,8 +211,8 @@ export default function TasksPage() {
       header: '',
       cell: ({ row }) => (
         <ActionButtons
-          onView={() => router.push(`/tasks/${row.original.id}`)}
-          onEdit={() => router.push(`/tasks/${row.original.id}/edit`)}
+          onView={() => navigate(`/tasks/${row.original.id}`)}
+          onEdit={() => navigate(`/tasks/${row.original.id}/edit`)}
           onDelete={() => {
             showConfirm({
               title: 'Delete this work item',
@@ -337,7 +335,7 @@ export default function TasksPage() {
 
             {/* New Task Button */}
             <Button asChild>
-              <Link href="/tasks/new">
+              <Link to="/tasks/new">
                 <Plus className="mr-2 h-4 w-4" />
                 New Task
               </Link>

@@ -1,9 +1,7 @@
-'use client'
-
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -33,7 +31,7 @@ const IMPACT_LABELS = ['', 'Negligible', 'Minor', 'Moderate', 'Major', 'Critical
 const PROBABILITY_LABELS = ['', 'Rare', 'Unlikely', 'Possible', 'Likely', 'Almost Certain']
 
 export function RiskForm({ risk, mode }: RiskFormProps) {
-  const router = useRouter()
+  const navigate = useNavigate()
   const { create, update, isSaving, themes, categories, fetchThemes, fetchCategories } = useRisksStore()
 
   const { data: users } = useQuery({
@@ -109,7 +107,7 @@ export function RiskForm({ risk, mode }: RiskFormProps) {
         await update(risk.id, data)
         toast.success('Risk updated')
       }
-      router.push('/risks')
+      navigate('/risks')
     } catch {
       toast.error('An error occurred')
     }
@@ -360,7 +358,7 @@ export function RiskForm({ risk, mode }: RiskFormProps) {
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push('/risks')}
+          onClick={() => navigate('/risks')}
         >
           Cancel
         </Button>

@@ -1,8 +1,6 @@
-'use client'
-
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -20,7 +18,7 @@ interface TeamFormProps {
 }
 
 export function TeamForm({ team, mode }: TeamFormProps) {
-  const router = useRouter()
+  const navigate = useNavigate()
   const { create, update, isSaving } = useTeamsStore()
 
   const {
@@ -53,7 +51,7 @@ export function TeamForm({ team, mode }: TeamFormProps) {
         await update(team.id, data)
         toast.success('Team updated')
       }
-      router.push('/teams')
+      navigate('/teams')
     } catch {
       toast.error('An error occurred')
     }
@@ -105,7 +103,7 @@ export function TeamForm({ team, mode }: TeamFormProps) {
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push('/teams')}
+          onClick={() => navigate('/teams')}
         >
           Cancel
         </Button>

@@ -11,9 +11,9 @@ enum SupplierStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::ACTIVE => 'Actif',
-            self::EXITED => 'Terminé',
-            self::PENDING => 'En attente',
+            self::ACTIVE => 'Active',
+            self::EXITED => 'Exited',
+            self::PENDING => 'Pending',
         };
     }
 

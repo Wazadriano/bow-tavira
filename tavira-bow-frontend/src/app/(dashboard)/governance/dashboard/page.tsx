@@ -1,5 +1,3 @@
-'use client'
-
 import { useEffect, useState } from 'react'
 import { Header } from '@/components/layout/header'
 import { BarChart, DoughnutChart, StatsCard, StatsGrid } from '@/components/charts'
@@ -34,7 +32,7 @@ interface GovernanceStats {
   upcoming: Array<{ id: number; title: string; next_due: string; department: string }>
 }
 
-const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
+const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 
 export default function GovernanceDashboardPage() {
   const [stats, setStats] = useState<GovernanceStats | null>(null)

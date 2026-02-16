@@ -1,7 +1,5 @@
-'use client'
-
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
+import { Link } from 'react-router-dom'
 import {
   AlertCircle,
   Clock,
@@ -157,7 +155,7 @@ export function AlertsPanel() {
                 return (
                   <Link
                     key={alert.id}
-                    href={alert.link}
+                    to={alert.link}
                     className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors group"
                   >
                     {content}
@@ -178,7 +176,7 @@ export function AlertsPanel() {
 
             {total > 5 && (
               <Button variant="ghost" className="w-full" asChild>
-                <Link href="/alerts">
+                <Link to="/alerts">
                   View all alerts ({total})
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </Link>

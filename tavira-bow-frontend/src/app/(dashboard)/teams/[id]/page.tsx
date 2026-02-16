@@ -1,8 +1,6 @@
-'use client'
-
 import { useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { useParams, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Header } from '@/components/layout/header'
 import { Button } from '@/components/ui/button'
@@ -29,7 +27,7 @@ import { toast } from 'sonner'
 
 export default function TeamDetailPage() {
   const params = useParams()
-  const router = useRouter()
+  const navigate = useNavigate()
   const id = Number(params.id)
 
   const {
@@ -67,7 +65,7 @@ export default function TeamDetailPage() {
         try {
           await remove(id)
           toast.success('Team deleted')
-          router.push('/teams')
+          navigate('/teams')
         } catch {
           toast.error('Error during deletion')
         }
@@ -128,14 +126,14 @@ export default function TeamDetailPage() {
       <div className="p-6">
         <div className="mb-6 flex items-center justify-between">
           <Button variant="ghost" asChild>
-            <Link href="/teams">
+            <Link to="/teams">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to list
             </Link>
           </Button>
           <div className="flex gap-2">
             <Button variant="outline" asChild>
-              <Link href={`/teams/${id}/edit`}>
+              <Link to={`/teams/${id}/edit`}>
                 <Edit className="mr-2 h-4 w-4" />
                 Edit
               </Link>

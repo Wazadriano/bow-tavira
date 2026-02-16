@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreSupplierContractRequest;
+use App\Http\Requests\UpdateSupplierContractRequest;
 use App\Http\Resources\SupplierContractResource;
 use App\Models\ContractEntity;
 use App\Models\Supplier;
@@ -69,23 +71,9 @@ class SupplierContractController extends Controller
     /**
      * Create new contract
      */
-    public function store(Request $request, Supplier $supplier): JsonResponse
+    public function store(StoreSupplierContractRequest $request, Supplier $supplier): JsonResponse
     {
         $this->authorize('update', $supplier);
-
-        $request->validate([
-            'contract_ref' => 'required|string|max:100',
-            'description' => 'nullable|string',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
-            'amount' => 'nullable|numeric|min:0',
-            'currency' => 'nullable|string|max:3',
-            'auto_renewal' => 'sometimes|boolean',
-            'notice_period_days' => 'nullable|integer|min:0',
-            'notes' => 'nullable|string',
-            'entities' => 'nullable|array',
-            'entities.*' => 'string',
-        ]);
 
         $contract = DB::transaction(function () use ($request, $supplier) {
             $contract = SupplierContract::create([
@@ -136,27 +124,13 @@ class SupplierContractController extends Controller
     /**
      * Update contract
      */
-    public function update(Request $request, Supplier $supplier, SupplierContract $contract): JsonResponse
+    public function update(UpdateSupplierContractRequest $request, Supplier $supplier, SupplierContract $contract): JsonResponse
     {
         $this->authorize('update', $supplier);
 
         if ($contract->supplier_id !== $supplier->id) {
             abort(404);
         }
-
-        $request->validate([
-            'contract_ref' => 'sometimes|string|max:100',
-            'description' => 'nullable|string',
-            'start_date' => 'sometimes|date',
-            'end_date' => 'sometimes|date|after:start_date',
-            'amount' => 'nullable|numeric|min:0',
-            'currency' => 'nullable|string|max:3',
-            'auto_renewal' => 'sometimes|boolean',
-            'notice_period_days' => 'nullable|integer|min:0',
-            'notes' => 'nullable|string',
-            'entities' => 'nullable|array',
-            'entities.*' => 'string',
-        ]);
 
         DB::transaction(function () use ($request, $contract) {
             $contract->update($request->except('entities'));

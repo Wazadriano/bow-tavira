@@ -1,5 +1,3 @@
-'use client'
-
 import { useEffect, useState } from 'react'
 import { Header } from '@/components/layout/header'
 import { BarChart, DoughnutChart, StatsCard, StatsGrid } from '@/components/charts'
@@ -36,7 +34,7 @@ interface DashboardStats {
   priority_by_dept: Array<{ department: string; total: number; priority: number }>
 }
 
-const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
+const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 
 export default function TasksDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)

@@ -1,8 +1,6 @@
-'use client'
-
 import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { useParams, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Header } from '@/components/layout/header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -44,7 +42,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 export default function WorkItemDetailPage() {
   const params = useParams()
-  const router = useRouter()
+  const navigate = useNavigate()
   const id = Number(params.id)
 
   const { selectedItem, isLoadingItem, error, fetchById, remove, uploadFile, deleteFile, update } = useWorkItemsStore()
@@ -68,7 +66,7 @@ export default function WorkItemDetailPage() {
         try {
           await remove(id)
           toast.success('Work item deleted')
-          router.push('/tasks')
+          navigate('/tasks')
         } catch {
           toast.error('Error during deletion')
         }
@@ -83,8 +81,8 @@ export default function WorkItemDetailPage() {
   if (error || !selectedItem) {
     return (
       <ErrorState
-        title="Tâche introuvable"
-        description={error || "Cette tâche n'existe pas ou vous n'avez pas les droits pour y accéder."}
+        title="Work item not found"
+        description={error || "This work item does not exist or you do not have access."}
         onRetry={() => fetchById(id)}
       />
     )
@@ -102,15 +100,13 @@ export default function WorkItemDetailPage() {
       <div className="p-6">
         {/* Navigation et actions */}
         <div className="mb-6 flex items-center justify-between">
-          <Button variant="ghost" asChild>
-            <Link href="/tasks">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to list
-            </Link>
+          <Button variant="ghost" onClick={() => navigate(-1)}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
           </Button>
           <div className="flex gap-2">
             <Button variant="outline" asChild>
-              <Link href={`/tasks/${id}/edit`}>
+              <Link to={`/tasks/${id}/edit`}>
                 <Edit className="mr-2 h-4 w-4" />
                 Edit
               </Link>

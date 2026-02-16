@@ -10,8 +10,8 @@ enum AppetiteStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::OK => 'Dans l\'appétit',
-            self::OUTSIDE => 'Hors appétit',
+            self::OK => 'Within Appetite',
+            self::OUTSIDE => 'Outside Appetite',
         };
     }
 

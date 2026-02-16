@@ -1,8 +1,6 @@
-'use client'
-
 import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { useParams, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Header } from '@/components/layout/header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -66,7 +64,7 @@ function getScoreColor(score: number): string {
 
 export default function RiskDetailPage() {
   const params = useParams()
-  const router = useRouter()
+  const navigate = useNavigate()
   const id = Number(params.id)
 
   const [controlDialogOpen, setControlDialogOpen] = useState(false)
@@ -163,7 +161,7 @@ export default function RiskDetailPage() {
         try {
           await remove(id)
           toast.success('Risk deleted')
-          router.push('/risks')
+          navigate('/risks')
         } catch {
           toast.error('Error during deletion')
         }
@@ -200,15 +198,13 @@ export default function RiskDetailPage() {
 
       <div className="p-6">
         <div className="mb-6 flex items-center justify-between">
-          <Button variant="ghost" asChild>
-            <Link href="/risks">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to list
-            </Link>
+          <Button variant="ghost" onClick={() => navigate(-1)}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
           </Button>
           <div className="flex gap-2">
             <Button variant="outline" asChild>
-              <Link href={`/risks/${id}/edit`}>
+              <Link to={`/risks/${id}/edit`}>
                 <Edit className="mr-2 h-4 w-4" />
                 Edit
               </Link>

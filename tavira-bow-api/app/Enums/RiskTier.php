@@ -11,9 +11,9 @@ enum RiskTier: string
     public function label(): string
     {
         return match ($this) {
-            self::TIER_A => 'Tier A - Risque Élevé',
-            self::TIER_B => 'Tier B - Risque Moyen',
-            self::TIER_C => 'Tier C - Risque Faible',
+            self::TIER_A => 'Tier A - High Risk',
+            self::TIER_B => 'Tier B - Medium Risk',
+            self::TIER_C => 'Tier C - Low Risk',
         };
     }
 

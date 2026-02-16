@@ -16,6 +16,9 @@ class DatabaseSeeder extends Seeder
             SettingListSeeder::class,
             RiskThemeSeeder::class,
             SystemSettingSeeder::class,
+            LegacyDataSeeder::class,
+            ComprehensiveDataSeeder::class,
+            WorkItemDataEnhancerSeeder::class,
         ]);
     }
 }

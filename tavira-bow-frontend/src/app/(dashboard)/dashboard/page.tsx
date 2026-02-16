@@ -1,5 +1,3 @@
-'use client'
-
 import { useQuery } from '@tanstack/react-query'
 import { Header } from '@/components/layout/header'
 import {
@@ -119,7 +117,7 @@ export default function DashboardPage() {
         <div className="grid gap-4 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>Distribution RAG</CardTitle>
+              <CardTitle>RAG Distribution</CardTitle>
               <CardDescription>Current status of work items</CardDescription>
             </CardHeader>
             <CardContent>

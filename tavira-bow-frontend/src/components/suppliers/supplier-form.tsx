@@ -1,8 +1,6 @@
-'use client'
-
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -40,7 +38,7 @@ const LOCATION_OPTIONS = [
 ]
 
 export function SupplierForm({ supplier, mode }: SupplierFormProps) {
-  const router = useRouter()
+  const navigate = useNavigate()
   const { create, update, isSaving } = useSuppliersStore()
 
   const { data: sageCategories } = useQuery({
@@ -90,7 +88,7 @@ export function SupplierForm({ supplier, mode }: SupplierFormProps) {
         await update(supplier.id, data)
         toast.success('Supplier updated')
       }
-      router.push('/suppliers')
+      navigate('/suppliers')
     } catch {
       toast.error('An error occurred')
     }
@@ -236,7 +234,7 @@ export function SupplierForm({ supplier, mode }: SupplierFormProps) {
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push('/suppliers')}
+          onClick={() => navigate('/suppliers')}
         >
           Cancel
         </Button>

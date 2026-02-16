@@ -1,7 +1,5 @@
-'use client'
-
 import { useEffect, useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom'
 import {
   CheckSquare,
   FileText,
@@ -58,7 +56,7 @@ export function CommandPalette() {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
-  const router = useRouter()
+  const navigate = useNavigate()
 
   const filtered = commands.filter((cmd) =>
     cmd.label.toLowerCase().includes(search.toLowerCase())
@@ -81,8 +79,8 @@ export function CommandPalette() {
 
   const handleSelect = useCallback((href: string) => {
     setOpen(false)
-    router.push(href)
-  }, [router])
+    navigate(href)
+  }, [navigate])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {

@@ -13,10 +13,10 @@ enum GovernanceFrequency: string
     public function label(): string
     {
         return match ($this) {
-            self::MONTHLY => 'Mensuel',
-            self::QUARTERLY => 'Trimestriel',
-            self::BIANNUALLY => 'Semestriel',
-            self::ANNUALLY => 'Annuel',
+            self::MONTHLY => 'Monthly',
+            self::QUARTERLY => 'Quarterly',
+            self::BIANNUALLY => 'Biannually',
+            self::ANNUALLY => 'Annually',
             self::AD_HOC => 'Ad Hoc',
         };
     }

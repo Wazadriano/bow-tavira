@@ -13,11 +13,11 @@ enum InvoiceFrequency: string
     public function label(): string
     {
         return match ($this) {
-            self::MONTHLY => 'Mensuel',
-            self::QUARTERLY => 'Trimestriel',
-            self::ANNUALLY => 'Annuel',
-            self::ONE_TIME => 'Unique',
-            self::AS_NEEDED => 'Sur demande',
+            self::MONTHLY => 'Monthly',
+            self::QUARTERLY => 'Quarterly',
+            self::ANNUALLY => 'Annually',
+            self::ONE_TIME => 'One Time',
+            self::AS_NEEDED => 'As Needed',
         };
     }
 }

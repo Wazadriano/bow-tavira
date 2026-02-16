@@ -12,10 +12,10 @@ enum ActionStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::OPEN => 'Ouvert',
-            self::IN_PROGRESS => 'En cours',
-            self::COMPLETED => 'Terminé',
-            self::OVERDUE => 'En retard',
+            self::OPEN => 'Open',
+            self::IN_PROGRESS => 'In Progress',
+            self::COMPLETED => 'Completed',
+            self::OVERDUE => 'Overdue',
         };
     }
 

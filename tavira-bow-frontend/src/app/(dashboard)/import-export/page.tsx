@@ -1,5 +1,3 @@
-'use client'
-
 import { useState } from 'react'
 import {
   Upload,
@@ -121,7 +119,7 @@ export default function ImportExportPage() {
       <div>
         <h1 className="text-3xl font-bold">Import / Export</h1>
         <p className="text-muted-foreground">
-          Importez vos donnees depuis des fichiers CSV/Excel ou exportez vos donnees
+          Import your data from CSV/Excel files or export your data
         </p>
       </div>
 
@@ -145,10 +143,10 @@ export default function ImportExportPage() {
                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm">
                   1
                 </span>
-                Type de donnees
+                Data Type
               </CardTitle>
               <CardDescription>
-                Selectionnez le type de donnees que vous souhaitez importer
+                Select the type of data you want to import
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -183,7 +181,7 @@ export default function ImportExportPage() {
                     onClick={() => handleDownloadTemplate(importType)}
                   >
                     <Download className="h-4 w-4 mr-2" />
-                    Telecharger le template
+                    Download Template
                   </Button>
                 </div>
               )}
@@ -198,10 +196,10 @@ export default function ImportExportPage() {
                   <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm">
                     2
                   </span>
-                  Fichier source
+                  Source File
                 </CardTitle>
                 <CardDescription>
-                  Selectionnez votre fichier CSV ou Excel a importer
+                  Select your CSV or Excel file to import
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -214,10 +212,10 @@ export default function ImportExportPage() {
                 {canPreview && (
                   <Button onClick={uploadAndPreview} disabled={isUploading || isPreviewing}>
                     {isUploading || isPreviewing ? (
-                      <>Analyse en cours...</>
+                      <>Analysing...</>
                     ) : (
                       <>
-                        Analyser le fichier
+                        Analyse File
                         <ArrowRight className="h-4 w-4 ml-2" />
                       </>
                     )}
@@ -237,10 +235,10 @@ export default function ImportExportPage() {
                   <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm">
                     3
                   </span>
-                  Selection des onglets
+                  Sheet Selection
                 </CardTitle>
                 <CardDescription>
-                  Le fichier contient {sheets.length} onglets. Selectionnez ceux a importer.
+                  The file contains {sheets.length} sheets. Select the ones to import.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -251,7 +249,7 @@ export default function ImportExportPage() {
                     onCheckedChange={() => toggleAllImportable()}
                   />
                   <label htmlFor="select-all-importable" className="text-sm font-medium cursor-pointer">
-                    Importer tous les onglets compatibles ({sheetInfo.filter((s) => s.importable).length})
+                    Import all compatible sheets ({sheetInfo.filter((s) => s.importable).length})
                   </label>
                 </div>
                 <div className="border-t pt-3 space-y-2">
@@ -277,13 +275,13 @@ export default function ImportExportPage() {
                         />
                         <label htmlFor={`sheet-${sheet.name}`} className={`text-sm cursor-pointer ${!sheet.importable ? 'text-muted-foreground' : ''}`}>
                           {sheet.name}
-                          {sheet.name === 'BOW List' && <span className="text-primary ml-1">(source primaire)</span>}
+                          {sheet.name === 'BOW List' && <span className="text-primary ml-1">(primary source)</span>}
                         </label>
                       </div>
                       <div className="flex items-center gap-2">
                         {sheet.rows > 0 && (
                           <Badge variant="secondary" className="text-xs">
-                            {sheet.rows} lignes
+                            {sheet.rows} rows
                           </Badge>
                         )}
                         {sheet.columns > 0 && (
@@ -293,7 +291,7 @@ export default function ImportExportPage() {
                         )}
                         {!sheet.importable && (
                           <Badge variant="destructive" className="text-xs">
-                            Non importable
+                            Not importable
                           </Badge>
                         )}
                       </div>
@@ -312,13 +310,13 @@ export default function ImportExportPage() {
                   <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm">
                     {3 + sheetStepOffset}
                   </span>
-                  Mapping des colonnes
+                  Column Mapping
                 </CardTitle>
                 <CardDescription>
-                  Associez les colonnes de votre fichier aux champs du systeme.
+                  Map the columns from your file to the system fields.
                   {mapping.filter((m) => m.detected).length > 0 && (
                     <span className="ml-1 font-medium">
-                      {mapping.filter((m) => m.detected).length}/{mapping.length} colonnes auto-detectees.
+                      {mapping.filter((m) => m.detected).length}/{mapping.length} columns auto-detected.
                     </span>
                   )}
                 </CardDescription>
@@ -341,10 +339,10 @@ export default function ImportExportPage() {
                   <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm">
                     {4 + sheetStepOffset}
                   </span>
-                  Apercu et validation
+                  Preview and Validation
                 </CardTitle>
                 <CardDescription>
-                  Verifiez les donnees avant de lancer l&apos;import
+                  Review the data before starting the import
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -353,7 +351,7 @@ export default function ImportExportPage() {
                 <div className="flex items-center justify-between pt-4 border-t">
                   <Button variant="outline" onClick={reset}>
                     <RotateCcw className="h-4 w-4 mr-2" />
-                    Recommencer
+                    Start Over
                   </Button>
 
                   <Button
@@ -361,11 +359,11 @@ export default function ImportExportPage() {
                     disabled={isImporting || !canImport || !allRequiredMapped}
                   >
                     {isImporting ? (
-                      <>Import en cours...</>
+                      <>Import in progress...</>
                     ) : (
                       <>
                         <CheckCircle className="h-4 w-4 mr-2" />
-                        Lancer l&apos;import ({preview.total_rows} lignes{selectedSheets.length > 1 ? `, ${selectedSheets.length} onglets` : ''})
+                        Start Import ({preview.total_rows} rows{selectedSheets.length > 1 ? `, ${selectedSheets.length} sheets` : ''})
                       </>
                     )}
                   </Button>
@@ -378,9 +376,9 @@ export default function ImportExportPage() {
         <TabsContent value="export" className="space-y-6 mt-6">
           <Card>
             <CardHeader>
-              <CardTitle>Exporter vos donnees</CardTitle>
+              <CardTitle>Export Your Data</CardTitle>
               <CardDescription>
-                Telechargez vos donnees au format Excel
+                Download your data in Excel format
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -400,7 +398,7 @@ export default function ImportExportPage() {
                       onClick={() => handleExport(type.value)}
                     >
                       <Download className="h-4 w-4 mr-2" />
-                      Exporter
+                      Export
                     </Button>
                   </Card>
                 ))}

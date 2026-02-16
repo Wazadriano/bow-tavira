@@ -1,8 +1,6 @@
-'use client'
-
 import { useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { useParams, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Header } from '@/components/layout/header'
 import { Button } from '@/components/ui/button'
 import { UserForm } from '@/components/users'
@@ -13,7 +11,7 @@ import { toast } from 'sonner'
 
 export default function EditUserPage() {
   const params = useParams()
-  const router = useRouter()
+  const navigate = useNavigate()
   const id = Number(params.id)
 
   const { selectedUser, isLoadingUser, isSaving, error, fetchById, update } =
@@ -29,7 +27,7 @@ export default function EditUserPage() {
     try {
       await update(id, data)
       toast.success('User updated successfully')
-      router.push(`/users/${id}`)
+      navigate(`/users/${id}`)
     } catch {
       toast.error('Error during update')
     }
@@ -59,7 +57,7 @@ export default function EditUserPage() {
       <div className="p-6">
         <div className="mb-6">
           <Button variant="ghost" asChild>
-            <Link href={`/users/${id}`}>
+            <Link to={`/users/${id}`}>
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to details
             </Link>

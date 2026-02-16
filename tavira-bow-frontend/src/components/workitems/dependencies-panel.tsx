@@ -1,5 +1,3 @@
-'use client'
-
 import { useState, useEffect } from 'react'
 import { Plus, X, ArrowRight, Link2, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -23,7 +21,7 @@ import {
 import { RAGBadge } from '@/components/shared/rag-badge'
 import { useWorkItemsStore } from '@/stores/workitems'
 import { toast } from 'sonner'
-import Link from 'next/link'
+import { Link } from 'react-router-dom'
 import type { WorkItem } from '@/types'
 
 interface DependenciesPanelProps {
@@ -160,7 +158,7 @@ export function DependenciesPanel({
                   <RAGBadge status={dep.rag_status} />
                   <div className="flex-1 min-w-0">
                     <Link
-                      href={`/tasks/${dep.id}`}
+                      to={`/tasks/${dep.id}`}
                       className="font-medium hover:underline flex items-center gap-2"
                     >
                       <span className="font-mono text-xs text-muted-foreground">

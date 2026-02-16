@@ -1,8 +1,6 @@
-'use client'
-
 import { useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { useParams, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Header } from '@/components/layout/header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -46,7 +44,7 @@ const FREQUENCY_LABELS: Record<string, string> = {
 
 export default function GovernanceDetailPage() {
   const params = useParams()
-  const router = useRouter()
+  const navigate = useNavigate()
   const id = Number(params.id)
 
   const { selectedItem, isLoadingItem, error, fetchById, remove, uploadFile, deleteFile } = useGovernanceStore()
@@ -67,7 +65,7 @@ export default function GovernanceDetailPage() {
         try {
           await remove(id)
           toast.success('Item deleted')
-          router.push('/governance')
+          navigate('/governance')
         } catch {
           toast.error('Error during deletion')
         }
@@ -100,15 +98,13 @@ export default function GovernanceDetailPage() {
 
       <div className="p-6">
         <div className="mb-6 flex items-center justify-between">
-          <Button variant="ghost" asChild>
-            <Link href="/governance">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to list
-            </Link>
+          <Button variant="ghost" onClick={() => navigate(-1)}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
           </Button>
           <div className="flex gap-2">
             <Button variant="outline" asChild>
-              <Link href={`/governance/${id}/edit`}>
+              <Link to={`/governance/${id}/edit`}>
                 <Edit className="mr-2 h-4 w-4" />
                 Edit
               </Link>

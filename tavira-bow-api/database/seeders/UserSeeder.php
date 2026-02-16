@@ -16,7 +16,7 @@ class UserSeeder extends Seeder
             [
                 'email' => 'admin@tavira-bow.local',
                 'password' => Hash::make('admin123'),
-                'full_name' => 'Administrateur',
+                'full_name' => 'Administrator',
                 'role' => 'admin',
                 'is_active' => true,
                 'primary_department' => null,

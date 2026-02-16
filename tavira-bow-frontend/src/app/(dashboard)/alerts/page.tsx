@@ -1,7 +1,5 @@
-'use client'
-
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
+import { Link } from 'react-router-dom'
 import {
   AlertCircle,
   Clock,
@@ -226,7 +224,7 @@ export default function AlertsPage() {
 
                 if (alert.link) {
                   return (
-                    <Link key={alert.id} href={alert.link} className="flex items-center gap-4 p-4 rounded-lg border hover:bg-muted/50 transition-colors group">
+                    <Link key={alert.id} to={alert.link} className="flex items-center gap-4 p-4 rounded-lg border hover:bg-muted/50 transition-colors group">
                       {content}
                     </Link>
                   )

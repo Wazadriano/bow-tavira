@@ -1,7 +1,5 @@
-'use client'
-
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom'
 import { Header } from '@/components/layout/header'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -40,7 +38,7 @@ interface Invoice {
 }
 
 export default function InvoicesPage() {
-  const router = useRouter()
+  const navigate = useNavigate()
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -113,7 +111,7 @@ export default function InvoicesPage() {
         description="Supplier invoices management"
         actions={
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => router.push('/import-export?type=invoices')}>
+            <Button variant="outline" onClick={() => navigate('/import-export?type=invoices')}>
               <Upload className="h-4 w-4 mr-2" />
               Import CSV
             </Button>
@@ -123,7 +121,7 @@ export default function InvoicesPage() {
               <Download className="h-4 w-4 mr-2" />
               Export
             </Button>
-            <Button onClick={() => router.push('/suppliers/invoices/new')}>
+            <Button onClick={() => navigate('/suppliers/invoices/new')}>
               <Plus className="h-4 w-4 mr-2" />
               New Invoice
             </Button>
@@ -237,7 +235,7 @@ export default function InvoicesPage() {
                       key={invoice.id}
                       className="cursor-pointer hover:bg-muted/50"
                       onClick={() =>
-                        router.push(`/suppliers/${invoice.supplier_id}`)
+                        navigate(`/suppliers/${invoice.supplier_id}`)
                       }
                     >
                       <TableCell className="font-medium font-mono">

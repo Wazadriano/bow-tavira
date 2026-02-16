@@ -11,9 +11,9 @@ enum ActionPriority: string
     public function label(): string
     {
         return match ($this) {
-            self::HIGH => 'Haute',
-            self::MEDIUM => 'Moyenne',
-            self::LOW => 'Basse',
+            self::HIGH => 'High',
+            self::MEDIUM => 'Medium',
+            self::LOW => 'Low',
         };
     }
 

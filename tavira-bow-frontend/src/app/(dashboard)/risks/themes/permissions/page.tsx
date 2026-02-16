@@ -1,5 +1,3 @@
-'use client'
-
 import { useEffect, useState } from 'react'
 import { Header } from '@/components/layout/header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -108,9 +106,9 @@ export default function RiskThemePermissionsPage() {
       setPermissions(res.data.data ?? [])
       setAddDialogOpen(false)
       setSelectedUserId('')
-      toast.success('Permission ajoutée')
+      toast.success('Permission added')
     } catch {
-      toast.error('Erreur lors de l\'ajout')
+      toast.error('Error adding permission')
     } finally {
       setIsSaving(false)
     }
@@ -121,17 +119,17 @@ export default function RiskThemePermissionsPage() {
     try {
       await api.delete(`/risks/themes/${selectedThemeId}/permissions/${permId}`)
       setPermissions((p) => p.filter((x) => x.id !== permId))
-      toast.success('Permission supprimée')
+      toast.success('Permission removed')
     } catch {
-      toast.error('Erreur')
+      toast.error('Error')
     }
   }
 
   return (
     <>
       <Header
-        title="Permissions par thème de risque"
-        description="Gérer les accès (vue / édition) par thème de risque (RG-BOW-011)"
+        title="Risk Theme Permissions"
+        description="Manage access (view / edit) by risk theme (RG-BOW-011)"
       />
 
       <div className="p-6 space-y-6">
@@ -139,16 +137,16 @@ export default function RiskThemePermissionsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ShieldCheck className="h-5 w-5" />
-              Thème
+              Theme
             </CardTitle>
           </CardHeader>
           <CardContent>
             {isLoadingThemes ? (
-              <p className="text-sm text-muted-foreground">Chargement...</p>
+              <p className="text-sm text-muted-foreground">Loading...</p>
             ) : (
               <Select value={selectedThemeId} onValueChange={setSelectedThemeId}>
                 <SelectTrigger className="w-[320px]">
-                  <SelectValue placeholder="Sélectionner un thème" />
+                  <SelectValue placeholder="Select a theme" />
                 </SelectTrigger>
                 <SelectContent>
                   {themes.map((t) => (
@@ -165,21 +163,21 @@ export default function RiskThemePermissionsPage() {
         {selectedTheme && (
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Accès au thème « {selectedTheme.name} »</CardTitle>
+              <CardTitle>Access to theme &ldquo;{selectedTheme.name}&rdquo;</CardTitle>
               <Button onClick={() => setAddDialogOpen(true)} size="sm">
                 <UserPlus className="h-4 w-4 mr-2" />
-                Ajouter un utilisateur
+                Add user
               </Button>
             </CardHeader>
             <CardContent>
               {isLoadingPerms ? (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Chargement...
+                  Loading...
                 </div>
               ) : permissions.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-4">
-                  Aucune permission spécifique. Les accès par département s’appliquent par défaut.
+                  No specific permissions. Department-level access applies by default.
                 </p>
               ) : (
                 <ul className="space-y-3">
@@ -192,10 +190,10 @@ export default function RiskThemePermissionsPage() {
                         <span className="font-medium">
                           {p.user?.full_name ?? p.user?.email ?? `User #${p.user_id}`}
                         </span>
-                        <Badge variant={p.can_view ? 'default' : 'secondary'}>Vue</Badge>
-                        {p.can_edit && <Badge variant="outline">Édition</Badge>}
-                        {p.can_create && <Badge variant="outline">Création</Badge>}
-                        {p.can_delete && <Badge variant="outline">Suppression</Badge>}
+                        <Badge variant={p.can_view ? 'default' : 'secondary'}>View</Badge>
+                        {p.can_edit && <Badge variant="outline">Edit</Badge>}
+                        {p.can_create && <Badge variant="outline">Create</Badge>}
+                        {p.can_delete && <Badge variant="outline">Delete</Badge>}
                       </div>
                       <Button
                         variant="ghost"
@@ -217,17 +215,17 @@ export default function RiskThemePermissionsPage() {
       <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Ajouter un accès</DialogTitle>
+            <DialogTitle>Add Access</DialogTitle>
             <DialogDescription>
-              Donner à un utilisateur des droits sur le thème « {selectedTheme?.name} ».
+              Grant a user access to theme &ldquo;{selectedTheme?.name}&rdquo;.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Utilisateur</Label>
+              <Label>User</Label>
               <Select value={selectedUserId} onValueChange={setSelectedUserId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Choisir un utilisateur" />
+                  <SelectValue placeholder="Choose a user" />
                 </SelectTrigger>
                 <SelectContent>
                   {availableUsers.map((u) => (
@@ -237,14 +235,14 @@ export default function RiskThemePermissionsPage() {
                   ))}
                   {availableUsers.length === 0 && (
                     <SelectItem value="_none" disabled>
-                      Tous les utilisateurs ont déjà un accès
+                      All users already have access
                     </SelectItem>
                   )}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Droits</Label>
+              <Label>Rights</Label>
               <div className="flex flex-wrap gap-4">
                 <label className="flex items-center gap-2">
                   <input
@@ -252,7 +250,7 @@ export default function RiskThemePermissionsPage() {
                     checked={newPermCanView}
                     onChange={(e) => setNewPermCanView(e.target.checked)}
                   />
-                  <span className="text-sm">Vue</span>
+                  <span className="text-sm">View</span>
                 </label>
                 <label className="flex items-center gap-2">
                   <input
@@ -260,7 +258,7 @@ export default function RiskThemePermissionsPage() {
                     checked={newPermCanEdit}
                     onChange={(e) => setNewPermCanEdit(e.target.checked)}
                   />
-                  <span className="text-sm">Édition</span>
+                  <span className="text-sm">Edit</span>
                 </label>
                 <label className="flex items-center gap-2">
                   <input
@@ -268,7 +266,7 @@ export default function RiskThemePermissionsPage() {
                     checked={newPermCanCreate}
                     onChange={(e) => setNewPermCanCreate(e.target.checked)}
                   />
-                  <span className="text-sm">Création</span>
+                  <span className="text-sm">Create</span>
                 </label>
                 <label className="flex items-center gap-2">
                   <input
@@ -276,20 +274,20 @@ export default function RiskThemePermissionsPage() {
                     checked={newPermCanDelete}
                     onChange={(e) => setNewPermCanDelete(e.target.checked)}
                   />
-                  <span className="text-sm">Suppression</span>
+                  <span className="text-sm">Delete</span>
                 </label>
               </div>
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setAddDialogOpen(false)}>
-                Annuler
+                Cancel
               </Button>
               <Button
                 disabled={!selectedUserId || selectedUserId === '_none' || isSaving}
                 onClick={handleAddPermission}
               >
                 {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Ajouter
+                Add
               </Button>
             </div>
           </div>

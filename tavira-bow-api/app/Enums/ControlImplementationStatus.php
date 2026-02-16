@@ -11,9 +11,9 @@ enum ControlImplementationStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::PLANNED => 'Planifié',
-            self::IN_PROGRESS => 'En cours',
-            self::IMPLEMENTED => 'Implémenté',
+            self::PLANNED => 'Planned',
+            self::IN_PROGRESS => 'In Progress',
+            self::IMPLEMENTED => 'Implemented',
         };
     }
 

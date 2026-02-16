@@ -1,8 +1,6 @@
-'use client'
-
 import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { useParams, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Header } from '@/components/layout/header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -50,7 +48,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function SupplierDetailPage() {
   const params = useParams()
-  const router = useRouter()
+  const navigate = useNavigate()
   const id = Number(params.id)
   const [activeTab, setActiveTab] = useState('info')
   const [contractDialogOpen, setContractDialogOpen] = useState(false)
@@ -116,7 +114,7 @@ export default function SupplierDetailPage() {
         try {
           await remove(id)
           toast.success('Supplier deleted')
-          router.push('/suppliers')
+          navigate('/suppliers')
         } catch {
           toast.error('Error during deletion')
         }
@@ -152,15 +150,13 @@ export default function SupplierDetailPage() {
 
       <div className="p-6">
         <div className="mb-6 flex items-center justify-between">
-          <Button variant="ghost" asChild>
-            <Link href="/suppliers">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to list
-            </Link>
+          <Button variant="ghost" onClick={() => navigate(-1)}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
           </Button>
           <div className="flex gap-2">
             <Button variant="outline" asChild>
-              <Link href={`/suppliers/${id}/edit`}>
+              <Link to={`/suppliers/${id}/edit`}>
                 <Edit className="mr-2 h-4 w-4" />
                 Edit
               </Link>
@@ -231,10 +227,10 @@ export default function SupplierDetailPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="info">Information</TabsTrigger>
-            <TabsTrigger value="entities">Entités ({(supplier as { entities?: { entity: string }[] }).entities?.length ?? 0})</TabsTrigger>
+            <TabsTrigger value="entities">Entities ({(supplier as { entities?: { entity: string }[] }).entities?.length ?? 0})</TabsTrigger>
             <TabsTrigger value="contracts">Contracts ({totalContracts})</TabsTrigger>
             <TabsTrigger value="invoices">Invoices ({invoices.length})</TabsTrigger>
-            <TabsTrigger value="access">Acces</TabsTrigger>
+            <TabsTrigger value="access">Access</TabsTrigger>
           </TabsList>
 
           <TabsContent value="info" className="mt-6">
@@ -248,20 +244,20 @@ export default function SupplierDetailPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Statut</span>
+                    <span className="text-sm text-muted-foreground">Status</span>
                     <Badge className={supplier.status ? (STATUS_COLORS[supplier.status.toLowerCase()] || '') : ''}>
                       {supplier.status ? (STATUS_LABELS[supplier.status.toLowerCase()] || supplier.status) : '-'}
                     </Badge>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Localisation</span>
+                    <span className="text-sm text-muted-foreground">Location</span>
                     <span>{supplier.location}</span>
                   </div>
 
                   {supplier.sage_category && (
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Categorie SAGE</span>
+                      <span className="text-sm text-muted-foreground">SAGE Category</span>
                       <Badge variant="outline">{supplier.sage_category.name}</Badge>
                     </div>
                   )}
@@ -297,12 +293,12 @@ export default function SupplierDetailPage() {
                   <Separator />
 
                   <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Cree le</h4>
+                    <h4 className="text-sm font-medium text-muted-foreground">Created</h4>
                     <p className="mt-1 text-sm">{formatDate(supplier.created_at)}</p>
                   </div>
 
                   <div>
-                    <h4 className="text-sm font-medium text-muted-foreground">Modifie le</h4>
+                    <h4 className="text-sm font-medium text-muted-foreground">Modified</h4>
                     <p className="mt-1 text-sm">{formatDate(supplier.updated_at)}</p>
                   </div>
                 </CardContent>
@@ -313,15 +309,15 @@ export default function SupplierDetailPage() {
           <TabsContent value="entities" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>Entités</CardTitle>
+                <CardTitle>Entities</CardTitle>
               </CardHeader>
               <CardContent>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Entités associées à ce fournisseur (multi-entité).
+                    Entities associated with this supplier (multi-entity).
                   </p>
                   <div className="flex gap-2 mb-4">
                     <Input
-                      placeholder="Nom de l'entité"
+                      placeholder="Entity name"
                       value={newEntity}
                       onChange={(e) => setNewEntity(e.target.value)}
                       onKeyDown={(e) => {
@@ -333,8 +329,8 @@ export default function SupplierDetailPage() {
                           if (entities.includes(v)) return
                           setIsSavingEntities(true)
                           update(id, { entities: [...entities, v] })
-                            .then(() => { fetchById(id); setNewEntity(''); toast.success('Entité ajoutée') })
-                            .catch(() => toast.error('Erreur'))
+                            .then(() => { fetchById(id); setNewEntity(''); toast.success('Entity added') })
+                            .catch(() => toast.error('Error'))
                             .finally(() => setIsSavingEntities(false))
                         }
                       }}
@@ -346,7 +342,7 @@ export default function SupplierDetailPage() {
                         if (!v) return
                         const entities = ((supplier as { entities?: { entity: string }[] }).entities ?? []).map((x) => x.entity)
                         if (entities.includes(v)) {
-                          toast.error('Cette entité existe déjà')
+                          toast.error('This entity already exists')
                           return
                         }
                         setIsSavingEntities(true)
@@ -354,19 +350,19 @@ export default function SupplierDetailPage() {
                           await update(id, { entities: [...entities, v] })
                           await fetchById(id)
                           setNewEntity('')
-                          toast.success('Entité ajoutée')
+                          toast.success('Entity added')
                         } catch {
-                          toast.error('Erreur lors de l\'ajout')
+                          toast.error('Error adding entity')
                         } finally {
                           setIsSavingEntities(false)
                         }
                       }}
                     >
-                      Ajouter
+                      Add
                     </Button>
                   </div>
                   {((supplier as { entities?: { id: number; entity: string }[] }).entities ?? []).length === 0 ? (
-                    <p className="text-sm text-muted-foreground py-4">Aucune entité.</p>
+                    <p className="text-sm text-muted-foreground py-4">No entities.</p>
                   ) : (
                     <ul className="space-y-2">
                       {((supplier as { entities?: { id: number; entity: string }[] }).entities ?? []).map((ent) => (
@@ -388,9 +384,9 @@ export default function SupplierDetailPage() {
                               try {
                                 await update(id, { entities })
                                 await fetchById(id)
-                                toast.success('Entité supprimée')
+                                toast.success('Entity removed')
                               } catch {
-                                toast.error('Erreur')
+                                toast.error('Error')
                               } finally {
                                 setIsSavingEntities(false)
                               }

@@ -1,9 +1,7 @@
-'use client'
-
 import { useState, useEffect } from 'react'
 import { ColumnDef } from '@tanstack/react-table'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Header } from '@/components/layout/header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -30,7 +28,7 @@ const STATUS_OPTIONS = [
 ]
 
 export default function TeamsPage() {
-  const router = useRouter()
+  const navigate = useNavigate()
   const { items, isLoading, fetchItems, remove } = useTeamsStore()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
@@ -79,7 +77,7 @@ export default function TeamsPage() {
       header: 'Name',
       cell: ({ row }) => (
         <Link
-          href={`/teams/${row.original.id}`}
+          to={`/teams/${row.original.id}`}
           className="font-medium text-primary hover:underline"
         >
           {row.getValue('name')}
@@ -140,8 +138,8 @@ export default function TeamsPage() {
       header: '',
       cell: ({ row }) => (
         <ActionButtons
-          onView={() => router.push(`/teams/${row.original.id}`)}
-          onEdit={() => router.push(`/teams/${row.original.id}/edit`)}
+          onView={() => navigate(`/teams/${row.original.id}`)}
+          onEdit={() => navigate(`/teams/${row.original.id}/edit`)}
           onDelete={() => {
             if (confirm('Are you sure you want to delete this team?')) {
               remove(row.original.id)
@@ -209,7 +207,7 @@ export default function TeamsPage() {
 
             {/* New Team Button */}
             <Button asChild>
-              <Link href="/teams/new">
+              <Link to="/teams/new">
                 <Plus className="mr-2 h-4 w-4" />
                 New Team
               </Link>

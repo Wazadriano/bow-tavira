@@ -12,10 +12,10 @@ enum RAGStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::BLUE => 'Bleu (Terminé)',
-            self::GREEN => 'Vert (OK)',
-            self::AMBER => 'Orange (Attention)',
-            self::RED => 'Rouge (Critique)',
+            self::BLUE => 'Blue (Completed)',
+            self::GREEN => 'Green (OK)',
+            self::AMBER => 'Amber (Warning)',
+            self::RED => 'Red (Critical)',
         };
     }
 

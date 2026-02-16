@@ -1,7 +1,5 @@
-'use client'
-
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom'
 import { useAuthIsLoading, useAuthError, useAuthActions } from '@/stores/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,7 +15,7 @@ import { ClipboardList, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function LoginPage() {
-  const router = useRouter()
+  const navigate = useNavigate()
   const isLoading = useAuthIsLoading()
   const error = useAuthError()
   const { login } = useAuthActions()
@@ -29,7 +27,7 @@ export default function LoginPage() {
     try {
       await login(email, password)
       toast.success('Welcome back!')
-      router.push('/dashboard')
+      navigate('/dashboard')
     } catch {
       toast.error(error || 'Login failed. Please check your credentials.')
     }
@@ -50,11 +48,11 @@ export default function LoginPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Email or Username</Label>
               <Input
                 id="email"
-                type="email"
-                placeholder="name@example.com"
+                type="text"
+                placeholder="email or username"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
