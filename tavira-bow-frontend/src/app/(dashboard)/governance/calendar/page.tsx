@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Header } from '@/components/layout/header'
 import { CalendarView, type CalendarEvent } from '@/components/calendar'
@@ -44,7 +44,6 @@ interface GovernanceCalendarEvent extends CalendarEvent {
 export default function GovernanceCalendarPage() {
   const navigate = useNavigate()
   const { items, fetchItems, isLoading } = useGovernanceStore()
-  const [events, setEvents] = useState<GovernanceCalendarEvent[]>([])
   const [statusFilter, setStatusFilter] = useState('all')
   const [ragFilter, setRagFilter] = useState('all')
   const [frequencyFilter, setFrequencyFilter] = useState('all')
@@ -59,8 +58,8 @@ export default function GovernanceCalendarPage() {
     return Array.from(depts).sort()
   }, [items])
 
-  useEffect(() => {
-    const calendarEvents: GovernanceCalendarEvent[] = items
+  const events: GovernanceCalendarEvent[] = useMemo(() => {
+    return items
       .filter((item) => item.deadline && safeParseDate(item.deadline))
       .map((item) => ({
         id: item.id,
@@ -73,7 +72,6 @@ export default function GovernanceCalendarPage() {
         _department: item.department,
         _frequency: item.frequency,
       }))
-    setEvents(calendarEvents)
   }, [items])
 
   const filteredEvents = useMemo(() => {

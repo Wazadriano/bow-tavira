@@ -35,7 +35,6 @@ export default function TasksCalendarPage() {
   const navigate = useNavigate()
   const { items, fetchItems, isLoading } = useWorkItemsStore()
   const [milestones, setMilestones] = useState<TaskMilestone[]>([])
-  const [events, setEvents] = useState<CalendarEvent[]>([])
   const [statusFilter, setStatusFilter] = useState('all')
   const [ragFilter, setRagFilter] = useState('all')
   const [departmentFilter, setDepartmentFilter] = useState('all')
@@ -58,7 +57,7 @@ export default function TasksCalendarPage() {
     return Array.from(depts).sort()
   }, [items])
 
-  useEffect(() => {
+  const events: CalendarEvent[] = useMemo(() => {
     const taskEvents: CalendarEvent[] = items
       .filter((item) => item.deadline && safeParseDate(item.deadline))
       .map((item) => ({
@@ -82,7 +81,7 @@ export default function TasksCalendarPage() {
         href: `/tasks/${m.work_item_id}`,
         eventKind: 'milestone' as const,
       }))
-    setEvents([...taskEvents, ...milestoneEvents])
+    return [...taskEvents, ...milestoneEvents]
   }, [items, milestones])
 
   const filteredEvents = useMemo(() => {

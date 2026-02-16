@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Header } from '@/components/layout/header'
@@ -34,7 +34,6 @@ interface SupplierCalendarEvent extends CalendarEvent {
 
 export default function SuppliersCalendarPage() {
   const navigate = useNavigate()
-  const [events, setEvents] = useState<SupplierCalendarEvent[]>([])
   const [statusFilter, setStatusFilter] = useState('all')
   const [locationFilter, setLocationFilter] = useState('all')
 
@@ -43,8 +42,8 @@ export default function SuppliersCalendarPage() {
     queryFn: () => get<PaginatedResponse<Supplier & { contracts?: SupplierContract[] }>>('/suppliers?per_page=100'),
   })
 
-  useEffect(() => {
-    if (!suppliersData?.data) return
+  const events: SupplierCalendarEvent[] = useMemo(() => {
+    if (!suppliersData?.data) return []
 
     const calendarEvents: SupplierCalendarEvent[] = []
 
@@ -77,7 +76,7 @@ export default function SuppliersCalendarPage() {
       })
     })
 
-    setEvents(calendarEvents)
+    return calendarEvents
   }, [suppliersData])
 
   const filteredEvents = useMemo(() => {
