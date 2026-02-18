@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Models\User;
 use App\Models\WorkItem;
+use App\Services\ICalendarService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -25,13 +26,27 @@ class TaskAssignedNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
+        $mail = (new MailMessage)
             ->subject("You have been assigned to task {$this->workItem->ref_no}")
             ->greeting("Hello {$notifiable->full_name},")
             ->line("{$this->assignedBy->full_name} has assigned you to task **{$this->workItem->ref_no}**.")
             ->line('Description: '.$this->workItem->description)
             ->line('Deadline: '.($this->workItem->deadline?->toDateString() ?? 'No deadline'))
+            ->line('Please acknowledge this assignment on the platform.')
             ->action('View Task', url("/tasks/{$this->workItem->id}"));
+
+        if ($this->workItem->deadline) {
+            $icsContent = app(ICalendarService::class)->generateTaskEvent($this->workItem);
+            $tmpFile = tempnam(sys_get_temp_dir(), 'ics_');
+            file_put_contents($tmpFile, $icsContent);
+
+            $mail->attach($tmpFile, [
+                'as' => 'task-deadline.ics',
+                'mime' => 'text/calendar',
+            ]);
+        }
+
+        return $mail;
     }
 
     public function toArray(object $notifiable): array

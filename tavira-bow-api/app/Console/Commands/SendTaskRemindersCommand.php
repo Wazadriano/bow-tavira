@@ -11,11 +11,11 @@ class SendTaskRemindersCommand extends Command
 {
     protected $signature = 'bow:send-task-reminders';
 
-    protected $description = 'Send task deadline reminders at J-7, J-3, and J-1';
+    protected $description = 'Send task deadline reminders at J-30, J-7, J-3, and J-1 (RG-BOW-014)';
 
     public function handle(): int
     {
-        $reminderDays = [7, 3, 1];
+        $reminderDays = [30, 7, 3, 1];
         $totalSent = 0;
 
         foreach ($reminderDays as $days) {
@@ -46,12 +46,14 @@ class SendTaskRemindersCommand extends Command
     {
         $users = collect();
 
+        // Responsible party always receives reminders (no acknowledged filter)
         if ($workItem->responsibleParty) {
             $users->push($workItem->responsibleParty);
         }
 
+        // Assigned users: only those who have NOT acknowledged (RG-BOW-014)
         foreach ($workItem->assignments as $assignment) {
-            if ($assignment->user) {
+            if ($assignment->user && ! $assignment->isAcknowledged()) {
                 $users->push($assignment->user);
             }
         }

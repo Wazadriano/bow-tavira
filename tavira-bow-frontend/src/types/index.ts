@@ -365,6 +365,7 @@ export interface TaskAssignment {
   work_item_id: number
   user_id: number
   assignment_type: 'owner' | 'member'
+  acknowledged_at: string | null
   created_at: string
   user: User
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { UserPlus, X, Loader2, User } from 'lucide-react'
+import { UserPlus, X, Loader2, User, CheckCircle2, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -18,8 +18,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { useWorkItemsStore } from '@/stores/workitems'
 import { useUsersStore } from '@/stores/users'
+import { useAuthUser } from '@/stores/auth'
 import { toast } from 'sonner'
 import type { TaskAssignment } from '@/types'
 
@@ -36,11 +43,13 @@ export function AssignmentPanel({
 }: AssignmentPanelProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [acknowledging, setAcknowledging] = useState<number | null>(null)
   const [selectedUserId, setSelectedUserId] = useState<string>('')
   const [assignmentType, setAssignmentType] = useState<'owner' | 'member'>('member')
 
-  const { assignUser, unassignUser, fetchById } = useWorkItemsStore()
+  const { assignUser, unassignUser, acknowledgeAssignment } = useWorkItemsStore()
   const { users, fetchUsers } = useUsersStore()
+  const currentUser = useAuthUser()
 
   const assignedUserIds = currentAssignments.map((a) => a.user_id)
   const availableUsers = users.filter((u) => !assignedUserIds.includes(u.id))
@@ -74,6 +83,19 @@ export function AssignmentPanel({
       onAssignmentsUpdated?.()
     } catch {
       toast.error('Error unassigning user')
+    }
+  }
+
+  const handleAcknowledge = async (assignmentId: number) => {
+    setAcknowledging(assignmentId)
+    try {
+      await acknowledgeAssignment(assignmentId)
+      toast.success('Assignment acknowledged')
+      onAssignmentsUpdated?.()
+    } catch {
+      toast.error('Error acknowledging assignment')
+    } finally {
+      setAcknowledging(null)
     }
   }
 
@@ -165,15 +187,48 @@ export function AssignmentPanel({
                   <Badge variant={a.assignment_type === 'owner' ? 'default' : 'secondary'}>
                     {a.assignment_type}
                   </Badge>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        {a.acknowledged_at ? (
+                          <CheckCircle2 className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <Clock className="h-4 w-4 text-amber-500" />
+                        )}
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {a.acknowledged_at
+                          ? `Acknowledged: ${new Date(a.acknowledged_at).toLocaleDateString()}`
+                          : 'Pending acknowledgement'}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-destructive hover:text-destructive"
-                  onClick={() => handleRemoveAssignment(a.user_id)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-1">
+                  {currentUser?.id === a.user_id && !a.acknowledged_at && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={acknowledging === a.id}
+                      onClick={() => handleAcknowledge(a.id)}
+                    >
+                      {acknowledging === a.id ? (
+                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                      ) : (
+                        <CheckCircle2 className="h-4 w-4 mr-1" />
+                      )}
+                      Acknowledge
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => handleRemoveAssignment(a.user_id)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>

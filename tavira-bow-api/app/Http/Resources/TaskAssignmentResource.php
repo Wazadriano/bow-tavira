@@ -14,6 +14,7 @@ class TaskAssignmentResource extends JsonResource
             'work_item_id' => $this->work_item_id,
             'user_id' => $this->user_id,
             'assignment_type' => $this->assignment_type?->value,
+            'acknowledged_at' => $this->acknowledged_at?->toIso8601String(),
             'user' => new UserResource($this->whenLoaded('user')),
         ];
     }

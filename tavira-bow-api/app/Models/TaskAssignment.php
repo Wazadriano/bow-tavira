@@ -12,13 +12,34 @@ class TaskAssignment extends Model
         'work_item_id',
         'user_id',
         'assignment_type',
+        'acknowledged_at',
     ];
 
     protected function casts(): array
     {
         return [
             'assignment_type' => AssignmentType::class,
+            'acknowledged_at' => 'datetime',
         ];
+    }
+
+    // ========== Business Logic ==========
+
+    public function isAcknowledged(): bool
+    {
+        return $this->acknowledged_at !== null;
+    }
+
+    // ========== Scopes (acknowledgement) ==========
+
+    public function scopeUnacknowledged($query)
+    {
+        return $query->whereNull('acknowledged_at');
+    }
+
+    public function scopeAcknowledged($query)
+    {
+        return $query->whereNotNull('acknowledged_at');
     }
 
     // ========== Relationships ==========

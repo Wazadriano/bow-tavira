@@ -27,6 +27,7 @@ use App\Http\Controllers\Api\SupplierController;
 use App\Http\Controllers\Api\SupplierFileController;
 use App\Http\Controllers\Api\SupplierInvoiceController;
 use App\Http\Controllers\Api\SystemSettingController;
+use App\Http\Controllers\Api\TaskAssignmentController;
 use App\Http\Controllers\Api\TeamController;
 use App\Http\Controllers\Api\TeamMemberController;
 use App\Http\Controllers\Api\TwoFactorController;
@@ -133,6 +134,9 @@ Route::middleware(['auth:sanctum', EnsureTwoFactorComplete::class, 'throttle:api
 
         Route::get('/milestones', [MilestoneController::class, 'forWorkItem']);
     });
+
+    // Task Assignment acknowledgement (RG-BOW-014)
+    Route::put('task-assignments/{taskAssignment}/acknowledge', [TaskAssignmentController::class, 'acknowledge']);
 
     // ----------------------------------------
     // Teams
