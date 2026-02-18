@@ -140,22 +140,17 @@ export default function SuppliersDashboardPage() {
     { name: 'Pending', value: stats.by_status.pending, color: '#f59e0b' },
   ]
 
-  const locationData = stats.by_location.map((l) => ({
-    name: l.name,
-    count: l.count,
+  const locationData = (stats.by_location ?? []).map((l) => ({
+    name: l?.name ?? 'Unknown',
+    count: l?.count ?? 0,
   }))
 
-  const categoryData = stats.by_category.map((c) => ({
-    name: c.name,
-    value: c.count,
-    color: [
-      '#3b82f6',
-      '#8b5cf6',
-      '#06b6d4',
-      '#22c55e',
-      '#f59e0b',
-      '#6b7280',
-    ][stats.by_category.indexOf(c) % 6],
+  const CATEGORY_COLORS = ['#3b82f6', '#8b5cf6', '#06b6d4', '#22c55e', '#f59e0b', '#6b7280']
+
+  const categoryData = (stats.by_category ?? []).map((c, index) => ({
+    name: c?.name ?? 'Unknown',
+    value: c?.count ?? 0,
+    color: CATEGORY_COLORS[index % CATEGORY_COLORS.length],
   }))
 
   return (

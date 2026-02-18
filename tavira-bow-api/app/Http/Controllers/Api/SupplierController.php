@@ -269,10 +269,12 @@ class SupplierController extends Controller
             ->get()
             ->map(fn ($row) => ['name' => $row->location instanceof \App\Enums\SupplierLocation ? $row->location->value : (string) $row->location, 'count' => (int) $row->count]);
 
-        // By sage category
+        // By sage category (top 10, sorted by count)
         $byCategory = Supplier::selectRaw('sage_category_id, count(*) as count')
             ->whereNotNull('sage_category_id')
             ->groupBy('sage_category_id')
+            ->orderByRaw('count(*) DESC')
+            ->limit(10)
             ->with('sageCategory')
             ->get()
             ->map(fn ($row) => ['name' => $row->sageCategory?->name ?? 'Unknown', 'count' => (int) $row->count]);

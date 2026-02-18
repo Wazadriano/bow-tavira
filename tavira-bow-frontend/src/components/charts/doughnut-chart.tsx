@@ -52,7 +52,7 @@ export function DoughnutChart({
               outerRadius={outerRadius}
               paddingAngle={2}
               dataKey="value"
-              label={({ name, value }) => `${name}: ${value}`}
+              label={({ name, value }) => `${name ?? 'N/A'}: ${value ?? 0}`}
               labelLine={false}
             >
               {data.map((entry, index) => (
@@ -71,7 +71,7 @@ export function DoughnutChart({
               <Legend
                 formatter={(value, entry) => {
                   const item = data.find((d) => d.name === value)
-                  const percentage = item ? ((item.value / total) * 100).toFixed(1) : 0
+                  const percentage = item && total > 0 ? ((item.value / total) * 100).toFixed(1) : '0.0'
                   return `${value} (${percentage}%)`
                 }}
               />
