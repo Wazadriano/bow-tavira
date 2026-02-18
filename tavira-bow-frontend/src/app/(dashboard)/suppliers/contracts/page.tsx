@@ -31,7 +31,7 @@ interface Contract {
   supplier_name: string
   start_date: string
   end_date: string
-  value: number
+  value: number | null
   currency: string
   status: 'active' | 'expired' | 'pending'
   rag_status?: string
@@ -98,10 +98,11 @@ export default function ContractsPage() {
     )
   }
 
-  const formatCurrency = (value: number, currency: string) => {
+  const formatCurrency = (value: number | null, currency: string) => {
+    if (value == null) return '-'
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
-      currency,
+      currency: currency || 'EUR',
     }).format(value)
   }
 

@@ -52,8 +52,7 @@ export function DoughnutChart({
               outerRadius={outerRadius}
               paddingAngle={2}
               dataKey="value"
-              label={({ name, value }) => `${name ?? 'N/A'}: ${value ?? 0}`}
-              labelLine={false}
+              label={false}
             >
               {data.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />
