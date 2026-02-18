@@ -62,9 +62,9 @@ export default function RiskActionsPage() {
 
   const filteredActions = actions.filter((action) => {
     const matchesSearch =
-      action.title.toLowerCase().includes(search.toLowerCase()) ||
-      action.risk_name.toLowerCase().includes(search.toLowerCase()) ||
-      action.owner.toLowerCase().includes(search.toLowerCase())
+      (action.title ?? '').toLowerCase().includes(search.toLowerCase()) ||
+      (action.risk_name ?? '').toLowerCase().includes(search.toLowerCase()) ||
+      (action.owner ?? '').toLowerCase().includes(search.toLowerCase())
     const matchesStatus =
       statusFilter === 'all' || action.status === statusFilter
     const matchesPriority =

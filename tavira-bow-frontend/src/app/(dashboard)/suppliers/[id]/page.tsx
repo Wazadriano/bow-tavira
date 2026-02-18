@@ -138,14 +138,14 @@ export default function SupplierDetailPage() {
 
   const supplier = selectedItem
   const totalContracts = contracts.length
-  const activeContracts = contracts.filter(c => c.status?.toLowerCase() === 'active').length
+  const activeContracts = contracts.filter(c => (c.status ?? '').toLowerCase() === 'active').length
   const totalInvoicesAmount = invoices.reduce((sum, inv) => sum + (inv.amount || 0), 0)
 
   return (
     <>
       <Header
         title={supplier.name}
-        description={`Supplier ${supplier.status ? (STATUS_LABELS[supplier.status.toLowerCase()] || supplier.status) : '-'}`}
+        description={`Supplier ${supplier.status ? (STATUS_LABELS[(supplier.status ?? '').toLowerCase()] || supplier.status) : '-'}`}
       />
 
       <div className="p-6">
@@ -245,8 +245,8 @@ export default function SupplierDetailPage() {
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Status</span>
-                    <Badge className={supplier.status ? (STATUS_COLORS[supplier.status.toLowerCase()] || '') : ''}>
-                      {supplier.status ? (STATUS_LABELS[supplier.status.toLowerCase()] || supplier.status) : '-'}
+                    <Badge className={supplier.status ? (STATUS_COLORS[(supplier.status ?? '').toLowerCase()] || '') : ''}>
+                      {supplier.status ? (STATUS_LABELS[(supplier.status ?? '').toLowerCase()] || supplier.status) : '-'}
                     </Badge>
                   </div>
 

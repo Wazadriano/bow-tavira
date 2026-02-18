@@ -61,8 +61,8 @@ export default function ContractsPage() {
 
   const filteredContracts = contracts.filter((contract) => {
     const matchesSearch =
-      contract.name.toLowerCase().includes(search.toLowerCase()) ||
-      contract.supplier_name.toLowerCase().includes(search.toLowerCase())
+      (contract.name ?? '').toLowerCase().includes(search.toLowerCase()) ||
+      (contract.supplier_name ?? '').toLowerCase().includes(search.toLowerCase())
     const matchesStatus =
       statusFilter === 'all' || contract.status === statusFilter
     return matchesSearch && matchesStatus

@@ -60,9 +60,9 @@ export default function ControlLibraryPage() {
 
   const filteredControls = controls.filter((control) => {
     const matchesSearch =
-      control.name.toLowerCase().includes(search.toLowerCase()) ||
-      control.code.toLowerCase().includes(search.toLowerCase()) ||
-      control.description.toLowerCase().includes(search.toLowerCase())
+      (control.name ?? '').toLowerCase().includes(search.toLowerCase()) ||
+      (control.code ?? '').toLowerCase().includes(search.toLowerCase()) ||
+      (control.description ?? '').toLowerCase().includes(search.toLowerCase())
     const matchesType =
       typeFilter === 'all' || control.type === typeFilter
     const matchesEffectiveness =

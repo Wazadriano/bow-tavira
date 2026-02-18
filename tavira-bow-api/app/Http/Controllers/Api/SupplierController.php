@@ -267,7 +267,7 @@ class SupplierController extends Controller
             ->whereNotNull('location')
             ->groupBy('location')
             ->get()
-            ->map(fn ($row) => ['name' => $row->location->value ?? $row->location, 'count' => (int) $row->count]);
+            ->map(fn ($row) => ['name' => $row->location instanceof \App\Enums\SupplierLocation ? $row->location->value : (string) $row->location, 'count' => (int) $row->count]);
 
         // By sage category
         $byCategory = Supplier::selectRaw('sage_category_id, count(*) as count')
