@@ -64,6 +64,23 @@ export default function PublicDashboardPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
+  const ragChartRef = useRef<HTMLDivElement>(null)
+  const deptChartRef = useRef<HTMLDivElement>(null)
+  const riskChartRef = useRef<HTMLDivElement>(null)
+
+  const exportPng = useCallback(async (ref: React.RefObject<HTMLDivElement | null>, filename: string) => {
+    if (!ref.current) return
+    try {
+      const dataUrl = await toPng(ref.current, { backgroundColor: '#ffffff' })
+      const link = document.createElement('a')
+      link.download = `${filename}.png`
+      link.href = dataUrl
+      link.click()
+    } catch {
+      // silently fail
+    }
+  }, [])
+
   useEffect(() => {
     if (!token) {
       setError('No access token provided')
@@ -108,23 +125,6 @@ export default function PublicDashboardPage() {
       </div>
     )
   }
-
-  const ragChartRef = useRef<HTMLDivElement>(null)
-  const deptChartRef = useRef<HTMLDivElement>(null)
-  const riskChartRef = useRef<HTMLDivElement>(null)
-
-  const exportPng = useCallback(async (ref: React.RefObject<HTMLDivElement | null>, filename: string) => {
-    if (!ref.current) return
-    try {
-      const dataUrl = await toPng(ref.current, { backgroundColor: '#ffffff' })
-      const link = document.createElement('a')
-      link.download = `${filename}.png`
-      link.href = dataUrl
-      link.click()
-    } catch {
-      // silently fail
-    }
-  }, [])
 
   const ragData = [
     { name: 'Blue', value: data.work_items.by_rag.blue, color: RAG_COLORS.Blue },
