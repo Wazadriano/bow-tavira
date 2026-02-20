@@ -172,10 +172,11 @@ export const useTeamsStore = create<TeamsState>((set, get) => ({
   // Members
   fetchMembers: async (teamId) => {
     try {
-      const response = await api.get<TeamMember[]>(
+      const response = await api.get(
         `/teams/${teamId}/members`
       )
-      set({ members: response.data })
+      const raw = response.data
+      set({ members: Array.isArray(raw) ? raw : (raw?.data ?? []) })
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to fetch members'

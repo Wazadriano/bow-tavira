@@ -113,7 +113,8 @@ export default function TeamDetailPage() {
   }
 
   const team = selectedItem
-  const memberIds = members.map((m) => m.user_id)
+  const safeMembers = Array.isArray(members) ? members : []
+  const memberIds = safeMembers.map((m) => m.user_id)
   const availableUsers = users?.data?.filter((u) => !memberIds.includes(u.id)) || []
 
   return (
@@ -152,17 +153,17 @@ export default function TeamDetailPage() {
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <Users className="h-5 w-5" />
-                  Members ({members.length})
+                  Members ({safeMembers.length})
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {members.length === 0 ? (
+                {safeMembers.length === 0 ? (
                   <p className="py-8 text-center text-muted-foreground">
                     No members in this team
                   </p>
                 ) : (
                   <div className="space-y-3">
-                    {members.map((member) => (
+                    {safeMembers.map((member) => (
                       <div
                         key={member.id}
                         className="flex items-center justify-between rounded-lg border p-3"
@@ -266,7 +267,7 @@ export default function TeamDetailPage() {
 
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Members</span>
-                  <span className="font-medium">{members.length}</span>
+                  <span className="font-medium">{safeMembers.length}</span>
                 </div>
 
                 <Separator />

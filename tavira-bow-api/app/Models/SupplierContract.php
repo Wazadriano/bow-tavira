@@ -6,6 +6,28 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int $id
+ * @property int|null $supplier_id
+ * @property string|null $contract_ref
+ * @property string|null $description
+ * @property \Illuminate\Support\Carbon|null $start_date
+ * @property \Illuminate\Support\Carbon|null $end_date
+ * @property float|null $amount
+ * @property string|null $currency
+ * @property bool $auto_renewal
+ * @property int $notice_period_days
+ * @property bool $alert_sent
+ * @property string|null $notes
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read bool $is_active
+ * @property-read int|null $days_until_expiry
+ * @property-read bool $needs_alert
+ * @property-read Supplier|null $supplier
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, ContractEntity> $entities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, SupplierContractAttachment> $attachments
+ */
 class SupplierContract extends Model
 {
     protected $fillable = [

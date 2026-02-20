@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { GovernanceMilestonesPanel } from '@/components/governance/governance-milestones-panel'
+import { usePermissions } from '@/hooks/use-permissions'
 
 const STATUS_LABELS: Record<string, string> = {
   not_started: 'Not Started',
@@ -49,6 +50,7 @@ export default function GovernanceDetailPage() {
 
   const { selectedItem, isLoadingItem, error, fetchById, remove, uploadFile, deleteFile } = useGovernanceStore()
   const { showConfirm } = useUIStore()
+  const { isAdmin, canEditInDepartment } = usePermissions()
 
   useEffect(() => {
     if (id) {
@@ -102,6 +104,7 @@ export default function GovernanceDetailPage() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
           </Button>
+          {(isAdmin || canEditInDepartment(item.department)) && (
           <div className="flex gap-2">
             <Button variant="outline" asChild>
               <Link to={`/governance/${id}/edit`}>
@@ -114,6 +117,7 @@ export default function GovernanceDetailPage() {
               Delete
             </Button>
           </div>
+          )}
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">

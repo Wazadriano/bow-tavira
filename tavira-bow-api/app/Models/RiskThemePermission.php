@@ -5,6 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int|null $theme_id
+ * @property int|null $user_id
+ * @property bool $can_view
+ * @property bool $can_edit
+ * @property bool $can_create
+ * @property bool $can_delete
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read RiskTheme|null $theme
+ * @property-read User|null $user
+ */
 class RiskThemePermission extends Model
 {
     protected $fillable = [

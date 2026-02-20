@@ -14,10 +14,10 @@ const PROBABILITY_LABELS = ['Rare', 'Unlikely', 'Possible', 'Likely', 'Almost Ce
 function getCellColor(impact: number, probability: number): string {
   const score = impact * probability
 
-  if (score <= 4) return 'bg-green-500 hover:bg-green-600'
-  if (score <= 9) return 'bg-amber-400 hover:bg-amber-500'
-  if (score <= 15) return 'bg-orange-500 hover:bg-orange-600'
-  return 'bg-red-500 hover:bg-red-600'
+  if (score <= 4) return 'bg-green-500 hover:bg-green-600 text-white'
+  if (score <= 9) return 'bg-amber-400 hover:bg-amber-500 text-white'
+  if (score <= 15) return 'bg-orange-500 hover:bg-orange-600 text-white'
+  return 'bg-red-500 hover:bg-red-600 text-white'
 }
 
 export function RiskHeatmap({ data, type, onCellClick }: RiskHeatmapProps) {
@@ -95,7 +95,7 @@ export function RiskHeatmap({ data, type, onCellClick }: RiskHeatmapProps) {
                           key={`${impact}-${probability}`}
                           onClick={() => onCellClick?.(impact, probability)}
                           className={cn(
-                            'flex h-14 flex-1 items-center justify-center rounded-md text-white font-semibold transition-colors',
+                            'flex h-14 flex-1 items-center justify-center rounded-md font-semibold transition-colors',
                             getCellColor(impact, probability),
                             count > 0 ? 'cursor-pointer' : 'cursor-default opacity-80'
                           )}

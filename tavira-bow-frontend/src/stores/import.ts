@@ -49,6 +49,38 @@ export interface SheetInfo {
   importable: boolean
 }
 
+export interface UserSuggestion {
+  user_id: number
+  full_name: string
+  email: string
+  confidence: number
+  match_type: string
+}
+
+export interface UserSuggestionGroup {
+  source_value: string
+  field: string
+  rows: number[]
+  status: 'exact_match' | 'fuzzy_match' | 'no_match'
+  suggestions: UserSuggestion[]
+}
+
+export interface DuplicateMatch {
+  id: number
+  ref_no: string | null
+  name: string | null
+  match_type: 'exact_ref' | 'similar_name' | 'similar_description'
+  confidence: number
+  action: 'update' | 'review'
+}
+
+export interface DuplicateWarning {
+  row_number: number
+  imported_ref: string | null
+  imported_name: string | null
+  matches: DuplicateMatch[]
+}
+
 interface ImportState {
   // Current import
   importType: ImportType | null
@@ -63,6 +95,14 @@ interface ImportState {
   sheetInfo: SheetInfo[]
   selectedSheet: string | null
   selectedSheets: string[]
+
+  // User suggestions
+  userSuggestions: UserSuggestionGroup[]
+  userOverrides: Record<string, number>
+
+  // Duplicate detection
+  duplicates: DuplicateWarning[]
+  duplicatesAcknowledged: boolean
 
   // Async job
   jobId: string | null
@@ -81,6 +121,9 @@ interface ImportState {
   toggleAllImportable: () => void
   uploadAndPreview: () => Promise<void>
   updateMapping: (index: number, targetField: string) => void
+  acceptSuggestion: (sourceValue: string, userId: number) => void
+  rejectSuggestion: (sourceValue: string) => void
+  acknowledgeDuplicates: () => void
   confirmImport: () => Promise<ImportResult>
   downloadTemplate: (type: ImportType) => Promise<void>
   exportData: (type: ImportType) => Promise<void>
@@ -123,6 +166,10 @@ export const targetFields: Record<ImportType, Array<{ field: string; label: stri
     { field: 'cost_efficiency_fte', label: 'FTE Efficiency', required: false },
     { field: 'expected_cost', label: 'Expected Cost', required: false },
     { field: 'revenue_potential', label: 'Revenue Potential', required: false },
+    { field: 'back_up_person_id', label: 'Back Up Person', required: false },
+    { field: 'other_item_completion_dependences', label: 'Dependencies', required: false },
+    { field: 'issues_risks', label: 'Issues / Risks', required: false },
+    { field: 'initial_item_provider_editor', label: 'Initial Provider/Editor', required: false },
   ],
   suppliers: [
     { field: 'ref_no', label: 'Reference', required: true },
@@ -185,6 +232,10 @@ export const useImportStore = create<ImportState>((set, get) => ({
   sheetInfo: [],
   selectedSheet: null,
   selectedSheets: [],
+  userSuggestions: [],
+  userOverrides: {},
+  duplicates: [],
+  duplicatesAcknowledged: false,
   jobId: null,
   isUploading: false,
   isPreviewing: false,
@@ -192,11 +243,11 @@ export const useImportStore = create<ImportState>((set, get) => ({
   error: null,
 
   setImportType: (type) => {
-    set({ importType: type, file: null, tempFile: null, preview: null, mapping: [], sheets: [], sheetInfo: [], selectedSheet: null, selectedSheets: [], jobId: null, error: null })
+    set({ importType: type, file: null, tempFile: null, preview: null, mapping: [], sheets: [], sheetInfo: [], selectedSheet: null, selectedSheets: [], userSuggestions: [], userOverrides: {}, duplicates: [], duplicatesAcknowledged: false, jobId: null, error: null })
   },
 
   setFile: (file) => {
-    set({ file, tempFile: null, preview: null, mapping: [], sheets: [], sheetInfo: [], selectedSheet: null, selectedSheets: [] })
+    set({ file, tempFile: null, preview: null, mapping: [], sheets: [], sheetInfo: [], selectedSheet: null, selectedSheets: [], userSuggestions: [], userOverrides: {}, duplicates: [], duplicatesAcknowledged: false })
   },
 
   setSelectedSheet: (sheet) => {
@@ -275,6 +326,20 @@ export const useImportStore = create<ImportState>((set, get) => ({
         })),
       }
 
+      // Extract user suggestions
+      const userSuggestions: UserSuggestionGroup[] = data.user_suggestions || []
+
+      // Extract duplicate detection results
+      const duplicates: DuplicateWarning[] = data.duplicates || []
+
+      // Auto-accept exact matches into overrides
+      const autoOverrides: Record<string, number> = {}
+      userSuggestions.forEach((group) => {
+        if (group.status === 'exact_match' && group.suggestions.length > 0) {
+          autoOverrides[group.source_value] = group.suggestions[0].user_id
+        }
+      })
+
       // Auto-select importable sheets
       const importableSheets = sheetInfo.filter((s) => s.importable).map((s) => s.name)
 
@@ -286,6 +351,10 @@ export const useImportStore = create<ImportState>((set, get) => ({
         sheetInfo,
         selectedSheet: respSelectedSheet,
         selectedSheets: importableSheets.length > 0 ? importableSheets : (respSelectedSheet ? [respSelectedSheet] : []),
+        userSuggestions,
+        userOverrides: autoOverrides,
+        duplicates,
+        duplicatesAcknowledged: duplicates.length === 0,
         isUploading: false,
         isPreviewing: false,
         progress: { ...initialProgress, status: 'previewing', message: 'Preview ready' },
@@ -309,8 +378,25 @@ export const useImportStore = create<ImportState>((set, get) => ({
     }))
   },
 
+  acceptSuggestion: (sourceValue, userId) => {
+    set((state) => ({
+      userOverrides: { ...state.userOverrides, [sourceValue]: userId },
+    }))
+  },
+
+  rejectSuggestion: (sourceValue) => {
+    set((state) => {
+      const { [sourceValue]: _removed, ...rest } = state.userOverrides
+      return { userOverrides: rest }
+    })
+  },
+
+  acknowledgeDuplicates: () => {
+    set({ duplicatesAcknowledged: true })
+  },
+
   confirmImport: async () => {
-    const { tempFile, importType, mapping, selectedSheets, selectedSheet } = get()
+    const { tempFile, importType, mapping, selectedSheets, selectedSheet, userOverrides } = get()
     if (!tempFile || !importType) {
       throw new Error('File or type missing')
     }
@@ -344,6 +430,11 @@ export const useImportStore = create<ImportState>((set, get) => ({
         payload.sheet_name = selectedSheets[0]
       } else if (selectedSheet) {
         payload.sheet_name = selectedSheet
+      }
+
+      // Send user overrides if any
+      if (Object.keys(userOverrides).length > 0) {
+        payload.user_overrides = userOverrides
       }
 
       const response = await api.post('/import/confirm', payload)
@@ -463,23 +554,96 @@ export const useImportStore = create<ImportState>((set, get) => ({
   },
 
   exportData: async (type) => {
-    try {
-      const response = await api.get(`/export/${type}`, {
-        responseType: 'blob',
-      })
+    set({
+      error: null,
+      progress: { ...initialProgress, status: 'importing', message: 'Starting export...' },
+    })
 
-      const blob = new Blob([response.data], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    try {
+      // Step 1: Initiate async export - backend returns 202 with job_id
+      const response = await api.get(`/export/${type}`)
+      const { job_id } = response.data
+
+      if (!job_id) {
+        throw new Error('No job_id in export response')
+      }
+
+      // Step 2: Poll for completion
+      await new Promise<void>((resolve, reject) => {
+        let pollCount = 0
+        const maxPolls = 150 // 5 min at 2s intervals
+
+        const poll = setInterval(async () => {
+          pollCount++
+
+          if (pollCount > maxPolls) {
+            clearInterval(poll)
+            const msg = 'Timeout: export is taking too long'
+            set({
+              error: msg,
+              progress: { ...initialProgress, status: 'error', message: msg },
+            })
+            reject(new Error(msg))
+            return
+          }
+
+          try {
+            const statusRes = await api.get(`/export/status/${job_id}`)
+            const status = statusRes.data
+
+            if (status.status === 'processing') {
+              set({
+                progress: {
+                  status: 'importing',
+                  progress: status.percentage || 0,
+                  total: status.total || 0,
+                  processed: status.processed || 0,
+                  errors: 0,
+                  message: status.message || 'Exporting...',
+                },
+              })
+            } else if (status.status === 'completed') {
+              clearInterval(poll)
+
+              // Step 3: Download the file
+              const downloadRes = await api.get(`/export/download/${job_id}`, {
+                responseType: 'blob',
+              })
+
+              const blob = new Blob([downloadRes.data], {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+              })
+              const url = window.URL.createObjectURL(blob)
+              const link = document.createElement('a')
+              link.href = url
+              link.download = `${type}_export_${new Date().toISOString().split('T')[0]}.xlsx`
+              link.click()
+              window.URL.revokeObjectURL(url)
+
+              set({
+                progress: { ...initialProgress, status: 'completed', message: 'Export completed' },
+              })
+              resolve()
+            } else if (status.status === 'failed') {
+              clearInterval(poll)
+              const msg = status.message || 'Export failed'
+              set({
+                error: msg,
+                progress: { ...initialProgress, status: 'error', message: msg },
+              })
+              reject(new Error(msg))
+            }
+          } catch {
+            // Network error during polling - keep trying
+          }
+        }, 2000)
       })
-      const url = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = `${type}_export_${new Date().toISOString().split('T')[0]}.xlsx`
-      link.click()
-      window.URL.revokeObjectURL(url)
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Error during export'
-      set({ error: message })
+      set({
+        error: message,
+        progress: { ...initialProgress, status: 'error', message },
+      })
     }
   },
 
@@ -495,6 +659,10 @@ export const useImportStore = create<ImportState>((set, get) => ({
       sheetInfo: [],
       selectedSheet: null,
       selectedSheets: [],
+      userSuggestions: [],
+      userOverrides: {},
+      duplicates: [],
+      duplicatesAcknowledged: false,
       jobId: null,
       isUploading: false,
       isPreviewing: false,

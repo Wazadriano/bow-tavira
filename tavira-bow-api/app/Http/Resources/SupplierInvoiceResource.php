@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/** @mixin \App\Models\SupplierInvoice */
 class SupplierInvoiceResource extends JsonResource
 {
     public function toArray(Request $request): array
@@ -15,6 +16,7 @@ class SupplierInvoiceResource extends JsonResource
             'invoice_ref' => $this->invoice_ref,
             'description' => $this->description,
             'amount' => $this->amount,
+            'amount_gbp' => $this->amount_gbp,
             'currency' => $this->currency ?? 'EUR',
             'invoice_date' => $this->invoice_date?->toDateString(),
             'due_date' => $this->due_date?->toDateString(),

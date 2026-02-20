@@ -13,6 +13,7 @@ import { ActionButtons } from '@/components/shared/action-buttons'
 import { get } from '@/lib/api'
 import type { Supplier, PaginatedResponse, SageCategory } from '@/types'
 import { useSuppliersStore } from '@/stores/suppliers'
+import { usePermissions } from '@/hooks/use-permissions'
 import { useUIStore } from '@/stores/ui'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -44,6 +45,7 @@ export default function SuppliersPage() {
   const queryClient = useQueryClient()
   const { remove } = useSuppliersStore()
   const { showConfirm } = useUIStore()
+  const { isAdmin } = usePermissions()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [locationFilter, setLocationFilter] = useState('all')
@@ -318,12 +320,14 @@ export default function SuppliersPage() {
             </Button>
 
             {/* New Supplier Button */}
-            <Button asChild>
-              <Link to="/suppliers/new">
-                <Plus className="mr-2 h-4 w-4" />
-                New Supplier
-              </Link>
-            </Button>
+            {isAdmin && (
+              <Button asChild>
+                <Link to="/suppliers/new">
+                  <Plus className="mr-2 h-4 w-4" />
+                  New Supplier
+                </Link>
+              </Button>
+            )}
           </div>
 
           {/* Advanced Filters Panel */}

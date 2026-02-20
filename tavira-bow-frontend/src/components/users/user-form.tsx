@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { api } from '@/lib/api'
 import type { User } from '@/types'
 import type { UserFormData } from '@/stores/users'
 
@@ -42,9 +43,18 @@ interface UserFormProps {
   isLoading?: boolean
 }
 
-const departments = ['IT', 'Finance', 'Operations', 'Compliance', 'HR', 'Legal', 'Marketing']
-
 export function UserForm({ user, onSubmit, isLoading }: UserFormProps) {
+  const [departments, setDepartments] = useState<string[]>([])
+
+  useEffect(() => {
+    api.get('/settings/lists', { params: { type: 'department' } })
+      .then((res) => {
+        const raw = res.data
+        const list = Array.isArray(raw) ? raw : (raw?.data ?? [])
+        setDepartments(list.map((d: { value: string }) => d.value).filter(Boolean))
+      })
+      .catch(() => setDepartments([]))
+  }, [])
   const {
     register,
     handleSubmit,
@@ -70,7 +80,7 @@ export function UserForm({ user, onSubmit, isLoading }: UserFormProps) {
 
   useEffect(() => {
     if (user) {
-      setValue('username', user.email || '')
+      setValue('username', user.username || '')
       setValue('email', user.email || '')
       setValue('full_name', user.full_name || '')
       setValue('role', user.role as 'admin' | 'member')

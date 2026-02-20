@@ -9,6 +9,7 @@ enum UpdateFrequency: string
     case QUARTERLY = 'Quarterly';
     case MONTHLY = 'Monthly';
     case WEEKLY = 'Weekly';
+    case ONE_OFF = 'One-off';
 
     public function label(): string
     {
@@ -18,6 +19,7 @@ enum UpdateFrequency: string
             self::QUARTERLY => 'Quarterly',
             self::MONTHLY => 'Monthly',
             self::WEEKLY => 'Weekly',
+            self::ONE_OFF => 'One-off',
         };
     }
 
@@ -29,6 +31,7 @@ enum UpdateFrequency: string
             self::QUARTERLY => 90,
             self::MONTHLY => 30,
             self::WEEKLY => 7,
+            self::ONE_OFF => 0,
         };
     }
 }

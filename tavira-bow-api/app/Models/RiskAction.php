@@ -7,6 +7,23 @@ use App\Enums\ActionStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int|null $risk_id
+ * @property string|null $title
+ * @property string|null $description
+ * @property int|null $owner_id
+ * @property ActionStatus|null $status
+ * @property ActionPriority|null $priority
+ * @property \Illuminate\Support\Carbon|null $due_date
+ * @property \Illuminate\Support\Carbon|null $completed_at
+ * @property string|null $notes
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read bool $is_overdue
+ * @property-read Risk|null $risk
+ * @property-read User|null $owner
+ */
 class RiskAction extends Model
 {
     protected $fillable = [

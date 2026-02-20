@@ -239,10 +239,12 @@ export const useSuppliersStore = create<SuppliersState>((set, get) => ({
   // Contracts
   fetchContracts: async (supplierId) => {
     try {
-      const response = await api.get<SupplierContract[]>(
+      const response = await api.get(
         `/suppliers/${supplierId}/contracts`
       )
-      set({ contracts: response.data })
+      const raw = response.data
+      const list = Array.isArray(raw) ? raw : (raw?.data ?? [])
+      set({ contracts: list as SupplierContract[] })
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to fetch contracts'
@@ -309,10 +311,12 @@ export const useSuppliersStore = create<SuppliersState>((set, get) => ({
   // Invoices
   fetchInvoices: async (supplierId) => {
     try {
-      const response = await api.get<SupplierInvoice[]>(
+      const response = await api.get(
         `/suppliers/${supplierId}/invoices`
       )
-      set({ invoices: response.data })
+      const raw = response.data
+      const list = Array.isArray(raw) ? raw : (raw?.data ?? [])
+      set({ invoices: list as SupplierInvoice[] })
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to fetch invoices'

@@ -13,6 +13,41 @@ use Illuminate\Support\Facades\Schema;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
+/**
+ * @property int $id
+ * @property int|null $category_id
+ * @property string|null $ref_no
+ * @property string|null $name
+ * @property string|null $description
+ * @property RiskTier|null $tier
+ * @property int|null $owner_id
+ * @property int|null $responsible_party_id
+ * @property int $financial_impact
+ * @property int $regulatory_impact
+ * @property int $reputational_impact
+ * @property int $inherent_probability
+ * @property float|null $inherent_risk_score
+ * @property RAGStatus|null $inherent_rag
+ * @property float|null $residual_risk_score
+ * @property RAGStatus|null $residual_rag
+ * @property AppetiteStatus|null $appetite_status
+ * @property string|null $monthly_update
+ * @property bool $is_active
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read float $inherent_impact
+ * @property-read float $calculated_inherent_score
+ * @property-read RiskTheme|null $theme
+ * @property-read RiskCategory|null $category
+ * @property-read User|null $owner
+ * @property-read User|null $responsibleParty
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, RiskControl> $controls
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, RiskControl> $riskControls
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, RiskAction> $actions
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, RiskAttachment> $attachments
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, WorkItem> $workItems
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, GovernanceItem> $governanceItems
+ */
 class Risk extends Model
 {
     use LogsActivity;

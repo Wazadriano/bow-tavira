@@ -22,16 +22,20 @@ class RiskThresholdBreachedNotification extends Notification implements ShouldQu
         return ['mail', 'database'];
     }
 
+    /**
+     * @param  \App\Models\User  $notifiable
+     */
     public function toMail(object $notifiable): MailMessage
     {
         $status = strtoupper($this->appetiteStatus);
+        $ragValue = $this->risk->residual_rag !== null ? $this->risk->residual_rag->value : 'N/A';
 
         return (new MailMessage)
             ->subject("Risk {$this->risk->ref_no} appetite {$status}")
             ->greeting("Hello {$notifiable->full_name},")
             ->line("Risk **{$this->risk->ref_no} - {$this->risk->name}** has appetite status: **{$status}**.")
             ->line('Residual score: '.$this->risk->residual_risk_score)
-            ->line('RAG: '.($this->risk->residual_rag?->value ?? 'N/A'))
+            ->line('RAG: '.$ragValue)
             ->action('View Risk', url("/risks/{$this->risk->id}"));
     }
 

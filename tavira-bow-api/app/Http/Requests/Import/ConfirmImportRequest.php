@@ -33,6 +33,8 @@ class ConfirmImportRequest extends FormRequest
             'sheet_name' => 'nullable|string|max:255',
             'sheet_names' => 'nullable|array',
             'sheet_names.*' => 'string|max:255',
+            'user_overrides' => 'nullable|array',
+            'user_overrides.*' => 'integer',
         ];
     }
 

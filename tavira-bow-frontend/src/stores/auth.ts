@@ -17,19 +17,9 @@ interface AuthState {
   setHasHydrated: (state: boolean) => void
 }
 
-// Default state for safe access
-const defaultState = {
-  user: null,
-  token: null,
-  isAuthenticated: false,
-  isLoading: false,
-  error: null,
-  _hasHydrated: false,
-}
-
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       user: null,
       token: null,
       isAuthenticated: false,

@@ -36,6 +36,8 @@ class RiskThemeController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        abort_unless($request->user()->isAdmin(), 403);
+
         $request->validate([
             'code' => 'required|string|max:20|unique:risk_themes,code',
             'name' => 'required|string|max:100',
@@ -74,6 +76,8 @@ class RiskThemeController extends Controller
      */
     public function update(Request $request, RiskTheme $theme): JsonResponse
     {
+        abort_unless($request->user()->isAdmin(), 403);
+
         $request->validate([
             'code' => 'sometimes|string|max:20|unique:risk_themes,code,'.$theme->id,
             'name' => 'sometimes|string|max:100',
@@ -94,8 +98,10 @@ class RiskThemeController extends Controller
     /**
      * Delete theme
      */
-    public function destroy(RiskTheme $theme): JsonResponse
+    public function destroy(Request $request, RiskTheme $theme): JsonResponse
     {
+        abort_unless($request->user()->isAdmin(), 403);
+
         // Check if theme has categories/risks
         if ($theme->categories()->exists()) {
             return response()->json([
@@ -115,6 +121,8 @@ class RiskThemeController extends Controller
      */
     public function reorder(Request $request): JsonResponse
     {
+        abort_unless($request->user()->isAdmin(), 403);
+
         $request->validate([
             'items' => 'required|array',
             'items.*.id' => 'required|exists:risk_themes,id',
@@ -147,6 +155,8 @@ class RiskThemeController extends Controller
      */
     public function storePermission(Request $request, RiskTheme $theme): JsonResponse
     {
+        abort_unless($request->user()->isAdmin(), 403);
+
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'can_view' => 'sometimes|boolean',
@@ -180,6 +190,8 @@ class RiskThemeController extends Controller
      */
     public function updatePermission(Request $request, RiskTheme $theme, RiskThemePermission $permission): JsonResponse
     {
+        abort_unless($request->user()->isAdmin(), 403);
+
         if ($permission->theme_id !== $theme->id) {
             return response()->json(['message' => 'Permission does not belong to this theme'], 404);
         }
@@ -202,8 +214,10 @@ class RiskThemeController extends Controller
     /**
      * Remove a theme permission
      */
-    public function destroyPermission(RiskTheme $theme, RiskThemePermission $permission): JsonResponse
+    public function destroyPermission(Request $request, RiskTheme $theme, RiskThemePermission $permission): JsonResponse
     {
+        abort_unless($request->user()->isAdmin(), 403);
+
         if ($permission->theme_id !== $theme->id) {
             return response()->json(['message' => 'Permission does not belong to this theme'], 404);
         }

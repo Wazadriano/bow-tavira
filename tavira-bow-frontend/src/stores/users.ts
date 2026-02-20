@@ -226,10 +226,11 @@ export const useUsersStore = create<UsersState>((set, get) => ({
 
   fetchPermissions: async (userId) => {
     try {
-      const response = await api.get<DepartmentPermission[]>(
+      const response = await api.get(
         `/users/${userId}/permissions`
       )
-      set({ permissions: response.data })
+      const raw = response.data
+      set({ permissions: Array.isArray(raw) ? raw : (raw?.data ?? []) })
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to fetch permissions'
       set({ error: message })

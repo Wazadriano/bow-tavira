@@ -6,6 +6,22 @@ use App\Enums\RAGStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int|null $governance_item_id
+ * @property string|null $title
+ * @property string|null $description
+ * @property \Illuminate\Support\Carbon|null $due_date
+ * @property \Illuminate\Support\Carbon|null $completion_date
+ * @property RAGStatus|null $rag_status
+ * @property int $order
+ * @property int|null $owner_id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read bool $is_completed
+ * @property-read GovernanceItem|null $governanceItem
+ * @property-read User|null $owner
+ */
 class GovernanceMilestone extends Model
 {
     protected $fillable = [

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, Outlet } from 'react-router-dom'
 import { Sidebar } from '@/components/layout/sidebar'
 import { CommandPalette } from '@/components/layout/command-palette'
@@ -11,20 +11,21 @@ export default function DashboardLayout() {
   const isAuthenticated = useAuthIsAuthenticated()
   const isLoading = useAuthIsLoading()
   const { fetchUser } = useAuthActions()
+  const [initialFetchDone, setInitialFetchDone] = useState(false)
 
   useEffect(() => {
     if (hasHydrated) {
-      fetchUser()
+      fetchUser().finally(() => setInitialFetchDone(true))
     }
   }, [fetchUser, hasHydrated])
 
   useEffect(() => {
-    if (hasHydrated && !isLoading && !isAuthenticated) {
+    if (hasHydrated && initialFetchDone && !isLoading && !isAuthenticated) {
       navigate('/login')
     }
-  }, [isAuthenticated, isLoading, navigate, hasHydrated])
+  }, [isAuthenticated, isLoading, navigate, hasHydrated, initialFetchDone])
 
-  if (!hasHydrated || isLoading) {
+  if (!hasHydrated || !initialFetchDone || isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />

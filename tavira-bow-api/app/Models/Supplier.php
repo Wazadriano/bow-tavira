@@ -10,11 +10,42 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
+/**
+ * @property int $id
+ * @property string|null $ref_no
+ * @property string|null $name
+ * @property string|null $contact_name
+ * @property string|null $contact_email
+ * @property string|null $contact_phone
+ * @property string|null $address
+ * @property string|null $category
+ * @property SupplierLocation|null $location
+ * @property SupplierStatus|null $status
+ * @property bool $is_common_provider
+ * @property int|null $sage_category_id
+ * @property int|null $sage_category_2_id
+ * @property int|null $responsible_party_id
+ * @property string|null $notes
+ * @property array|null $tags
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read int $active_contracts_count
+ * @property-read float $total_invoices_amount
+ * @property-read SageCategory|null $sageCategory
+ * @property-read SageCategory|null $sageCategory2
+ * @property-read User|null $responsibleParty
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, SupplierEntity> $entities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, SupplierAccess> $access
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, SupplierContract> $contracts
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, SupplierInvoice> $invoices
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, SupplierAttachment> $attachments
+ */
 class Supplier extends Model
 {
     use LogsActivity;
 
     protected $fillable = [
+        'ref_no',
         'name',
         'contact_name',
         'contact_email',
@@ -25,6 +56,8 @@ class Supplier extends Model
         'status',
         'is_common_provider',
         'sage_category_id',
+        'sage_category_2_id',
+        'responsible_party_id',
         'notes',
         'tags',
     ];
@@ -52,6 +85,11 @@ class Supplier extends Model
     public function sageCategory(): BelongsTo
     {
         return $this->belongsTo(SageCategory::class);
+    }
+
+    public function sageCategory2(): BelongsTo
+    {
+        return $this->belongsTo(SageCategory::class, 'sage_category_2_id');
     }
 
     public function responsibleParty(): BelongsTo

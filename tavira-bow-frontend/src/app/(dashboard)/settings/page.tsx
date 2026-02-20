@@ -19,6 +19,8 @@ import {
   Database,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { usePermissions } from '@/hooks/use-permissions'
+import { useNavigate } from 'react-router-dom'
 
 const LIST_TYPES = [
   { value: 'department' as const, label: 'Departments' },
@@ -28,6 +30,8 @@ const LIST_TYPES = [
 ]
 
 export default function SettingsPage() {
+  const { isAdmin } = usePermissions()
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('lists')
   const [selectedType, setSelectedType] = useState<'department' | 'activity' | 'entity' | 'vendor_category'>('department')
   const [editingId, setEditingId] = useState<number | null>(null)
@@ -52,9 +56,13 @@ export default function SettingsPage() {
   const { showConfirm } = useUIStore()
 
   useEffect(() => {
+    if (!isAdmin) {
+      navigate('/dashboard', { replace: true })
+      return
+    }
     fetchLists(selectedType)
     fetchSystemSettings()
-  }, [fetchLists, fetchSystemSettings, selectedType])
+  }, [fetchLists, fetchSystemSettings, selectedType, isAdmin, navigate])
 
   const filteredLists = lists.filter((item) => item.type === selectedType)
 

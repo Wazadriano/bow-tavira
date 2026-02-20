@@ -61,8 +61,8 @@ export default function InvoicesPage() {
 
   const filteredInvoices = invoices.filter((invoice) => {
     const matchesSearch =
-      invoice.invoice_number.toLowerCase().includes(search.toLowerCase()) ||
-      invoice.supplier_name.toLowerCase().includes(search.toLowerCase())
+      (invoice.invoice_number ?? '').toLowerCase().includes(search.toLowerCase()) ||
+      (invoice.supplier_name ?? '').toLowerCase().includes(search.toLowerCase())
     const matchesStatus =
       statusFilter === 'all' || invoice.status === statusFilter
     return matchesSearch && matchesStatus

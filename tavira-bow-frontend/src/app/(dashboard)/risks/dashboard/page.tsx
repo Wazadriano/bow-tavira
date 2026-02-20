@@ -135,21 +135,21 @@ export default function RisksDashboardPage() {
   }
 
   const ragData = [
-    { name: 'Blue', value: stats.by_rag.blue, color: '#0ea5e9' },
-    { name: 'Green', value: stats.by_rag.green, color: '#22c55e' },
-    { name: 'Amber', value: stats.by_rag.amber, color: '#f59e0b' },
-    { name: 'Red', value: stats.by_rag.red, color: '#ef4444' },
+    { name: 'Blue', value: stats.by_rag?.blue ?? 0, color: '#0ea5e9' },
+    { name: 'Green', value: stats.by_rag?.green ?? 0, color: '#22c55e' },
+    { name: 'Amber', value: stats.by_rag?.amber ?? 0, color: '#f59e0b' },
+    { name: 'Red', value: stats.by_rag?.red ?? 0, color: '#ef4444' },
   ]
 
-  const themeData = stats.by_theme.map((t) => ({
+  const themeData = (stats.by_theme ?? []).map((t) => ({
     name: t.code,
     count: t.count,
   }))
 
-  const tierData = stats.by_tier.map((t) => ({
+  const tierData = (stats.by_tier ?? []).map((t, index) => ({
     name: t.name,
     value: t.count,
-    color: ['#3b82f6', '#8b5cf6', '#06b6d4'][stats.by_tier.indexOf(t) % 3],
+    color: ['#3b82f6', '#8b5cf6', '#06b6d4'][index % 3],
   }))
 
   return (
@@ -251,7 +251,7 @@ export default function RisksDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {stats.appetite_breaches.map((risk) => (
+                {(stats.appetite_breaches ?? []).map((risk) => (
                   <div
                     key={risk.id}
                     className="flex items-center justify-between p-3 rounded-lg border border-red-200 bg-red-50"

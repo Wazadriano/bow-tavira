@@ -1,12 +1,16 @@
 // User types
 export interface User {
   id: number
+  username: string
   email: string
   full_name: string
   role: 'admin' | 'member'
   department: string | null
   is_active: boolean
+  has_2fa: boolean
   two_factor_confirmed_at: string | null
+  department_permissions?: UserDepartmentPermission[]
+  risk_theme_permissions?: RiskThemePermission[]
   created_at: string
   updated_at: string
 }
@@ -16,8 +20,9 @@ export interface UserDepartmentPermission {
   user_id: number
   department: string
   can_view: boolean
-  can_edit: boolean
-  can_delete: boolean
+  can_edit_status: boolean
+  can_create_tasks: boolean
+  can_edit_all: boolean
 }
 
 // Work Item types
@@ -87,6 +92,8 @@ export interface Supplier {
   name: string
   sage_category_id: number | null
   sage_category: SageCategory | null
+  sage_category_2_id: number | null
+  sage_category_2: SageCategory | null
   location: 'local' | 'overseas' | null
   is_common_provider: boolean
   status: 'active' | 'inactive' | 'pending' | null
@@ -365,6 +372,7 @@ export interface TaskAssignment {
   work_item_id: number
   user_id: number
   assignment_type: 'owner' | 'member'
+  acknowledged_at: string | null
   created_at: string
   user: User
 }
@@ -611,6 +619,7 @@ export interface NotificationListResponse {
 export interface SupplierFormData {
   name: string
   sage_category_id?: number
+  sage_category_2_id?: number
   location?: 'local' | 'overseas'
   is_common_provider?: boolean
   status?: 'active' | 'inactive' | 'pending'
@@ -689,4 +698,44 @@ export interface RiskControlFormData {
   control_id: number
   effectiveness?: 'effective' | 'partially_effective' | 'ineffective' | 'none'
   notes?: string
+}
+
+// Public Dashboard types
+export interface PublicDashboardToken {
+  id: number
+  name: string
+  token: string
+  is_active: boolean
+  expires_at: string | null
+  last_used_at: string | null
+  created_by: number | null
+  created_at: string
+}
+
+export interface PublicDashboardData {
+  work_items: {
+    total: number
+    by_rag: { blue: number; green: number; amber: number; red: number }
+    by_department: { department: string; count: number }[]
+    by_status: { status: string; count: number }[]
+  }
+  governance: {
+    total: number
+    by_rag: { blue: number; green: number; amber: number; red: number }
+    by_department: { department: string; count: number }[]
+    overdue: number
+  }
+  risks: {
+    total: number
+    by_theme: { theme: string; count: number; color: string }[]
+    outside_appetite: number
+    overdue_actions: number
+  }
+  suppliers: {
+    total: number
+    active: number
+    total_contracts: number
+    expiring_contracts: number
+  }
+  generated_at: string
 }

@@ -46,15 +46,15 @@ export function Header({ title, description, actions }: HeaderProps) {
   }
 
   return (
-    <header className="flex h-16 items-center justify-between border-b bg-card px-6">
-      <div>
-        <h1 className="text-lg font-semibold">{title}</h1>
+    <header className="flex h-16 items-center justify-between border-b bg-card pl-14 pr-4 md:px-6">
+      <div className="min-w-0 flex-1">
+        <h1 className="truncate text-lg font-semibold">{title}</h1>
         {description && (
           <p className="text-sm text-muted-foreground">{description}</p>
         )}
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 md:gap-4">
         {actions}
 
         <div className="relative hidden md:block">

@@ -14,6 +14,48 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
+/**
+ * @property int $id
+ * @property string|null $ref_no
+ * @property string|null $type
+ * @property string|null $activity
+ * @property string|null $department
+ * @property string|null $description
+ * @property string|null $goal
+ * @property BAUType|null $bau_or_transformative
+ * @property ImpactLevel|null $impact_level
+ * @property CurrentStatus|null $current_status
+ * @property RAGStatus|null $rag_status
+ * @property \Illuminate\Support\Carbon|null $deadline
+ * @property \Illuminate\Support\Carbon|null $completion_date
+ * @property string|null $monthly_update
+ * @property string|null $comments
+ * @property UpdateFrequency|null $update_frequency
+ * @property int|null $responsible_party_id
+ * @property int|null $department_head_id
+ * @property array|null $tags
+ * @property bool $priority_item
+ * @property string|null $file_path
+ * @property float|null $cost_savings
+ * @property float|null $cost_efficiency_fte
+ * @property float|null $expected_cost
+ * @property float|null $revenue_potential
+ * @property int|null $back_up_person_id
+ * @property string|null $other_item_completion_dependences
+ * @property string|null $issues_risks
+ * @property string|null $initial_item_provider_editor
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read bool $is_overdue
+ * @property-read User|null $responsibleParty
+ * @property-read User|null $departmentHead
+ * @property-read User|null $backUpPerson
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, TaskDependency> $dependencies
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, TaskDependency> $dependentOn
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, TaskAssignment> $assignments
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, TaskMilestone> $milestones
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Risk> $risks
+ */
 class WorkItem extends Model
 {
     use LogsActivity;
@@ -43,6 +85,10 @@ class WorkItem extends Model
         'cost_efficiency_fte',
         'expected_cost',
         'revenue_potential',
+        'back_up_person_id',
+        'other_item_completion_dependences',
+        'issues_risks',
+        'initial_item_provider_editor',
     ];
 
     protected function casts(): array
@@ -82,6 +128,11 @@ class WorkItem extends Model
     public function departmentHead(): BelongsTo
     {
         return $this->belongsTo(User::class, 'department_head_id');
+    }
+
+    public function backUpPerson(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'back_up_person_id');
     }
 
     public function dependencies(): HasMany

@@ -154,8 +154,9 @@ export const useRisksStore = create<RisksState>((set, get) => ({
 
   fetchThemes: async () => {
     try {
-      const response = await api.get<RiskTheme[]>('/risks/themes')
-      set({ themes: response.data })
+      const response = await api.get('/risks/themes')
+      const raw = response.data
+      set({ themes: Array.isArray(raw) ? raw : (raw?.data ?? []) })
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to fetch themes'
@@ -168,8 +169,9 @@ export const useRisksStore = create<RisksState>((set, get) => ({
       const url = themeId
         ? `/risks/categories?theme_id=${themeId}`
         : '/risks/categories'
-      const response = await api.get<RiskCategory[]>(url)
-      set({ categories: response.data })
+      const response = await api.get(url)
+      const raw = response.data
+      set({ categories: Array.isArray(raw) ? raw : (raw?.data ?? []) })
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to fetch categories'
@@ -179,10 +181,11 @@ export const useRisksStore = create<RisksState>((set, get) => ({
 
   fetchControlLibrary: async () => {
     try {
-      const response = await api.get<ControlLibrary[]>(
+      const response = await api.get(
         '/risks/controls/library'
       )
-      set({ controlLibrary: response.data })
+      const raw = response.data
+      set({ controlLibrary: Array.isArray(raw) ? raw : (raw?.data ?? []) })
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to fetch control library'
@@ -325,10 +328,11 @@ export const useRisksStore = create<RisksState>((set, get) => ({
   // Controls
   fetchControls: async (riskId) => {
     try {
-      const response = await api.get<RiskControl[]>(
+      const response = await api.get(
         `/risks/${riskId}/controls`
       )
-      set({ controls: response.data })
+      const raw = response.data
+      set({ controls: Array.isArray(raw) ? raw : (raw?.data ?? []) })
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to fetch controls'
@@ -385,10 +389,11 @@ export const useRisksStore = create<RisksState>((set, get) => ({
   // Actions
   fetchActions: async (riskId) => {
     try {
-      const response = await api.get<RiskAction[]>(
+      const response = await api.get(
         `/risks/${riskId}/actions`
       )
-      set({ actions: response.data })
+      const raw = response.data
+      set({ actions: Array.isArray(raw) ? raw : (raw?.data ?? []) })
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to fetch actions'

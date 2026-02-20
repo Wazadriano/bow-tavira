@@ -12,6 +12,8 @@ use App\Http\Controllers\Api\ImportExportController;
 use App\Http\Controllers\Api\LoginHistoryController;
 use App\Http\Controllers\Api\MilestoneController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\PublicDashboardController;
+use App\Http\Controllers\Api\PublicDashboardTokenController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\RiskActionController;
 use App\Http\Controllers\Api\RiskCategoryController;
@@ -27,6 +29,7 @@ use App\Http\Controllers\Api\SupplierController;
 use App\Http\Controllers\Api\SupplierFileController;
 use App\Http\Controllers\Api\SupplierInvoiceController;
 use App\Http\Controllers\Api\SystemSettingController;
+use App\Http\Controllers\Api\TaskAssignmentController;
 use App\Http\Controllers\Api\TeamController;
 use App\Http\Controllers\Api\TeamMemberController;
 use App\Http\Controllers\Api\TwoFactorController;
@@ -133,6 +136,9 @@ Route::middleware(['auth:sanctum', EnsureTwoFactorComplete::class, 'throttle:api
 
         Route::get('/milestones', [MilestoneController::class, 'forWorkItem']);
     });
+
+    // Task Assignment acknowledgement (RG-BOW-014)
+    Route::put('task-assignments/{taskAssignment}/acknowledge', [TaskAssignmentController::class, 'acknowledge']);
 
     // ----------------------------------------
     // Teams
@@ -365,6 +371,16 @@ Route::middleware(['auth:sanctum', EnsureTwoFactorComplete::class, 'throttle:api
     Route::get('/admin/login-history', [LoginHistoryController::class, 'index']);
 
     // ----------------------------------------
+    // Admin - Public Dashboard Tokens
+    // ----------------------------------------
+    Route::prefix('admin/public-tokens')->middleware(\App\Http\Middleware\EnsureUserIsAdmin::class)->group(function () {
+        Route::get('/', [PublicDashboardTokenController::class, 'index']);
+        Route::post('/', [PublicDashboardTokenController::class, 'store']);
+        Route::put('/{token}', [PublicDashboardTokenController::class, 'update']);
+        Route::delete('/{token}', [PublicDashboardTokenController::class, 'destroy']);
+    });
+
+    // ----------------------------------------
     // Notifications
     // ----------------------------------------
     Route::prefix('notifications')->group(function () {
@@ -376,4 +392,11 @@ Route::middleware(['auth:sanctum', EnsureTwoFactorComplete::class, 'throttle:api
         Route::post('/send-reminders', [DashboardController::class, 'sendReminders'])
             ->middleware('ability:admin');
     });
+});
+
+// ============================================================
+// Public Dashboard (token-based, no session)
+// ============================================================
+Route::middleware(\App\Http\Middleware\VerifyPublicDashboardToken::class)->group(function () {
+    Route::get('/public/dashboard', [PublicDashboardController::class, 'index']);
 });

@@ -11,6 +11,7 @@ use App\Models\GovernanceItemAccess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class GovernanceController extends Controller
@@ -29,17 +30,13 @@ class GovernanceController extends Controller
         $query = GovernanceItem::query()
             ->with(['responsibleParty', 'milestones']);
 
-        // Filter by user access
+        // Non-admins only see their own items (explicit access, responsible, or assigned)
         if (! $user->isAdmin()) {
             $query->where(function ($q) use ($user) {
-                // Items with explicit access
                 $q->whereHas('access', function ($q2) use ($user) {
                     $q2->where('user_id', $user->id)->where('can_view', true);
                 })
-                // Or items in user's departments
-                    ->orWhereIn('department', $user->departmentPermissions()
-                        ->where('can_view', true)
-                        ->pluck('department'));
+                    ->orWhere('responsible_party_id', $user->id);
             });
         }
 
@@ -146,77 +143,80 @@ class GovernanceController extends Controller
     public function dashboard(Request $request): JsonResponse
     {
         $user = $request->user();
+        $cacheKey = 'governance_dashboard_'.($user->isAdmin() ? 'admin' : $user->id);
 
-        // Base query with access control
-        $query = GovernanceItem::query();
-        if (! $user->isAdmin()) {
-            $query->where(function ($q) use ($user) {
-                $q->whereHas('access', function ($q2) use ($user) {
-                    $q2->where('user_id', $user->id)->where('can_view', true);
-                })
-                    ->orWhereIn('department', $user->departmentPermissions()
-                        ->where('can_view', true)
-                        ->pluck('department'));
-            });
-        }
+        $data = Cache::remember($cacheKey, 300, function () use ($user) {
+            $query = GovernanceItem::query();
+            if (! $user->isAdmin()) {
+                $query->where(function ($q) use ($user) {
+                    $q->whereHas('access', function ($q2) use ($user) {
+                        $q2->where('user_id', $user->id)->where('can_view', true);
+                    })
+                        ->orWhere('responsible_party_id', $user->id);
+                });
+            }
 
-        // Total counts
-        $total = (clone $query)->count();
-        $completed = (clone $query)->where('current_status', 'Completed')->count();
-        $inProgress = (clone $query)->where('current_status', 'In Progress')->count();
-        $pending = (clone $query)->whereNull('current_status')
-            ->orWhere('current_status', 'Not Started')
-            ->count();
-        $overdue = (clone $query)
-            ->where('deadline', '<', now())
-            ->whereNull('completion_date')
-            ->count();
+            $total = (clone $query)->count();
+            $completed = (clone $query)->where('current_status', 'Completed')->count();
+            $inProgress = (clone $query)->where('current_status', 'In Progress')->count();
+            $pending = (clone $query)->whereNull('current_status')
+                ->orWhere('current_status', 'Not Started')
+                ->count();
+            $overdue = (clone $query)
+                ->where('deadline', '<', now())
+                ->whereNull('completion_date')
+                ->count();
 
-        // By department
-        $byDepartment = (clone $query)
-            ->select('department')
-            ->selectRaw('COUNT(*) as count')
-            ->whereNotNull('department')
-            ->groupBy('department')
-            ->orderByDesc('count')
-            ->limit(10)
-            ->get()
-            ->map(fn ($item) => [
-                'name' => $item->department,
-                'count' => (int) $item->count,
-            ]);
+            $byDepartment = (clone $query)
+                ->select('department')
+                ->selectRaw('COUNT(*) as count')
+                ->whereNotNull('department')
+                ->groupBy('department')
+                ->orderByDesc('count')
+                ->limit(10)
+                ->get()
+                ->map(fn ($item) => [
+                    'name' => $item->department,
+                    'count' => (int) $item->count,
+                ]);
 
-        // By frequency
-        $byFrequency = (clone $query)
-            ->select('frequency')
-            ->selectRaw('COUNT(*) as count')
-            ->whereNotNull('frequency')
-            ->groupBy('frequency')
-            ->orderByDesc('count')
-            ->get()
-            ->map(fn ($item) => [
-                'name' => ucfirst($item->frequency?->value ?? $item->frequency ?? 'Unknown'),
-                'count' => (int) $item->count,
-            ]);
+            $byFrequency = (clone $query)
+                ->select('frequency')
+                ->selectRaw('COUNT(*) as count')
+                ->whereNotNull('frequency')
+                ->groupBy('frequency')
+                ->orderByDesc('count')
+                ->get()
+                ->map(function ($item) {
+                    /** @var GovernanceItem $item */
+                    $freq = $item->frequency;
+                    $name = $freq !== null ? $freq->value : 'Unknown';
 
-        // Upcoming items
-        $upcoming = (clone $query)
-            ->with('responsibleParty')
-            ->whereNotNull('deadline')
-            ->where('deadline', '>=', now())
-            ->whereNull('completion_date')
-            ->orderBy('deadline')
-            ->limit(5)
-            ->get()
-            ->map(fn ($item) => [
-                'id' => $item->id,
-                'title' => $item->activity ?? $item->description ?? $item->ref_no,
-                'next_due' => $item->deadline?->toDateString(),
-                'department' => $item->department,
-            ]);
+                    return [
+                        'name' => ucfirst($name),
+                        'count' => (int) $item->count,
+                    ];
+                });
 
-        return response()->json([
-            'data' => [
+            $upcoming = (clone $query)
+                ->with('responsibleParty')
+                ->whereNotNull('deadline')
+                ->where('deadline', '>=', now())
+                ->whereNull('completion_date')
+                ->orderBy('deadline')
+                ->limit(5)
+                ->get()
+                ->map(function ($item) {
+                    /** @var GovernanceItem $item */
+                    return [
+                        'id' => $item->id,
+                        'title' => $item->activity ?? $item->description ?? $item->ref_no,
+                        'next_due' => $item->deadline?->toDateString(),
+                        'department' => $item->department,
+                    ];
+                });
+
+            return [
                 'total_items' => $total,
                 'completed' => $completed,
                 'pending' => $pending + $inProgress,
@@ -230,8 +230,10 @@ class GovernanceController extends Controller
                     'overdue' => $overdue,
                 ],
                 'upcoming' => $upcoming,
-            ],
-        ]);
+            ];
+        });
+
+        return response()->json(['data' => $data]);
     }
 
     /**

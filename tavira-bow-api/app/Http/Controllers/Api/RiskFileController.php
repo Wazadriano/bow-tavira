@@ -20,7 +20,7 @@ class RiskFileController extends Controller
     public function store(Request $request, Risk $risk): JsonResponse
     {
         $request->validate([
-            'file' => 'required|file|max:10240',
+            'file' => 'required|file|max:10240|mimes:pdf,doc,docx,xls,xlsx,csv,txt,png,jpg,jpeg,gif',
         ]);
 
         $file = $request->file('file');
@@ -73,6 +73,7 @@ class RiskFileController extends Controller
      */
     public function showById(Risk $risk, int $id)
     {
+        /** @var \App\Models\RiskAttachment $attachment */
         $attachment = $risk->attachments()->findOrFail($id);
         $path = $attachment->getAttribute('path')
             ?? $attachment->getAttribute('file_path')
@@ -94,6 +95,7 @@ class RiskFileController extends Controller
      */
     public function destroyById(Risk $risk, int $id): JsonResponse
     {
+        /** @var \App\Models\RiskAttachment $attachment */
         $attachment = $risk->attachments()->findOrFail($id);
         $path = $attachment->getAttribute('path')
             ?? $attachment->getAttribute('file_path')

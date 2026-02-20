@@ -81,7 +81,7 @@ const statusConfig: Record<
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
   // Normalize status string
-  const normalizedStatus = status
+  const normalizedStatus = (status ?? '')
     .toLowerCase()
     .replace(/\s+/g, '_') as Status
 

@@ -13,6 +13,31 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
+/**
+ * @property int $id
+ * @property string|null $ref_no
+ * @property string|null $activity
+ * @property string|null $description
+ * @property GovernanceFrequency|null $frequency
+ * @property GovernanceLocation|null $location
+ * @property string|null $department
+ * @property int|null $responsible_party_id
+ * @property CurrentStatus|null $current_status
+ * @property RAGStatus|null $rag_status
+ * @property \Illuminate\Support\Carbon|null $deadline
+ * @property \Illuminate\Support\Carbon|null $completion_date
+ * @property string|null $monthly_update
+ * @property array|null $tags
+ * @property string|null $file_path
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read bool $is_overdue
+ * @property-read User|null $responsibleParty
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, GovernanceMilestone> $milestones
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, GovernanceAttachment> $attachments
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, GovernanceItemAccess> $access
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Risk> $risks
+ */
 class GovernanceItem extends Model
 {
     use LogsActivity;

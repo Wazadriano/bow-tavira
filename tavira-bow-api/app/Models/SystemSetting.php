@@ -5,6 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
+/**
+ * @property int $id
+ * @property string|null $key
+ * @property string|null $value
+ * @property string|null $type
+ * @property string|null $description
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read mixed $typed_value
+ */
 class SystemSetting extends Model
 {
     protected $fillable = [

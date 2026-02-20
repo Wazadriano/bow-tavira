@@ -6,95 +6,150 @@ use App\Http\Controllers\Controller;
 use App\Models\GovernanceItem;
 use App\Models\Risk;
 use App\Models\SupplierContract;
+use App\Models\User;
 use App\Models\WorkItem;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class DashboardController extends Controller
 {
+    /**
+     * Scope work items to only those the user owns or is assigned to.
+     */
+    private function scopeWorkItems(Builder $query, User $user): Builder
+    {
+        if (! $user->isAdmin()) {
+            $query->where(function ($q) use ($user) {
+                $q->where('responsible_party_id', $user->id)
+                    ->orWhereHas('assignments', fn ($sub) => $sub->where('user_id', $user->id));
+            });
+        }
+
+        return $query;
+    }
+
+    /**
+     * Scope governance items to only those the user has explicit access to or owns.
+     */
+    private function scopeGovernance(Builder $query, User $user): Builder
+    {
+        if (! $user->isAdmin()) {
+            $query->where(function ($q) use ($user) {
+                $q->whereHas('access', fn ($q2) => $q2->where('user_id', $user->id)->where('can_view', true))
+                    ->orWhere('responsible_party_id', $user->id);
+            });
+        }
+
+        return $query;
+    }
+
+    /**
+     * Scope risks to only those the user owns or is responsible for.
+     */
+    private function scopeRisks(Builder $query, User $user): Builder
+    {
+        if (! $user->isAdmin()) {
+            $query->where(function ($q) use ($user) {
+                $q->where('owner_id', $user->id)
+                    ->orWhere('responsible_party_id', $user->id);
+            });
+        }
+
+        return $query;
+    }
+
+    /**
+     * Scope suppliers to only those the user has explicit access to or owns.
+     */
+    private function scopeSuppliers(Builder $query, User $user): Builder
+    {
+        if (! $user->isAdmin()) {
+            $query->where(function ($q) use ($user) {
+                $q->whereHas('access', fn ($q2) => $q2->where('user_id', $user->id)->where('can_view', true))
+                    ->orWhere('responsible_party_id', $user->id);
+            });
+        }
+
+        return $query;
+    }
+
     /**
      * Get global statistics
      */
     public function stats(Request $request): JsonResponse
     {
         $user = $request->user();
+        $cacheKey = 'dashboard_stats_'.($user->isAdmin() ? 'admin' : $user->id);
 
-        // Get departments user has access to
-        $departments = null;
-        if (! $user->isAdmin()) {
-            $departments = $user->departmentPermissions()
-                ->where('can_view', true)
-                ->pluck('department')
-                ->toArray();
-        }
+        $data = Cache::remember($cacheKey, 300, function () use ($user) {
+            $workItemsQuery = $this->scopeWorkItems(WorkItem::query(), $user);
 
-        // Work Items stats
-        $workItemsQuery = WorkItem::query();
-        if ($departments !== null) {
-            $workItemsQuery->whereIn('department', $departments);
-        }
+            $workItemsTotal = (clone $workItemsQuery)->count();
+            $workItemsOverdue = (clone $workItemsQuery)->overdue()->count();
+            $workItemsCompleted = (clone $workItemsQuery)
+                ->where('current_status', 'Completed')
+                ->count();
+            $workItemsPriority = (clone $workItemsQuery)->priority()->count();
 
-        $workItemsTotal = $workItemsQuery->count();
-        $workItemsOverdue = (clone $workItemsQuery)->overdue()->count();
-        $workItemsCompleted = (clone $workItemsQuery)
-            ->where('current_status', 'Completed')
-            ->count();
-        $workItemsPriority = (clone $workItemsQuery)->priority()->count();
+            $governanceQuery = $this->scopeGovernance(GovernanceItem::query(), $user);
+            $governanceTotal = (clone $governanceQuery)->count();
+            $governanceOverdue = (clone $governanceQuery)
+                ->where('deadline', '<', now())
+                ->whereNull('completion_date')
+                ->count();
 
-        // Governance stats
-        $governanceQuery = GovernanceItem::query();
-        if ($departments !== null) {
-            $governanceQuery->whereIn('department', $departments);
-        }
+            $riskQuery = $this->scopeRisks(Risk::active(), $user);
+            $risksTotal = (clone $riskQuery)->count();
+            $risksHigh = (clone $riskQuery)->highRisk()->count();
 
-        $governanceTotal = $governanceQuery->count();
-        $governanceOverdue = (clone $governanceQuery)
-            ->where('deadline', '<', now())
-            ->whereNull('completion_date')
-            ->count();
+            $supplierQuery = $this->scopeSuppliers(\App\Models\Supplier::active(), $user);
+            $suppliersTotal = $supplierQuery->count();
 
-        // Contract alerts
-        $contractsExpiring = SupplierContract::expiringSoon(90)->count();
+            $contractQuery = SupplierContract::query();
+            if (! $user->isAdmin()) {
+                $accessibleSupplierIds = \App\Models\Supplier::query()
+                    ->where(function ($q) use ($user) {
+                        $q->whereHas('access', fn ($q2) => $q2->where('user_id', $user->id)->where('can_view', true))
+                            ->orWhere('responsible_party_id', $user->id);
+                    })->pluck('id');
+                $contractQuery->whereIn('supplier_id', $accessibleSupplierIds);
+            }
+            $contractsExpiring = (clone $contractQuery)->expiringSoon(90)->count();
 
-        // Risk stats
-        $risksTotal = Risk::active()->count();
-        $risksHigh = Risk::active()->highRisk()->count();
+            $ragQuery = $this->scopeWorkItems(
+                WorkItem::query()
+                    ->select('rag_status')
+                    ->selectRaw('COUNT(*) as count')
+                    ->whereNotNull('rag_status')
+                    ->groupBy('rag_status'),
+                $user
+            );
+            $ragStats = $ragQuery->get();
 
-        // Supplier stats
-        $suppliersTotal = \App\Models\Supplier::active()->count();
+            return [
+                'total_tasks' => $workItemsTotal,
+                'completed_tasks' => $workItemsCompleted,
+                'overdue_tasks' => $workItemsOverdue,
+                'priority_tasks' => $workItemsPriority,
+                'total_suppliers' => $suppliersTotal,
+                'total_risks' => $risksTotal,
+                'high_risks' => $risksHigh,
+                'total_governance' => $governanceTotal,
+                'overdue_governance' => $governanceOverdue,
+                'expiring_contracts' => $contractsExpiring,
+                'tasks_by_rag' => [
+                    'blue' => (int) ($ragStats->firstWhere('rag_status', 'Blue')->count ?? 0),
+                    'green' => (int) ($ragStats->firstWhere('rag_status', 'Green')->count ?? 0),
+                    'amber' => (int) ($ragStats->firstWhere('rag_status', 'Amber')->count ?? 0),
+                    'red' => (int) ($ragStats->firstWhere('rag_status', 'Red')->count ?? 0),
+                ],
+            ];
+        });
 
-        // RAG distribution for tasks
-        $ragQuery = WorkItem::query()
-            ->select('rag_status')
-            ->selectRaw('COUNT(*) as count')
-            ->whereNotNull('rag_status')
-            ->groupBy('rag_status');
-
-        if ($departments !== null) {
-            $ragQuery->whereIn('department', $departments);
-        }
-
-        $ragStats = $ragQuery->get();
-
-        return response()->json([
-            'total_tasks' => $workItemsTotal,
-            'completed_tasks' => $workItemsCompleted,
-            'overdue_tasks' => $workItemsOverdue,
-            'priority_tasks' => $workItemsPriority,
-            'total_suppliers' => $suppliersTotal,
-            'total_risks' => $risksTotal,
-            'high_risks' => $risksHigh,
-            'total_governance' => $governanceTotal,
-            'overdue_governance' => $governanceOverdue,
-            'expiring_contracts' => $contractsExpiring,
-            'tasks_by_rag' => [
-                'blue' => $ragStats->firstWhere('rag_status', 'Blue')?->count ?? 0,
-                'green' => $ragStats->firstWhere('rag_status', 'Green')?->count ?? 0,
-                'amber' => $ragStats->firstWhere('rag_status', 'Amber')?->count ?? 0,
-                'red' => $ragStats->firstWhere('rag_status', 'Red')?->count ?? 0,
-            ],
-        ]);
+        return response()->json($data);
     }
 
     /**
@@ -102,17 +157,6 @@ class DashboardController extends Controller
      */
     public function byArea(Request $request): JsonResponse
     {
-        $user = $request->user();
-
-        $departments = null;
-        if (! $user->isAdmin()) {
-            $departments = $user->departmentPermissions()
-                ->where('can_view', true)
-                ->pluck('department')
-                ->toArray();
-        }
-
-        // Get base stats by department
         $query = WorkItem::query()
             ->select('department')
             ->selectRaw('COUNT(*) as total_tasks')
@@ -126,9 +170,7 @@ class DashboardController extends Controller
             ->whereNotNull('department')
             ->groupBy('department');
 
-        if ($departments !== null) {
-            $query->whereIn('department', $departments);
-        }
+        $this->scopeWorkItems($query, $request->user());
 
         $stats = $query->get();
 
@@ -142,7 +184,7 @@ class DashboardController extends Controller
                 'completion_rate' => $item->total_tasks > 0
                     ? round(($item->completed / $item->total_tasks) * 100, 1)
                     : 0,
-                'trend' => 'stable', // TODO: calculate from historical data
+                'trend' => 'stable',
                 'rag_distribution' => [
                     'blue' => (int) $item->rag_blue,
                     'green' => (int) $item->rag_green,
@@ -158,30 +200,22 @@ class DashboardController extends Controller
      */
     public function byRag(Request $request): JsonResponse
     {
-        $user = $request->user();
-
         $query = WorkItem::query()
             ->select('rag_status')
             ->selectRaw('COUNT(*) as count')
             ->whereNotNull('rag_status')
             ->groupBy('rag_status');
 
-        if (! $user->isAdmin()) {
-            $departments = $user->departmentPermissions()
-                ->where('can_view', true)
-                ->pluck('department')
-                ->toArray();
-            $query->whereIn('department', $departments);
-        }
+        $this->scopeWorkItems($query, $request->user());
 
         $stats = $query->get();
 
         return response()->json([
             'rag_distribution' => [
-                'Blue' => $stats->firstWhere('rag_status', 'Blue')?->count ?? 0,
-                'Green' => $stats->firstWhere('rag_status', 'Green')?->count ?? 0,
-                'Amber' => $stats->firstWhere('rag_status', 'Amber')?->count ?? 0,
-                'Red' => $stats->firstWhere('rag_status', 'Red')?->count ?? 0,
+                'Blue' => (int) ($stats->firstWhere('rag_status', 'Blue')->count ?? 0),
+                'Green' => (int) ($stats->firstWhere('rag_status', 'Green')->count ?? 0),
+                'Amber' => (int) ($stats->firstWhere('rag_status', 'Amber')->count ?? 0),
+                'Red' => (int) ($stats->firstWhere('rag_status', 'Red')->count ?? 0),
             ],
         ]);
     }
@@ -194,15 +228,6 @@ class DashboardController extends Controller
         $user = $request->user();
         $alerts = [];
 
-        // Get departments user has access to
-        $departments = null;
-        if (! $user->isAdmin()) {
-            $departments = $user->departmentPermissions()
-                ->where('can_view', true)
-                ->pluck('department')
-                ->toArray();
-        }
-
         // Overdue work items
         $overdueQuery = WorkItem::query()
             ->where('deadline', '<', now())
@@ -210,9 +235,7 @@ class DashboardController extends Controller
             ->orderBy('deadline')
             ->limit(10);
 
-        if ($departments !== null) {
-            $overdueQuery->whereIn('department', $departments);
-        }
+        $this->scopeWorkItems($overdueQuery, $user);
 
         $overdueItems = $overdueQuery->get();
 
@@ -228,17 +251,27 @@ class DashboardController extends Controller
             ];
         }
 
-        // Expiring contracts
-        $expiringContracts = SupplierContract::query()
+        // Expiring contracts (scoped by supplier access)
+        $expiringContractsQuery = SupplierContract::query()
             ->with('supplier')
             ->expiringSoon(90)
             ->orderBy('end_date')
-            ->limit(10)
-            ->get();
+            ->limit(10);
+
+        if (! $user->isAdmin()) {
+            $accessibleSupplierIds = \App\Models\Supplier::query()
+                ->where(function ($q) use ($user) {
+                    $q->whereHas('access', fn ($q2) => $q2->where('user_id', $user->id)->where('can_view', true))
+                        ->orWhere('responsible_party_id', $user->id);
+                })->pluck('id');
+            $expiringContractsQuery->whereIn('supplier_id', $accessibleSupplierIds);
+        }
+
+        $expiringContracts = $expiringContractsQuery->get();
 
         foreach ($expiringContracts as $contract) {
             $alerts[] = [
-                'id' => 1000 + $contract->id, // Offset to avoid ID collision
+                'id' => 1000 + $contract->id,
                 'type' => 'expiring_contract',
                 'title' => 'Contrat expirant',
                 'description' => "{$contract->contract_ref} - expire dans {$contract->days_until_expiry} jours",
@@ -249,16 +282,19 @@ class DashboardController extends Controller
         }
 
         // High risk items
-        $highRisks = Risk::active()
+        $highRisksQuery = Risk::active()
             ->highRisk()
             ->with('category.theme')
             ->orderByDesc('inherent_risk_score')
-            ->limit(5)
-            ->get();
+            ->limit(5);
+
+        $this->scopeRisks($highRisksQuery, $user);
+
+        $highRisks = $highRisksQuery->get();
 
         foreach ($highRisks as $risk) {
             $alerts[] = [
-                'id' => 2000 + $risk->id, // Offset to avoid ID collision
+                'id' => 2000 + $risk->id,
                 'type' => 'high_risk',
                 'title' => 'Risque élevé',
                 'description' => "{$risk->ref_no}: {$risk->name}",
@@ -269,7 +305,7 @@ class DashboardController extends Controller
         }
 
         // Sort by severity
-        usort($alerts, function ($a, $b) {
+        usort($alerts, function (array $a, array $b): int {
             $severityOrder = ['high' => 0, 'medium' => 1, 'low' => 2];
 
             return ($severityOrder[$a['severity']] ?? 3) <=> ($severityOrder[$b['severity']] ?? 3);
@@ -289,14 +325,6 @@ class DashboardController extends Controller
         $user = $request->user();
         $days = $request->get('days', 30);
 
-        $departments = null;
-        if (! $user->isAdmin()) {
-            $departments = $user->departmentPermissions()
-                ->where('can_view', true)
-                ->pluck('department')
-                ->toArray();
-        }
-
         // Work items
         $workItemsQuery = WorkItem::query()
             ->with('responsibleParty')
@@ -306,9 +334,7 @@ class DashboardController extends Controller
             ->whereNull('completion_date')
             ->orderBy('deadline');
 
-        if ($departments !== null) {
-            $workItemsQuery->whereIn('department', $departments);
-        }
+        $this->scopeWorkItems($workItemsQuery, $user);
 
         $workItems = $workItemsQuery->limit(20)->get();
 
@@ -321,35 +347,39 @@ class DashboardController extends Controller
             ->whereNull('completion_date')
             ->orderBy('deadline');
 
-        if ($departments !== null) {
-            $governanceQuery->whereIn('department', $departments);
-        }
+        $this->scopeGovernance($governanceQuery, $user);
 
         $governanceItems = $governanceQuery->limit(20)->get();
 
         return response()->json([
-            'work_items' => $workItems->map(fn ($item) => [
-                'id' => $item->id,
-                'type' => 'work_item',
-                'ref_no' => $item->ref_no,
-                'description' => Str::limit($item->description, 100),
-                'deadline' => $item->deadline?->toDateString(),
-                'days_until' => now()->diffInDays($item->deadline, false),
-                'department' => $item->department,
-                'responsible_party' => $item->responsibleParty?->full_name,
-                'rag_status' => $item->rag_status?->value,
-            ]),
-            'governance_items' => $governanceItems->map(fn ($item) => [
-                'id' => $item->id,
-                'type' => 'governance',
-                'ref_no' => $item->ref_no,
-                'description' => Str::limit($item->description, 100),
-                'deadline' => $item->deadline?->toDateString(),
-                'days_until' => now()->diffInDays($item->deadline, false),
-                'department' => $item->department,
-                'responsible_party' => $item->responsibleParty?->full_name,
-                'rag_status' => $item->rag_status?->value,
-            ]),
+            'work_items' => $workItems->map(function ($item) {
+                /** @var WorkItem $item */
+                return [
+                    'id' => $item->id,
+                    'type' => 'work_item',
+                    'ref_no' => $item->ref_no,
+                    'description' => Str::limit($item->description, 100),
+                    'deadline' => $item->deadline?->toDateString(),
+                    'days_until' => now()->diffInDays($item->deadline, false),
+                    'department' => $item->department,
+                    'responsible_party' => $item->responsibleParty?->full_name,
+                    'rag_status' => $item->rag_status?->value,
+                ];
+            }),
+            'governance_items' => $governanceItems->map(function ($item) {
+                /** @var GovernanceItem $item */
+                return [
+                    'id' => $item->id,
+                    'type' => 'governance',
+                    'ref_no' => $item->ref_no,
+                    'description' => Str::limit($item->description, 100),
+                    'deadline' => $item->deadline?->toDateString(),
+                    'days_until' => now()->diffInDays($item->deadline, false),
+                    'department' => $item->department,
+                    'responsible_party' => $item->responsibleParty?->full_name,
+                    'rag_status' => $item->rag_status?->value,
+                ];
+            }),
         ]);
     }
 
@@ -358,8 +388,6 @@ class DashboardController extends Controller
      */
     public function byActivity(Request $request): JsonResponse
     {
-        $user = $request->user();
-
         $query = WorkItem::query()
             ->select('activity')
             ->selectRaw('COUNT(*) as total')
@@ -367,25 +395,22 @@ class DashboardController extends Controller
             ->whereNotNull('activity')
             ->groupBy('activity');
 
-        if (! $user->isAdmin()) {
-            $departments = $user->departmentPermissions()
-                ->where('can_view', true)
-                ->pluck('department')
-                ->toArray();
-            $query->whereIn('department', $departments);
-        }
+        $this->scopeWorkItems($query, $request->user());
 
         $stats = $query->get();
 
         return response()->json([
-            'data' => $stats->map(fn ($item) => [
-                'activity' => $item->activity,
-                'total' => $item->total,
-                'completed' => $item->completed,
-                'completion_rate' => $item->total > 0
-                    ? round(($item->completed / $item->total) * 100, 1)
-                    : 0,
-            ]),
+            'data' => $stats->map(function ($item) {
+                /** @var WorkItem $item */
+                return [
+                    'activity' => $item->activity,
+                    'total' => $item->total,
+                    'completed' => $item->completed,
+                    'completion_rate' => $item->total > 0
+                        ? round(($item->completed / $item->total) * 100, 1)
+                        : 0,
+                ];
+            }),
         ]);
     }
 
@@ -398,22 +423,12 @@ class DashboardController extends Controller
         $start = $request->get('start', now()->startOfMonth()->toDateString());
         $end = $request->get('end', now()->endOfMonth()->toDateString());
 
-        $departments = null;
-        if (! $user->isAdmin()) {
-            $departments = $user->departmentPermissions()
-                ->where('can_view', true)
-                ->pluck('department')
-                ->toArray();
-        }
-
         // Work items with deadlines
         $workItemsQuery = WorkItem::query()
             ->whereNotNull('deadline')
             ->whereBetween('deadline', [$start, $end]);
 
-        if ($departments !== null) {
-            $workItemsQuery->whereIn('department', $departments);
-        }
+        $this->scopeWorkItems($workItemsQuery, $user);
 
         $workItems = $workItemsQuery->get();
 
@@ -422,15 +437,14 @@ class DashboardController extends Controller
             ->whereNotNull('deadline')
             ->whereBetween('deadline', [$start, $end]);
 
-        if ($departments !== null) {
-            $governanceQuery->whereIn('department', $departments);
-        }
+        $this->scopeGovernance($governanceQuery, $user);
 
         $governanceItems = $governanceQuery->get();
 
         $events = [];
 
         foreach ($workItems as $item) {
+            /** @var WorkItem $item */
             $events[] = [
                 'id' => 'wi_'.$item->id,
                 'title' => $item->description ?? $item->ref_no,
@@ -442,6 +456,7 @@ class DashboardController extends Controller
         }
 
         foreach ($governanceItems as $item) {
+            /** @var GovernanceItem $item */
             $events[] = [
                 'id' => 'gov_'.$item->id,
                 'title' => $item->name ?? $item->ref_no,
@@ -464,18 +479,8 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        $departments = null;
-        if (! $user->isAdmin()) {
-            $departments = $user->departmentPermissions()
-                ->where('can_view', true)
-                ->pluck('department')
-                ->toArray();
-        }
-
         $query = WorkItem::query();
-        if ($departments !== null) {
-            $query->whereIn('department', $departments);
-        }
+        $this->scopeWorkItems($query, $user);
 
         // Basic counts
         $total = (clone $query)->count();
@@ -524,10 +529,10 @@ class DashboardController extends Controller
             ->get();
 
         $byRag = [
-            'blue' => (int) ($ragStats->firstWhere('rag_status', 'Blue')?->count ?? 0),
-            'green' => (int) ($ragStats->firstWhere('rag_status', 'Green')?->count ?? 0),
-            'amber' => (int) ($ragStats->firstWhere('rag_status', 'Amber')?->count ?? 0),
-            'red' => (int) ($ragStats->firstWhere('rag_status', 'Red')?->count ?? 0),
+            'blue' => (int) ($ragStats->firstWhere('rag_status', 'Blue')->count ?? 0),
+            'green' => (int) ($ragStats->firstWhere('rag_status', 'Green')->count ?? 0),
+            'amber' => (int) ($ragStats->firstWhere('rag_status', 'Amber')->count ?? 0),
+            'red' => (int) ($ragStats->firstWhere('rag_status', 'Red')->count ?? 0),
         ];
 
         // Priority by department (top 5)

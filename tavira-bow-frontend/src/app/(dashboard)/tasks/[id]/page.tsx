@@ -31,6 +31,7 @@ import { toast } from 'sonner'
 import { DependenciesPanel } from '@/components/workitems/dependencies-panel'
 import { MilestonesPanel } from '@/components/workitems/milestones-panel'
 import { AssignmentPanel } from '@/components/workitems/assignment-panel'
+import { usePermissions } from '@/hooks/use-permissions'
 
 const STATUS_LABELS: Record<string, string> = {
   not_started: 'Not Started',
@@ -50,6 +51,7 @@ export default function WorkItemDetailPage() {
   const [newTag, setNewTag] = useState('')
   const [isSavingTags, setIsSavingTags] = useState(false)
   const { showConfirm } = useUIStore()
+  const { isAdmin, canEditInDepartment } = usePermissions()
 
   useEffect(() => {
     if (id) {
@@ -104,18 +106,20 @@ export default function WorkItemDetailPage() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
           </Button>
-          <div className="flex gap-2">
-            <Button variant="outline" asChild>
-              <Link to={`/tasks/${id}/edit`}>
-                <Edit className="mr-2 h-4 w-4" />
-                Edit
-              </Link>
-            </Button>
-            <Button variant="destructive" onClick={handleDelete}>
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </Button>
-          </div>
+          {(isAdmin || canEditInDepartment(item.department)) && (
+            <div className="flex gap-2">
+              <Button variant="outline" asChild>
+                <Link to={`/tasks/${id}/edit`}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit
+                </Link>
+              </Button>
+              <Button variant="destructive" onClick={handleDelete}>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </Button>
+            </div>
+          )}
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">

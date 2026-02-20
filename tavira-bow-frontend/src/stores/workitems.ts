@@ -62,6 +62,7 @@ interface WorkItemsState {
   fetchAssignments: (workItemId: number) => Promise<void>
   assignUser: (workItemId: number, userId: number, type: 'owner' | 'member') => Promise<void>
   unassignUser: (workItemId: number, userId: number) => Promise<void>
+  acknowledgeAssignment: (assignmentId: number) => Promise<void>
 
   // Actions - Files
   uploadFile: (workItemId: number, file: File) => Promise<void>
@@ -335,10 +336,11 @@ export const useWorkItemsStore = create<WorkItemsState>((set, get) => ({
   // Assignments
   fetchAssignments: async (workItemId) => {
     try {
-      const response = await api.get<TaskAssignment[]>(
+      const response = await api.get(
         `/workitems/${workItemId}/assignments`
       )
-      set({ assignments: response.data })
+      const raw = response.data
+      set({ assignments: Array.isArray(raw) ? raw : (raw?.data ?? []) })
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to fetch assignments'
@@ -367,6 +369,23 @@ export const useWorkItemsStore = create<WorkItemsState>((set, get) => ({
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to unassign user'
+      set({ error: message })
+      throw error
+    }
+  },
+
+  acknowledgeAssignment: async (assignmentId) => {
+    try {
+      const response = await api.put(`/task-assignments/${assignmentId}/acknowledge`)
+      const updated = response.data.data
+      set((state) => ({
+        assignments: state.assignments.map((a) =>
+          a.id === assignmentId ? { ...a, acknowledged_at: updated.acknowledged_at } : a
+        ),
+      }))
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to acknowledge assignment'
       set({ error: message })
       throw error
     }

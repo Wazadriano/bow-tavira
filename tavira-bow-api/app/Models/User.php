@@ -8,6 +8,29 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
+/**
+ * @property int $id
+ * @property string|null $username
+ * @property string|null $email
+ * @property string|null $password
+ * @property string|null $full_name
+ * @property string|null $role
+ * @property bool $is_active
+ * @property string|null $primary_department
+ * @property string|null $two_factor_secret
+ * @property string|null $two_factor_recovery_codes
+ * @property \Illuminate\Support\Carbon|null $two_factor_confirmed_at
+ * @property \Illuminate\Support\Carbon|null $email_verified_at
+ * @property string|null $remember_token
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, UserDepartmentPermission> $departmentPermissions
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, WorkItem> $workItemsResponsible
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, TaskAssignment> $taskAssignments
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, TeamMember> $teamMemberships
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, RiskThemePermission> $riskThemePermissions
+ * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $unreadNotifications
+ */
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;

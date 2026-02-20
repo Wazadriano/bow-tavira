@@ -19,7 +19,7 @@ interface NotificationsState {
   clearError: () => void
 }
 
-export const useNotificationsStore = create<NotificationsState>((set, get) => ({
+export const useNotificationsStore = create<NotificationsState>((set) => ({
   items: [],
   unreadCount: 0,
   currentPage: 1,

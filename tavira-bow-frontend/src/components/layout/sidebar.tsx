@@ -32,6 +32,7 @@ import {
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { useAuthUser, useAuthActions } from '@/stores/auth'
+import { usePermissions } from '@/hooks/use-permissions'
 
 interface NavSection {
   title: string
@@ -89,6 +90,7 @@ const navSections: NavSection[] = [
       { name: 'Import / Export', href: '/import-export', icon: FileSpreadsheet },
       { name: 'Audit Trail', href: '/audit', icon: ClipboardList },
       { name: 'Login History', href: '/admin/login-history', icon: ClipboardList },
+      { name: 'Public Tokens', href: '/admin/public-tokens', icon: Lock },
       { name: 'Notifications', href: '/notifications', icon: Bell },
       { name: 'Teams', href: '/teams', icon: Users },
       { name: 'Users', href: '/users', icon: UserCog },
@@ -111,10 +113,21 @@ export function MobileMenuButton({ onClick }: { onClick: () => void }) {
   )
 }
 
+const ADMIN_ONLY_HREFS = new Set([
+  '/users',
+  '/settings',
+  '/settings/security',
+  '/audit',
+  '/admin/login-history',
+  '/admin/public-tokens',
+  '/risks/themes/permissions',
+])
+
 export function Sidebar() {
   const { pathname } = useLocation()
   const user = useAuthUser()
   const { logout } = useAuthActions()
+  const { isAdmin } = usePermissions()
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [expandedSections, setExpandedSections] = useState<string[]>(
@@ -246,7 +259,7 @@ export function Sidebar() {
                 {/* Section Items */}
                 {(isExpanded || isCollapsed) && (
                   <div className={cn('space-y-0.5', !isCollapsed && 'pl-2')}>
-                    {section.items.map((item) => {
+                    {section.items.filter((item) => !ADMIN_ONLY_HREFS.has(item.href) || isAdmin).map((item) => {
                       const isActive = isItemActive(item.href)
                       return (
                         <Link

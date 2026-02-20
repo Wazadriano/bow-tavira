@@ -146,6 +146,26 @@ it('auto-selects BOW List sheet if present', function () {
     expect($response->json('selected_sheet'))->toBe('BOW List');
 });
 
+it('returns user_suggestions in preview response', function () {
+    $file = UploadedFile::fake()->createWithContent(
+        'test.csv',
+        "ref_no,department,description,responsible_party\nBOW-001,IT,Test item,Andy Webster\n"
+    );
+
+    $response = $this->actingAs($this->user)
+        ->postJson('/api/import/preview', [
+            'file' => $file,
+            'type' => 'workitems',
+        ]);
+
+    $response->assertStatus(200)
+        ->assertJsonStructure([
+            'user_suggestions',
+        ]);
+
+    expect($response->json('user_suggestions'))->toBeArray();
+});
+
 it('requires authentication', function () {
     $file = UploadedFile::fake()->createWithContent(
         'test.csv',

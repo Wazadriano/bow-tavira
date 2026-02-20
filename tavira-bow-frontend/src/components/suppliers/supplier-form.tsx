@@ -63,6 +63,7 @@ export function SupplierForm({ supplier, mode }: SupplierFormProps) {
       ? {
           name: supplier.name || '',
           sage_category_id: supplier.sage_category_id || undefined,
+          sage_category_2_id: supplier.sage_category_2_id || undefined,
           location: supplier.location || 'local',
           is_common_provider: supplier.is_common_provider || false,
           status: supplier.status || 'active',
@@ -167,6 +168,29 @@ export function SupplierForm({ supplier, mode }: SupplierFormProps) {
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {sageCategories?.data?.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id.toString()}>
+                      {cat.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="sage_category_2_id">SAGE Category 2 (Secondary)</Label>
+              <Select
+                value={watch('sage_category_2_id')?.toString() || ''}
+                onValueChange={(value) =>
+                  setValue('sage_category_2_id', value ? parseInt(value) : undefined)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a secondary category" />
                 </SelectTrigger>
                 <SelectContent>
                   {sageCategories?.data?.map((cat) => (

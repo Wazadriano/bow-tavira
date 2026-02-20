@@ -4,6 +4,9 @@ import DashboardLayout from '@/layouts/DashboardLayout'
 // Auth
 import LoginPage from '@/app/(auth)/login/page'
 
+// Public
+import PublicDashboardPage from '@/app/(public)/dashboard/page'
+
 // Dashboard
 import DashboardPage from '@/app/(dashboard)/dashboard/page'
 
@@ -52,6 +55,7 @@ import UsersPage from '@/app/(dashboard)/users/page'
 import UsersNewPage from '@/app/(dashboard)/users/new/page'
 import UserDetailPage from '@/app/(dashboard)/users/[id]/page'
 import UserEditPage from '@/app/(dashboard)/users/[id]/edit/page'
+import UserPermissionsPage from '@/app/(dashboard)/users/[id]/permissions/page'
 
 // Teams
 import TeamsPage from '@/app/(dashboard)/teams/page'
@@ -67,6 +71,7 @@ import AuditPage from '@/app/(dashboard)/audit/page'
 import NotificationsPage from '@/app/(dashboard)/notifications/page'
 import AlertsPage from '@/app/(dashboard)/alerts/page'
 import LoginHistoryPage from '@/app/(dashboard)/admin/login-history/page'
+import PublicTokensPage from '@/app/(dashboard)/admin/public-tokens/page'
 
 export const router = createBrowserRouter([
   {
@@ -76,6 +81,10 @@ export const router = createBrowserRouter([
   {
     path: '/login',
     element: <LoginPage />,
+  },
+  {
+    path: '/public/dashboard',
+    element: <PublicDashboardPage />,
   },
   {
     element: <DashboardLayout />,
@@ -127,6 +136,7 @@ export const router = createBrowserRouter([
       { path: '/users/new', element: <UsersNewPage /> },
       { path: '/users/:id', element: <UserDetailPage /> },
       { path: '/users/:id/edit', element: <UserEditPage /> },
+      { path: '/users/:id/permissions', element: <UserPermissionsPage /> },
 
       // Teams
       { path: '/teams', element: <TeamsPage /> },
@@ -142,6 +152,7 @@ export const router = createBrowserRouter([
       { path: '/notifications', element: <NotificationsPage /> },
       { path: '/alerts', element: <AlertsPage /> },
       { path: '/admin/login-history', element: <LoginHistoryPage /> },
+      { path: '/admin/public-tokens', element: <PublicTokensPage /> },
     ],
   },
 ])

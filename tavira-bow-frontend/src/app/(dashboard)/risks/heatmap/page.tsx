@@ -62,11 +62,11 @@ export default function RiskHeatmapPage() {
 
   const getCellColor = (impact: number, probability: number) => {
     const score = impact * probability
-    if (score >= 20) return 'bg-red-500 hover:bg-red-600'
-    if (score >= 12) return 'bg-orange-500 hover:bg-orange-600'
-    if (score >= 8) return 'bg-amber-400 hover:bg-amber-500'
-    if (score >= 4) return 'bg-yellow-300 hover:bg-yellow-400'
-    return 'bg-green-400 hover:bg-green-500'
+    if (score >= 20) return 'bg-red-500 hover:bg-red-600 text-white'
+    if (score >= 12) return 'bg-orange-500 hover:bg-orange-600 text-white'
+    if (score >= 8) return 'bg-amber-400 hover:bg-amber-500 text-white'
+    if (score >= 4) return 'bg-yellow-300 hover:bg-yellow-400 text-gray-900'
+    return 'bg-green-400 hover:bg-green-500 text-white'
   }
 
   const getCellByPosition = (impact: number, probability: number) => {
@@ -153,7 +153,7 @@ export default function RiskHeatmapPage() {
                             return (
                               <button
                                 key={`cell-${impact}-${prob}`}
-                                className={`h-16 rounded-md flex items-center justify-center text-white font-bold transition-colors ${getCellColor(impact, prob)}`}
+                                className={`h-16 rounded-md flex items-center justify-center font-bold transition-colors ${getCellColor(impact, prob)}`}
                                 onClick={() => cell && setSelectedCell(cell)}
                               >
                                 {riskCount > 0 && (

@@ -28,6 +28,7 @@ import { useRisksStore } from '@/stores/risks'
 import { api } from '@/lib/api'
 import type { Attachment } from '@/types'
 import { useUIStore } from '@/stores/ui'
+import { usePermissions } from '@/hooks/use-permissions'
 import { formatDate } from '@/lib/utils'
 import {
   ArrowLeft,
@@ -102,6 +103,7 @@ export default function RiskDetailPage() {
     remove,
   } = useRisksStore()
   const { showConfirm } = useUIStore()
+  const { isAdmin, canEditRiskTheme } = usePermissions()
 
   const fetchRiskFiles = async () => {
     try {
@@ -184,6 +186,11 @@ export default function RiskDetailPage() {
   }
 
   const risk = selectedItem
+  const canEdit = isAdmin || (risk.category?.theme_id ? canEditRiskTheme(risk.category.theme_id) : false)
+  // Defensive: ensure arrays even if store returns objects
+  const safeControls = Array.isArray(controls) ? controls : []
+  const safeActions = Array.isArray(actions) ? actions : []
+  const safeControlLibrary = Array.isArray(controlLibrary) ? controlLibrary : []
   // Calculate inherent impact as max of financial, regulatory, reputational
   const inherentImpact = Math.max(risk.financial_impact || 1, risk.regulatory_impact || 1, risk.reputational_impact || 1)
   const inherentScore = risk.inherent_risk_score || (inherentImpact * (risk.inherent_probability || 1))
@@ -202,18 +209,20 @@ export default function RiskDetailPage() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
           </Button>
-          <div className="flex gap-2">
-            <Button variant="outline" asChild>
-              <Link to={`/risks/${id}/edit`}>
-                <Edit className="mr-2 h-4 w-4" />
-                Edit
-              </Link>
-            </Button>
-            <Button variant="destructive" onClick={handleDelete}>
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </Button>
-          </div>
+          {canEdit && (
+            <div className="flex gap-2">
+              <Button variant="outline" asChild>
+                <Link to={`/risks/${id}/edit`}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit
+                </Link>
+              </Button>
+              <Button variant="destructive" onClick={handleDelete}>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </Button>
+            </div>
+          )}
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
@@ -359,7 +368,7 @@ export default function RiskDetailPage() {
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <Target className="h-5 w-5" />
-                  Controls ({controls.length})
+                  Controls ({safeControls.length})
                 </CardTitle>
                 <Dialog open={controlDialogOpen} onOpenChange={setControlDialogOpen}>
                   <DialogTrigger asChild>
@@ -381,7 +390,7 @@ export default function RiskDetailPage() {
                             <SelectValue placeholder="Select a control" />
                           </SelectTrigger>
                           <SelectContent>
-                            {controlLibrary.map((ctrl) => (
+                            {safeControlLibrary.map((ctrl) => (
                               <SelectItem key={ctrl.id} value={String(ctrl.id)}>
                                 {ctrl.code} - {ctrl.name}
                               </SelectItem>
@@ -437,13 +446,13 @@ export default function RiskDetailPage() {
                 </Dialog>
               </CardHeader>
               <CardContent>
-                {controls.length === 0 ? (
+                {safeControls.length === 0 ? (
                   <p className="py-4 text-center text-muted-foreground">
                     No controls defined for this risk
                   </p>
                 ) : (
                   <div className="space-y-3">
-                    {controls.map((control) => (
+                    {safeControls.map((control) => (
                       <div key={control.id} className="rounded-lg border p-4">
                         <div className="flex items-start justify-between">
                           <div>
@@ -477,7 +486,7 @@ export default function RiskDetailPage() {
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <Activity className="h-5 w-5" />
-                  Actions ({actions.length})
+                  Actions ({safeActions.length})
                 </CardTitle>
                 <Dialog open={actionDialogOpen} onOpenChange={setActionDialogOpen}>
                   <DialogTrigger asChild>
@@ -500,7 +509,7 @@ export default function RiskDetailPage() {
                         <Label>Description</Label>
                         <Input value={actionForm.description} onChange={(e) => setActionForm((f) => ({ ...f, description: e.target.value }))} placeholder="Optional description" />
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
                           <Label>Priority</Label>
                           <Select value={actionForm.priority} onValueChange={(v) => setActionForm((f) => ({ ...f, priority: v as 'low' | 'medium' | 'high' | 'critical' }))}>
@@ -549,13 +558,13 @@ export default function RiskDetailPage() {
                 </Dialog>
               </CardHeader>
               <CardContent>
-                {actions.length === 0 ? (
+                {safeActions.length === 0 ? (
                   <p className="py-4 text-center text-muted-foreground">
                     No actions defined for this risk
                   </p>
                 ) : (
                   <div className="space-y-3">
-                    {actions.map((action) => (
+                    {safeActions.map((action) => (
                       <div key={action.id} className="rounded-lg border p-4">
                         <div className="flex items-start justify-between">
                           <div>

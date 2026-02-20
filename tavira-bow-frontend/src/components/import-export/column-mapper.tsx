@@ -62,8 +62,8 @@ export function ColumnMapper({
         </div>
       </div>
 
-      <div className="border rounded-lg divide-y">
-        <div className="grid grid-cols-3 gap-4 p-3 bg-muted/50 font-medium text-sm">
+      <div className="border rounded-lg divide-y overflow-x-auto">
+        <div className="grid grid-cols-3 gap-4 p-3 bg-muted/50 font-medium text-sm min-w-[500px]">
           <div>Source Column</div>
           <div>Target Field</div>
           <div>Status</div>
@@ -74,7 +74,7 @@ export function ColumnMapper({
           const selectedField = fields.find((f) => f.field === m.targetField)
 
           return (
-            <div key={index} className="grid grid-cols-3 gap-4 p-3 items-center">
+            <div key={index} className="grid grid-cols-3 gap-4 p-3 items-center min-w-[500px]">
               <div className="font-mono text-sm">{m.sourceColumn}</div>
               <div>
                 <Select
