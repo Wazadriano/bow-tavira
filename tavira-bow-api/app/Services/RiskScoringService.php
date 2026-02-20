@@ -78,7 +78,10 @@ class RiskScoringService
 
         // Calculate total effectiveness (each control can reduce score)
         $totalEffectiveness = $controls->sum(function ($rc) {
-            return match ($rc->effectiveness?->value ?? 'none') {
+            /** @var \App\Models\RiskControl $rc */
+            $effectivenessValue = $rc->effectiveness !== null ? $rc->effectiveness->value : 'none';
+
+            return match ($effectivenessValue) {
                 'effective' => 0.3,
                 'partially_effective' => 0.15,
                 'ineffective', 'none' => 0,
@@ -114,7 +117,8 @@ class RiskScoringService
     public function calculateAppetiteStatus(Risk $risk): RiskAppetiteStatus
     {
         $residualScore = $this->calculateResidualScore($risk);
-        $appetiteThreshold = $risk->category?->risk_appetite_threshold ?? 8;
+        /** @var int $appetiteThreshold */
+        $appetiteThreshold = ($risk->category !== null ? $risk->category->risk_appetite_threshold : null) ?? 8;
 
         if ($residualScore <= $appetiteThreshold) {
             return RiskAppetiteStatus::WITHIN;
@@ -132,11 +136,13 @@ class RiskScoringService
      */
     public function updateRiskScores(Risk $risk): Risk
     {
-        $risk->inherent_risk_score = $this->calculateInherentScore($risk);
-        $risk->inherent_rag = $this->getRAGFromScore($risk->inherent_risk_score);
+        $inherentScore = $this->calculateInherentScore($risk);
+        $risk->inherent_risk_score = $inherentScore;
+        $risk->inherent_rag = $this->getRAGFromScore($inherentScore);
 
-        $risk->residual_risk_score = $this->calculateResidualScore($risk);
-        $risk->residual_rag = $this->getRAGFromScore($risk->residual_risk_score);
+        $residualScore = $this->calculateResidualScore($risk);
+        $risk->residual_risk_score = $residualScore;
+        $risk->residual_rag = $this->getRAGFromScore($residualScore);
 
         $previousAppetite = $risk->appetite_status;
         $risk->appetite_status = $this->calculateAppetiteStatus($risk);
@@ -363,15 +369,17 @@ class RiskScoringService
 
     private function notifyRiskThresholdBreached(Risk $risk): void
     {
+        /** @var User|null $owner */
         $owner = $risk->owner;
         $admins = User::where('role', 'admin')->where('is_active', true)->get();
 
         $recipients = $admins;
-        if ($owner && ! $admins->contains('id', $owner->id)) {
-            $recipients = $admins->push($owner);
+        if ($owner !== null && ! $admins->contains('id', $owner->id)) {
+            $recipients->push($owner);
         }
 
         foreach ($recipients as $user) {
+            /** @var User $user */
             $user->notify(new RiskThresholdBreachedNotification($risk, 'exceeded'));
         }
     }

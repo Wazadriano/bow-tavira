@@ -27,16 +27,13 @@ class RiskController extends Controller
     {
         $user = $request->user();
         $query = Risk::query()
-            ->with(['category.theme', 'owner', 'responsibleParty']);
+            ->with(['category.theme', 'owner', 'responsibleParty', 'controls']);
 
-        // Filter by user's theme permissions
+        // Non-admins only see their own risks (owner or responsible)
         if (! $user->isAdmin()) {
-            $themeIds = $user->riskThemePermissions()
-                ->where('can_view', true)
-                ->pluck('theme_id');
-
-            $query->whereHas('category', function ($q) use ($themeIds) {
-                $q->whereIn('theme_id', $themeIds);
+            $query->where(function ($q) use ($user) {
+                $q->where('owner_id', $user->id)
+                    ->orWhere('responsible_party_id', $user->id);
             });
         }
 
@@ -177,29 +174,54 @@ class RiskController extends Controller
      */
     public function dashboard(Request $request): JsonResponse
     {
-        $risks = Risk::active()->get();
+        $user = $request->user();
+        $query = Risk::active();
+
+        if (! $user->isAdmin()) {
+            $query->where(function ($q) use ($user) {
+                $q->where('owner_id', $user->id)
+                    ->orWhere('responsible_party_id', $user->id);
+            });
+        }
+
+        $risks = $query->get();
 
         $totalRisks = $risks->count();
         $highRisks = $risks->where('inherent_rag', \App\Enums\RAGStatus::RED)->count();
         $mediumRisks = $risks->where('inherent_rag', \App\Enums\RAGStatus::AMBER)->count();
         $lowRisks = $totalRisks - $highRisks - $mediumRisks;
 
-        $openActions = \App\Models\RiskAction::open()->count();
-        $overdueActions = \App\Models\RiskAction::overdue()->count();
+        $riskIds = $risks->pluck('id');
 
-        // By theme (L1)
-        $byTheme = \App\Models\RiskTheme::withCount(['categories as risks_count' => function ($q) {
-            $q->withCount('risks');
-        }])->get()->map(function ($theme) {
+        $openActions = \App\Models\RiskAction::open()
+            ->whereIn('risk_id', $riskIds)->count();
+        $overdueActions = \App\Models\RiskAction::overdue()
+            ->whereIn('risk_id', $riskIds)->count();
+
+        // By theme (L1) - scoped to user's visible risks
+        $visibleThemeIds = $risks->map(fn ($r) => $r->category?->theme_id)->filter()->unique();
+        $themeQuery = \App\Models\RiskTheme::with('categories');
+        if (! $user->isAdmin()) {
+            $themeQuery->whereIn('id', $visibleThemeIds);
+        }
+
+        $byTheme = $themeQuery->get()->map(function ($theme) {
+            /** @var \App\Models\RiskTheme $theme */
             return [
                 'name' => $theme->name,
                 'code' => $theme->code ?? $theme->name,
-                'count' => $theme->categories->sum(fn ($c) => $c->risks()->active()->count()),
+                'count' => $theme->categories->sum(function ($c) {
+                    /** @var RiskCategory $c */
+                    return $c->risks()->active()->count();
+                }),
             ];
         })->filter(fn ($t) => $t['count'] > 0)->values();
 
         // By tier
-        $byTier = $risks->groupBy(fn ($r) => $r->tier?->value ?? 'Unknown')
+        $byTier = $risks->groupBy(function ($r) {
+            /** @var Risk $r */
+            return $r->tier !== null ? $r->tier->value : 'Unknown';
+        })
             ->map(fn ($group, $name) => ['name' => $name, 'count' => $group->count()])
             ->values();
 
@@ -214,13 +236,16 @@ class RiskController extends Controller
         // Appetite breaches
         $appetiteBreaches = $risks
             ->where('appetite_status', \App\Enums\AppetiteStatus::OUTSIDE)
-            ->map(fn ($r) => [
-                'id' => $r->id,
-                'name' => $r->name,
-                'theme' => $r->category?->theme?->name ?? '',
-                'score' => (float) $r->residual_risk_score,
-                'appetite' => (float) ($r->category?->theme?->board_appetite ?? 0),
-            ])
+            ->map(function ($r) {
+                /** @var Risk $r */
+                return [
+                    'id' => $r->id,
+                    'name' => $r->name,
+                    'theme' => $r->category?->theme?->name ?? '',
+                    'score' => (float) $r->residual_risk_score,
+                    'appetite' => (float) ($r->category?->theme?->board_appetite ?? 0),
+                ];
+            })
             ->values();
 
         return response()->json([
@@ -248,14 +273,11 @@ class RiskController extends Controller
             ->where('is_active', true)
             ->select('financial_impact', 'regulatory_impact', 'reputational_impact', 'inherent_probability', 'ref_no', 'name', 'inherent_risk_score', 'inherent_rag');
 
-        // Filter by user's theme permissions
+        // Non-admins only see their own risks
         if (! $user->isAdmin()) {
-            $themeIds = $user->riskThemePermissions()
-                ->where('can_view', true)
-                ->pluck('theme_id');
-
-            $query->whereHas('category', function ($q) use ($themeIds) {
-                $q->whereIn('theme_id', $themeIds);
+            $query->where(function ($q) use ($user) {
+                $q->where('owner_id', $user->id)
+                    ->orWhere('responsible_party_id', $user->id);
             });
         }
 
@@ -282,6 +304,7 @@ class RiskController extends Controller
 
         // Place risks in matrix
         foreach ($risks as $risk) {
+            /** @var Risk $risk */
             $impact = max($risk->financial_impact ?? 1, $risk->regulatory_impact ?? 1, $risk->reputational_impact ?? 1);
             $probability = $risk->inherent_probability ?? 1;
             $key = "{$impact}-{$probability}";
@@ -290,10 +313,11 @@ class RiskController extends Controller
                 'ref_no' => $risk->ref_no,
                 'name' => $risk->name,
                 'score' => $risk->inherent_risk_score,
-                'rag' => $risk->inherent_rag?->value,
+                'rag' => $risk->inherent_rag !== null ? $risk->inherent_rag->value : null,
             ];
         }
 
+        /** @var array<string, array{impact: int, probability: int, score: int, risks: list<array{ref_no: string|null, name: string|null, score: mixed, rag: string|null}>}> $matrix */
         return response()->json([
             'heatmap' => array_values($matrix),
             'total_risks' => $risks->count(),

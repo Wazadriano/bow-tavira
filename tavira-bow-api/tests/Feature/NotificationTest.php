@@ -116,7 +116,7 @@ it('sends task due reminders via command', function () {
         'department' => 'IT',
         'description' => 'Reminder test',
         'current_status' => 'In Progress',
-        'deadline' => now()->addDays(7),
+        'deadline' => now()->addDays(14),
         'responsible_party_id' => $this->member->id,
     ]);
 
@@ -134,7 +134,7 @@ it('does not send reminders for completed tasks', function () {
         'department' => 'IT',
         'description' => 'Completed task',
         'current_status' => 'Completed',
-        'deadline' => now()->addDays(7),
+        'deadline' => now()->addDays(14),
         'responsible_party_id' => $this->member->id,
     ]);
 

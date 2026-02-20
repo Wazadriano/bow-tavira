@@ -1,0 +1,25 @@
+id,name,module,path,description,persona,category,status,version,tags
+agent-builder,agent builder,bmb,_byan/bmb/agents/agent-builder.md,Agent Building Expert,,builder,active,1.0.0,bmb;builder
+byan,byan,bmb,_byan/bmb/agents/byan.md,Builder of YAN - Agent Creator Specialist,,builder,active,1.0.0,bmb;builder;core
+byan-optimized,byan,bmb,_byan/bmb/agents/byan.optimized.md,Builder of YAN - Agent Creator Specialist (optimized),,builder,active,1.0.0,bmb;builder;optimized
+byan-optimized-v2,byan,bmb,_byan/bmb/agents/byan.optimized-v2.md,Builder of YAN - Agent Creator Specialist (optimized v2),,builder,active,1.0.0,bmb;builder;optimized
+byan-test,byan-test,bmb,_byan/bmb/agents/byan-test.md,Builder of YAN - Agent Creator Specialist (test),,builder,active,1.0.0,bmb;builder;test
+claude,claude,bmb,_byan/bmb/agents/claude.md,Claude - Claude Code Integration Specialist,,integration,active,1.0.0,bmb;integration
+codex,codex,bmb,_byan/bmb/agents/codex.md,Codex - OpenCode/Codex Integration Specialist,,integration,active,1.0.0,bmb;integration
+drawio,drawio,bmb,_byan/bmb/agents/drawio.md,Agent specialise dans la creation de diagrammes techniques avec draw.io,,tooling,active,1.0.0,bmb;tooling
+marc,marc,bmb,_byan/bmb/agents/marc.md,Marc - GitHub Copilot CLI Integration Specialist,,integration,active,1.0.0,bmb;integration
+module-builder,module builder,bmb,_byan/bmb/agents/module-builder.md,Module Creation Master,,builder,active,1.0.0,bmb;builder
+patnote,patnote,bmb,_byan/bmb/agents/patnote.md,Patnote - Gardien des Mises a Jour BYAN - Update Manager,,maintenance,active,1.0.0,bmb;maintenance
+rachid,rachid,bmb,_byan/bmb/agents/rachid.md,Rachid - NPM/NPX Deployment Specialist,,deployment,active,1.0.0,bmb;deployment
+turbo-whisper-integration,turbo-whisper-integration,bmb,_byan/bmb/agents/turbo-whisper-integration.md,Voice dictation integration specialist for BMAD agents,,integration,active,1.0.0,bmb;integration
+workflow-builder,workflow builder,bmb,_byan/bmb/agents/workflow-builder.md,Workflow Building Master,,builder,active,1.0.0,bmb;builder
+bow-product-manager,bow-product-manager,bow,_byan/bow/agents/bow-product-manager.md,Product Manager BOW Expert - Gardien du domaine metier Book of Work,BOW-PM,project,active,1.0.0,bow;metier;pm
+bow-architect,bow-architect,bow,_byan/bow/agents/bow-architect.md,Architecte Systeme pour le projet Book of Work,BOW-ARCH,project,active,1.0.0,bow;architecture;infra
+bow-backend-expert,bow-backend-expert,bow,_byan/bow/agents/bow-backend-expert.md,Backend Expert Laravel + PostgreSQL pour le projet Book of Work,BOW-BACK,project,active,1.0.0,bow;backend;laravel
+bow-frontend-expert,bow-frontend-expert,bow,_byan/bow/agents/bow-frontend-expert.md,Frontend Expert UX/UI React Next.js pour le projet Book of Work,BOW-FRONT,project,active,1.0.0,bow;frontend;react
+bow-qa-tester,bow-qa-tester,bow,_byan/bow/agents/bow-qa-tester.md,QA Tester TDD pour le projet Book of Work,BOW-QA,project,active,1.0.0,bow;qa;tests
+bow-devsecops,bow-devsecops,bow,_byan/bow/agents/bow-devsecops.md,DevSecOps - Securite applicative et monitoring pour le projet Book of Work,BOW-SEC,project,active,1.0.0,bow;securite;owasp
+bow-github-expert,bow-github-expert,bow,_byan/bow/agents/bow-github-expert.md,GitHub Expert - CI/CD et Repository Management pour le projet Book of Work,BOW-GH,project,active,1.0.0,bow;cicd;github
+bow-excel-specialist,bow-excel-specialist,bow,_byan/bow/agents/bow-excel-specialist.md,Excel Import/Export Specialist pour le projet Book of Work,BOW-XLS,project,active,1.0.0,bow;excel;import
+bow-infra-deployer,bow-infra-deployer,bow,_byan/bow/agents/bow-infra-deployer.md,Infrastructure & Deployment Specialist pour le projet Book of Work - OVH staging production SMTP DNS SSL,BOW-INFRA,project,active,1.0.0,bow;infra;deployment;ovh
+carmack,carmack,bmb,.github/agents/bmad-agent-carmack.md,Token Optimization Specialist for BMAD/BYAN Agents,,optimization,active,1.0.0,bmb;optimization;tokens

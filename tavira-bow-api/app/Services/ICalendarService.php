@@ -14,9 +14,10 @@ class ICalendarService
         $summary = $this->escapeIcal("BOW - {$workItem->ref_no}: {$workItem->description}");
         $description = $this->escapeIcal($workItem->description ?? '');
 
+        /** @var Carbon|null $deadline */
         $deadline = $workItem->deadline;
-        $dtstart = $deadline ? $deadline->format('Ymd') : Carbon::today()->format('Ymd');
-        $dtend = $deadline ? $deadline->copy()->addDay()->format('Ymd') : Carbon::tomorrow()->format('Ymd');
+        $dtstart = $deadline !== null ? $deadline->format('Ymd') : Carbon::today()->format('Ymd');
+        $dtend = $deadline !== null ? $deadline->copy()->addDay()->format('Ymd') : Carbon::tomorrow()->format('Ymd');
 
         return implode("\r\n", [
             'BEGIN:VCALENDAR',

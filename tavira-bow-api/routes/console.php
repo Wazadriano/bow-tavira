@@ -21,10 +21,20 @@ Artisan::command('inspire', function () {
 |--------------------------------------------------------------------------
 */
 
-// Daily task reminders at 8:00 AM
+// Daily task reminders at 8:00 AM (J-14 and Jour J)
 Schedule::command('bow:send-task-reminders')
     ->dailyAt('08:00')
-    ->description('Send task deadline reminders');
+    ->description('Send task deadline reminders (J-14 and Jour J)');
+
+// Daily overdue notifications at 8:30 AM (J+1: team leads + Ranjit)
+Schedule::command('bow:send-overdue-notifications')
+    ->dailyAt('08:30')
+    ->description('Notify team leads of overdue tasks (J+1)');
+
+// Weekly CEO report every Monday at 6:00 AM
+Schedule::command('bow:send-weekly-ceo-report')
+    ->weeklyOn(1, '06:00')
+    ->description('Send weekly consolidated report to CEO');
 
 // Daily contract expiration alerts at 9:00 AM
 Schedule::command('bow:send-contract-alerts')

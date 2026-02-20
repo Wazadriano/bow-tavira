@@ -91,18 +91,18 @@ export default function GovernanceDashboardPage() {
   }
 
   const statusData = [
-    { name: 'Completed', value: stats.by_status.completed, color: '#22c55e' },
-    { name: 'In Progress', value: stats.by_status.in_progress, color: '#3b82f6' },
-    { name: 'Pending', value: stats.by_status.pending, color: '#f59e0b' },
-    { name: 'Overdue', value: stats.by_status.overdue, color: '#ef4444' },
+    { name: 'Completed', value: stats.by_status?.completed ?? 0, color: '#22c55e' },
+    { name: 'In Progress', value: stats.by_status?.in_progress ?? 0, color: '#3b82f6' },
+    { name: 'Pending', value: stats.by_status?.pending ?? 0, color: '#f59e0b' },
+    { name: 'Overdue', value: stats.by_status?.overdue ?? 0, color: '#ef4444' },
   ]
 
-  const deptData = stats.by_department.map((d) => ({
+  const deptData = (stats.by_department ?? []).map((d) => ({
     name: d.name,
     count: d.count,
   }))
 
-  const freqData = stats.by_frequency.map((f) => ({
+  const freqData = (stats.by_frequency ?? []).map((f) => ({
     name: f.name,
     count: f.count,
   }))
@@ -192,7 +192,7 @@ export default function GovernanceDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {stats.upcoming.map((item) => (
+                {(stats.upcoming ?? []).map((item) => (
                   <div
                     key={item.id}
                     className="flex items-center justify-between p-3 rounded-lg border"

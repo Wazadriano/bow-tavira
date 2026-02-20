@@ -33,14 +33,12 @@ class WorkItemController extends Controller
         $query = WorkItem::query()
             ->with(['responsibleParty', 'assignments.user']);
 
-        // Non-admins only see items from departments they have access to
+        // Non-admins only see their own tasks (responsible or assigned)
         if (! $user->isAdmin()) {
-            $departments = $user->departmentPermissions()
-                ->where('can_view', true)
-                ->pluck('department')
-                ->toArray();
-
-            $query->whereIn('department', $departments);
+            $query->where(function ($q) use ($user) {
+                $q->where('responsible_party_id', $user->id)
+                    ->orWhereHas('assignments', fn ($sub) => $sub->where('user_id', $user->id));
+            });
         }
 
         // Filters
@@ -113,7 +111,7 @@ class WorkItemController extends Controller
 
             // Handle tags
             if ($request->has('tags') && is_array($request->tags)) {
-                $workItem->tags = $request->tags;
+                $workItem->tags = (array) $request->tags;
                 $workItem->save();
             }
 
@@ -217,14 +215,12 @@ class WorkItemController extends Controller
             ->whereNotNull('deadline')
             ->select('id', 'ref_no', 'description', 'deadline', 'rag_status', 'current_status', 'department');
 
-        // Non-admins only see items from their departments
+        // Non-admins only see their own tasks (responsible or assigned)
         if (! $user->isAdmin()) {
-            $departments = $user->departmentPermissions()
-                ->where('can_view', true)
-                ->pluck('department')
-                ->toArray();
-
-            $query->whereIn('department', $departments);
+            $query->where(function ($q) use ($user) {
+                $q->where('responsible_party_id', $user->id)
+                    ->orWhereHas('assignments', fn ($sub) => $sub->where('user_id', $user->id));
+            });
         }
 
         // Date range filter
@@ -239,17 +235,20 @@ class WorkItemController extends Controller
         $items = $query->get();
 
         return response()->json([
-            'events' => $items->map(fn ($item) => [
-                'id' => $item->id,
-                'title' => $item->ref_no.' - '.Str::limit($item->description, 50),
-                'start' => $item->deadline->toDateString(),
-                'color' => $this->getRagColor($item->rag_status?->value),
-                'extendedProps' => [
-                    'ref_no' => $item->ref_no,
-                    'status' => $item->current_status,
-                    'department' => $item->department,
-                ],
-            ]),
+            'events' => $items->map(function ($item) {
+                /** @var WorkItem $item */
+                return [
+                    'id' => $item->id,
+                    'title' => $item->ref_no.' - '.Str::limit($item->description, 50),
+                    'start' => $item->deadline->toDateString(),
+                    'color' => $this->getRagColor($item->rag_status !== null ? $item->rag_status->value : null),
+                    'extendedProps' => [
+                        'ref_no' => $item->ref_no,
+                        'status' => $item->current_status,
+                        'department' => $item->department,
+                    ],
+                ];
+            }),
         ]);
     }
 
@@ -305,7 +304,10 @@ class WorkItemController extends Controller
             'assignment_type' => $request->get('type', 'member'),
         ]);
 
-        $user->notify(new TaskAssignedNotification($workitem, $request->user()));
+        // No notification on self-assignment (RG-BOW-014)
+        if ($user->id !== $request->user()->id) {
+            $user->notify(new TaskAssignedNotification($workitem, $request->user()));
+        }
 
         return response()->json([
             'message' => 'User assigned successfully',

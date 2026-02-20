@@ -46,13 +46,16 @@ class ProcessImportFile implements ShouldQueue
 
     private ?string $jobId;
 
+    private ?array $userOverrides;
+
     public function __construct(
         string $filePath,
         string $type,
         array $columnMapping,
         int $userId,
         array|string|null $sheetNames = null,
-        ?string $jobId = null
+        ?string $jobId = null,
+        ?array $userOverrides = null
     ) {
         $this->filePath = $filePath;
         $this->type = $type;
@@ -60,6 +63,7 @@ class ProcessImportFile implements ShouldQueue
         $this->userId = $userId;
         $this->sheetNames = $sheetNames;
         $this->jobId = $jobId;
+        $this->userOverrides = $userOverrides;
     }
 
     public function handle(ImportNormalizationService $importService): void
@@ -256,16 +260,11 @@ class ProcessImportFile implements ShouldQueue
             $sheet = $spreadsheet->getActiveSheet();
         }
 
-        $data = $sheet->toArray(null, true, true, false);
+        $data = ImportNormalizationService::sheetToLimitedArray($sheet);
 
         $service = app(ImportNormalizationService::class);
 
         return $service->sanitizeExcelData($data);
-    }
-
-    private function mapRowToFields(array $row): array
-    {
-        return $this->mapRowToFieldsWithMapping($row, $this->columnMapping);
     }
 
     private function mapRowToFieldsWithMapping(array $row, array $mapping): array
@@ -340,14 +339,30 @@ class ProcessImportFile implements ShouldQueue
             'revenue_potential' => $service->transformValue($data['revenue_potential'] ?? null, 'decimal'),
         ];
 
+        // Text fields for new columns
+        if (! empty($data['other_item_completion_dependences'])) {
+            $attributes['other_item_completion_dependences'] = $data['other_item_completion_dependences'];
+        }
+        if (! empty($data['issues_risks'])) {
+            $attributes['issues_risks'] = $data['issues_risks'];
+        }
+        if (! empty($data['initial_item_provider_editor'])) {
+            $attributes['initial_item_provider_editor'] = $data['initial_item_provider_editor'];
+        }
+
         // Handle responsible party lookup
         if (! empty($data['responsible_party_id'])) {
-            $attributes['responsible_party_id'] = $service->resolveUserId($data['responsible_party_id']);
+            $attributes['responsible_party_id'] = $service->resolveUserId($data['responsible_party_id'], $this->userOverrides);
         }
 
         // Handle department head lookup
         if (! empty($data['department_head_id'])) {
-            $attributes['department_head_id'] = $service->resolveUserId($data['department_head_id']);
+            $attributes['department_head_id'] = $service->resolveUserId($data['department_head_id'], $this->userOverrides);
+        }
+
+        // Handle backup person lookup
+        if (! empty($data['back_up_person_id'])) {
+            $attributes['back_up_person_id'] = $service->resolveUserId($data['back_up_person_id'], $this->userOverrides);
         }
 
         // Remove null values to avoid overwriting existing data with nulls on update
@@ -360,7 +375,9 @@ class ProcessImportFile implements ShouldQueue
         }
 
         // For create, ensure required fields
-        $attributes['current_status'] = $attributes['current_status'] ?? 'Not Started';
+        if (! isset($attributes['current_status'])) {
+            $attributes['current_status'] = 'Not Started';
+        }
         WorkItem::create($attributes);
 
         return 'created';
@@ -502,7 +519,7 @@ class ProcessImportFile implements ShouldQueue
 
         // Handle responsible party lookup
         if (! empty($data['responsible_party_id'])) {
-            $attributes['responsible_party_id'] = $service->resolveUserId($data['responsible_party_id']);
+            $attributes['responsible_party_id'] = $service->resolveUserId($data['responsible_party_id'], $this->userOverrides);
         }
 
         $attributes = array_filter($attributes, fn ($v) => $v !== null);
@@ -513,7 +530,9 @@ class ProcessImportFile implements ShouldQueue
             return 'updated';
         }
 
-        $attributes['current_status'] = $attributes['current_status'] ?? 'not_started';
+        if (! isset($attributes['current_status'])) {
+            $attributes['current_status'] = 'not_started';
+        }
         GovernanceItem::create($attributes);
 
         return 'created';

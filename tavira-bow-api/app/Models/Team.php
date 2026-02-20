@@ -6,6 +6,18 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int $id
+ * @property string|null $name
+ * @property string|null $description
+ * @property bool $is_active
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read int $member_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, TeamMember> $members
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, User> $users
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, User> $leads
+ */
 class Team extends Model
 {
     protected $fillable = [

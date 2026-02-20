@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/** @mixin \App\Models\Supplier */
 class SupplierResource extends JsonResource
 {
     public function toArray(Request $request): array
@@ -14,6 +15,7 @@ class SupplierResource extends JsonResource
             'ref_no' => $this->ref_no,
             'name' => $this->name,
             'sage_category_id' => $this->sage_category_id,
+            'sage_category_2_id' => $this->sage_category_2_id,
             'responsible_party_id' => $this->responsible_party_id,
             'location' => $this->location?->value,
             'is_common_provider' => $this->is_common_provider,
@@ -26,6 +28,7 @@ class SupplierResource extends JsonResource
 
             // Relations
             'sage_category' => new SageCategoryResource($this->whenLoaded('sageCategory')),
+            'sage_category_2' => new SageCategoryResource($this->whenLoaded('sageCategory2')),
             'responsible_party' => new UserResource($this->whenLoaded('responsibleParty')),
             'entities' => SupplierEntityResource::collection($this->whenLoaded('entities')),
             'contracts' => SupplierContractResource::collection($this->whenLoaded('contracts')),

@@ -14,7 +14,7 @@ class StoreSupplierRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ref_no' => 'required|string|max:50|unique:suppliers,ref_no',
+            'ref_no' => 'nullable|string|max:50|unique:suppliers,ref_no',
             'name' => 'required|string|max:200',
             'sage_category_id' => 'nullable|exists:sage_categories,id',
             'responsible_party_id' => 'nullable|exists:users,id',

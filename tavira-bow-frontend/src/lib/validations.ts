@@ -114,6 +114,7 @@ export type GovernanceMilestoneFormData = z.infer<typeof governanceMilestoneSche
 export const supplierSchema = z.object({
   name: z.string().min(1, 'Name is required').max(200, 'Maximum 200 characters'),
   sage_category_id: z.number().optional(),
+  sage_category_2_id: z.number().optional(),
   location: z.enum(['local', 'overseas']).optional(),
   is_common_provider: z.boolean().optional(),
   status: z.enum(['active', 'inactive', 'pending']).optional(),

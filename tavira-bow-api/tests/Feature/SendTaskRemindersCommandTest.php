@@ -28,10 +28,10 @@ function createWorkItem(array $overrides = []): WorkItem
     ], $overrides));
 }
 
-it('sends reminders at J-30', function () {
+it('sends reminders at J-14', function () {
     $user = User::factory()->create();
     $workItem = createWorkItem([
-        'deadline' => Carbon::today()->addDays(30),
+        'deadline' => Carbon::today()->addDays(14),
     ]);
     TaskAssignment::create([
         'work_item_id' => $workItem->id,
@@ -45,10 +45,27 @@ it('sends reminders at J-30', function () {
     Notification::assertSentTo($user, TaskDueReminderNotification::class);
 });
 
-it('sends reminders at J-7 J-3 J-1', function () {
+it('sends reminders on Jour J (deadline today)', function () {
+    $user = User::factory()->create();
+    $workItem = createWorkItem([
+        'deadline' => Carbon::today(),
+    ]);
+    TaskAssignment::create([
+        'work_item_id' => $workItem->id,
+        'user_id' => $user->id,
+        'assignment_type' => AssignmentType::MEMBER,
+    ]);
+
+    $this->artisan('bow:send-task-reminders')
+        ->assertSuccessful();
+
+    Notification::assertSentTo($user, TaskDueReminderNotification::class);
+});
+
+it('does not send reminders at old J-30 J-7 J-3 intervals', function () {
     $user = User::factory()->create();
 
-    foreach ([7, 3, 1] as $days) {
+    foreach ([30, 7, 3, 1] as $days) {
         $workItem = createWorkItem([
             'deadline' => Carbon::today()->addDays($days),
         ]);
@@ -62,14 +79,14 @@ it('sends reminders at J-7 J-3 J-1', function () {
     $this->artisan('bow:send-task-reminders')
         ->assertSuccessful();
 
-    Notification::assertSentToTimes($user, TaskDueReminderNotification::class, 3);
+    Notification::assertNotSentTo($user, TaskDueReminderNotification::class);
 });
 
 it('does not send reminder to user who acknowledged', function () {
     $acknowledgedUser = User::factory()->create();
     $unacknowledgedUser = User::factory()->create();
     $workItem = createWorkItem([
-        'deadline' => Carbon::today()->addDays(7),
+        'deadline' => Carbon::today()->addDays(14),
     ]);
 
     TaskAssignment::create([
@@ -95,7 +112,7 @@ it('does not send reminder to user who acknowledged', function () {
 it('always sends reminder to responsible party regardless of acknowledgement', function () {
     $responsibleParty = User::factory()->create();
     createWorkItem([
-        'deadline' => Carbon::today()->addDays(7),
+        'deadline' => Carbon::today()->addDays(14),
         'responsible_party_id' => $responsibleParty->id,
     ]);
 
@@ -108,7 +125,7 @@ it('always sends reminder to responsible party regardless of acknowledgement', f
 it('does not send reminders for completed tasks', function () {
     $user = User::factory()->create();
     $workItem = createWorkItem([
-        'deadline' => Carbon::today()->addDays(7),
+        'deadline' => Carbon::today()->addDays(14),
         'current_status' => 'Completed',
     ]);
     TaskAssignment::create([

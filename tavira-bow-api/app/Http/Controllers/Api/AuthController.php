@@ -57,6 +57,9 @@ class AuthController extends Controller
             ]);
         }
 
+        // Load permission relations for the response
+        $user->load(['departmentPermissions', 'riskThemePermissions']);
+
         // Create new token
         $token = $user->createToken('auth-token', ['*'], now()->addDays(7));
 

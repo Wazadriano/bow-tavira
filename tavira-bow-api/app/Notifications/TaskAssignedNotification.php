@@ -24,14 +24,19 @@ class TaskAssignedNotification extends Notification implements ShouldQueue
         return ['mail', 'database'];
     }
 
+    /**
+     * @param  \App\Models\User  $notifiable
+     */
     public function toMail(object $notifiable): MailMessage
     {
+        $deadlineStr = $this->workItem->deadline !== null ? $this->workItem->deadline->toDateString() : 'No deadline';
+
         $mail = (new MailMessage)
             ->subject("You have been assigned to task {$this->workItem->ref_no}")
             ->greeting("Hello {$notifiable->full_name},")
             ->line("{$this->assignedBy->full_name} has assigned you to task **{$this->workItem->ref_no}**.")
             ->line('Description: '.$this->workItem->description)
-            ->line('Deadline: '.($this->workItem->deadline?->toDateString() ?? 'No deadline'))
+            ->line('Deadline: '.$deadlineStr)
             ->line('Please acknowledge this assignment on the platform.')
             ->action('View Task', url("/tasks/{$this->workItem->id}"));
 

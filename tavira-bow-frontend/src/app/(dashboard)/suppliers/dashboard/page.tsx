@@ -135,9 +135,9 @@ export default function SuppliersDashboardPage() {
   }
 
   const statusData = [
-    { name: 'Active', value: stats.by_status.active, color: '#22c55e' },
-    { name: 'Inactive', value: stats.by_status.inactive, color: '#6b7280' },
-    { name: 'Pending', value: stats.by_status.pending, color: '#f59e0b' },
+    { name: 'Active', value: stats.by_status?.active ?? 0, color: '#22c55e' },
+    { name: 'Inactive', value: stats.by_status?.inactive ?? 0, color: '#6b7280' },
+    { name: 'Pending', value: stats.by_status?.pending ?? 0, color: '#f59e0b' },
   ]
 
   const locationData = (stats.by_location ?? []).map((l) => ({
@@ -250,7 +250,7 @@ export default function SuppliersDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {stats.expiring_contracts.map((contract) => (
+                {(stats.expiring_contracts ?? []).map((contract) => (
                   <div
                     key={contract.id}
                     className="flex items-center justify-between p-3 rounded-lg border"

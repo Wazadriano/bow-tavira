@@ -16,6 +16,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { get } from '@/lib/api'
 import type { Risk, PaginatedResponse, HeatmapData } from '@/types'
+import { usePermissions } from '@/hooks/use-permissions'
+import { useAuthStore } from '@/stores/auth'
 import { Plus, Eye, Edit, MoreHorizontal, Grid3X3, Trash2 } from 'lucide-react'
 import { useRisksStore } from '@/stores/risks'
 import { useUIStore } from '@/stores/ui'
@@ -281,6 +283,9 @@ function HeatmapView() {
 
 export default function RisksPage() {
   const [view, setView] = useState<'list' | 'heatmap'>('list')
+  const { isAdmin } = usePermissions()
+  const user = useAuthStore((state) => state.user)
+  const canCreateAnyRisk = isAdmin || (user?.risk_theme_permissions ?? []).some((p) => p.can_create)
   const columns = useRiskColumns()
 
   const { data, isLoading } = useQuery({
@@ -303,12 +308,14 @@ export default function RisksPage() {
               <TabsTrigger value="heatmap">Heatmap</TabsTrigger>
             </TabsList>
           </Tabs>
-          <Button asChild>
-            <Link to="/risks/new">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Risk
-            </Link>
-          </Button>
+          {canCreateAnyRisk && (
+            <Button asChild>
+              <Link to="/risks/new">
+                <Plus className="mr-2 h-4 w-4" />
+                Add Risk
+              </Link>
+            </Button>
+          )}
         </div>
 
         {view === 'heatmap' ? (

@@ -22,9 +22,9 @@ class UserPermissionController extends Controller
         $validated = $request->validate([
             'department' => 'required|string',
             'can_view' => 'boolean',
-            'can_edit' => 'boolean',
-            'can_create' => 'boolean',
-            'can_delete' => 'boolean',
+            'can_edit_status' => 'boolean',
+            'can_create_tasks' => 'boolean',
+            'can_edit_all' => 'boolean',
         ]);
 
         $permission = $user->departmentPermissions()->create($validated);
@@ -36,9 +36,9 @@ class UserPermissionController extends Controller
     {
         $validated = $request->validate([
             'can_view' => 'boolean',
-            'can_edit' => 'boolean',
-            'can_create' => 'boolean',
-            'can_delete' => 'boolean',
+            'can_edit_status' => 'boolean',
+            'can_create_tasks' => 'boolean',
+            'can_edit_all' => 'boolean',
         ]);
 
         $permission->update($validated);

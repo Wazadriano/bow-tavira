@@ -6,6 +6,22 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int $id
+ * @property int|null $work_item_id
+ * @property string|null $title
+ * @property string|null $description
+ * @property \Illuminate\Support\Carbon|null $target_date
+ * @property string|null $status
+ * @property int $order
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read string|null $due_date
+ * @property-read bool $is_completed
+ * @property-read bool $is_overdue
+ * @property-read WorkItem|null $workItem
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, MilestoneAssignment> $assignments
+ */
 class TaskMilestone extends Model
 {
     protected $fillable = [

@@ -16,8 +16,6 @@ beforeEach(function () {
 // ============================================================
 
 it('detects exact duplicate rows in import data', function () {
-    $this->markTestSkipped('TDD RED: detectDuplicates() not implemented yet (RG-BOW-008)');
-
     $rows = [
         ['ref_no' => 'WI-001', 'name' => 'Task Alpha', 'department' => 'IT'],
         ['ref_no' => 'WI-002', 'name' => 'Task Beta', 'department' => 'Finance'],
@@ -31,8 +29,6 @@ it('detects exact duplicate rows in import data', function () {
 });
 
 it('returns empty array when no duplicates exist', function () {
-    $this->markTestSkipped('TDD RED: detectDuplicates() not implemented yet (RG-BOW-008)');
-
     $rows = [
         ['ref_no' => 'WI-001', 'name' => 'Task Alpha'],
         ['ref_no' => 'WI-002', 'name' => 'Task Beta'],
@@ -45,8 +41,6 @@ it('returns empty array when no duplicates exist', function () {
 });
 
 it('detects fuzzy duplicates with similar names', function () {
-    $this->markTestSkipped('TDD RED: detectDuplicates() not implemented yet (RG-BOW-008)');
-
     $rows = [
         ['ref_no' => 'WI-001', 'name' => 'John Smith'],
         ['ref_no' => 'WI-002', 'name' => 'J. Smith'],

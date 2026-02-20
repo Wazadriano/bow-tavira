@@ -22,19 +22,26 @@ class ContractExpiringNotification extends Notification implements ShouldQueue
         return ['mail', 'database'];
     }
 
+    /**
+     * @param  \App\Models\User  $notifiable
+     */
     public function toMail(object $notifiable): MailMessage
     {
         $supplierName = $this->contract->supplier?->name ?? 'Unknown';
+        $endDate = $this->contract->end_date !== null ? $this->contract->end_date->toDateString() : 'N/A';
 
         return (new MailMessage)
             ->subject("Contract {$this->contract->contract_ref} expiring in {$this->daysUntilExpiry} days")
             ->greeting("Hello {$notifiable->full_name},")
             ->line("Contract **{$this->contract->contract_ref}** with **{$supplierName}** expires in {$this->daysUntilExpiry} days.")
-            ->line('End date: '.$this->contract->end_date?->toDateString())
-            ->line('Contract value: '.number_format($this->contract->value ?? 0, 2).' GBP')
+            ->line('End date: '.$endDate)
+            ->line('Contract value: '.number_format($this->contract->amount ?? 0, 2).' GBP')
             ->action('View Supplier', url("/suppliers/{$this->contract->supplier_id}"));
     }
 
+    /**
+     * @param  \App\Models\User  $notifiable
+     */
     public function toArray(object $notifiable): array
     {
         return [
@@ -44,7 +51,7 @@ class ContractExpiringNotification extends Notification implements ShouldQueue
             'supplier_id' => $this->contract->supplier_id,
             'supplier_name' => $this->contract->supplier?->name,
             'days_until_expiry' => $this->daysUntilExpiry,
-            'end_date' => $this->contract->end_date?->toDateString(),
+            'end_date' => $this->contract->end_date !== null ? $this->contract->end_date->toDateString() : null,
             'message' => "Contract {$this->contract->contract_ref} expires in {$this->daysUntilExpiry} days",
         ];
     }

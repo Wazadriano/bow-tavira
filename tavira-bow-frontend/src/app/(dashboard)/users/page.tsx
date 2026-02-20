@@ -43,6 +43,7 @@ import {
   User,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { usePermissions } from '@/hooks/use-permissions'
 
 const ROLE_LABELS: Record<string, string> = {
   admin: 'Administrator',
@@ -55,6 +56,7 @@ const ROLE_COLORS: Record<string, string> = {
 }
 
 export default function UsersPage() {
+  const { isAdmin } = usePermissions()
   const navigate = useNavigate()
   const {
     users,
@@ -72,8 +74,12 @@ export default function UsersPage() {
   const { showConfirm } = useUIStore()
 
   useEffect(() => {
+    if (!isAdmin) {
+      navigate('/dashboard', { replace: true })
+      return
+    }
     fetchUsers()
-  }, [fetchUsers])
+  }, [fetchUsers, isAdmin, navigate])
 
   const handleDelete = (id: number, name: string) => {
     showConfirm({

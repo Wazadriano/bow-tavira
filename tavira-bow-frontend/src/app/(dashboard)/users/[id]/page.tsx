@@ -23,6 +23,7 @@ import {
   UserX,
   Plus,
   X,
+  ShieldCheck,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -135,7 +136,8 @@ export default function UserDetailPage() {
   }
 
   const user = selectedUser
-  const usedDepts = permissions.map((p) => p.department)
+  const safePermissions = Array.isArray(permissions) ? permissions : []
+  const usedDepts = safePermissions.map((p) => p.department)
   const availableDepts = departments.filter((d) => !usedDepts.includes(d))
 
   return (
@@ -164,6 +166,12 @@ export default function UserDetailPage() {
                   Activate
                 </>
               )}
+            </Button>
+            <Button variant="outline" asChild>
+              <Link to={`/users/${id}/permissions`}>
+                <ShieldCheck className="mr-2 h-4 w-4" />
+                Permissions
+              </Link>
             </Button>
             <Button variant="outline" asChild>
               <Link to={`/users/${id}/edit`}>
@@ -304,13 +312,13 @@ export default function UserDetailPage() {
                 </Dialog>
               </CardHeader>
               <CardContent>
-                {permissions.length === 0 ? (
+                {safePermissions.length === 0 ? (
                   <p className="py-4 text-center text-muted-foreground">
                     No specific permissions configured
                   </p>
                 ) : (
                   <div className="space-y-2">
-                    {permissions.map((perm) => (
+                    {safePermissions.map((perm) => (
                       <div
                         key={perm.id}
                         className="flex items-center justify-between p-3 rounded-lg border group"

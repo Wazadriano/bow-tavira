@@ -12,13 +12,14 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            UserSeeder::class,
             SettingListSeeder::class,
             RiskThemeSeeder::class,
             SystemSettingSeeder::class,
-            LegacyDataSeeder::class,
+            RealUsersSeeder::class,
+            ExcelWorkItemsSeeder::class,
+            ExcelGovernanceSeeder::class,
+            RealisticSuppliersSeeder::class,
             ComprehensiveDataSeeder::class,
-            WorkItemDataEnhancerSeeder::class,
         ]);
     }
 }

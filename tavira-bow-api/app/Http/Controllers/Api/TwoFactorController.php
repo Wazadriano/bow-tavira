@@ -97,8 +97,9 @@ class TwoFactorController extends Controller
 
         $user = $request->user();
 
+        /** @var PersonalAccessToken $token */
         $token = $user->currentAccessToken();
-        if (! $token instanceof PersonalAccessToken || $token->name !== '2fa-pending') {
+        if ($token->name !== '2fa-pending') {
             return response()->json(['message' => 'Invalid token for 2FA verification.'], 403);
         }
 

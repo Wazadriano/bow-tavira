@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import { FileUpload, ColumnMapper, PreviewTable, ImportProgress } from '@/components/import-export'
+import { FileUpload, ColumnMapper, PreviewTable, ImportProgress, UserSuggestions, DuplicateWarnings } from '@/components/import-export'
 import { useImportStore, type ImportType, targetFields } from '@/stores/import'
 
 const importTypes: Array<{ value: ImportType; label: string; description: string }> = [
@@ -67,6 +67,13 @@ export default function ImportExportPage() {
     toggleAllImportable,
     uploadAndPreview,
     updateMapping,
+    userSuggestions,
+    userOverrides,
+    acceptSuggestion,
+    rejectSuggestion,
+    duplicates,
+    duplicatesAcknowledged,
+    acknowledgeDuplicates,
     confirmImport,
     downloadTemplate,
     exportData,
@@ -331,6 +338,33 @@ export default function ImportExportPage() {
             </Card>
           )}
 
+          {/* User suggestions (between mapping and preview) */}
+          {preview && userSuggestions.length > 0 && (
+            <Card>
+              <CardContent className="pt-6">
+                <UserSuggestions
+                  suggestions={userSuggestions}
+                  overrides={userOverrides}
+                  onAccept={acceptSuggestion}
+                  onReject={rejectSuggestion}
+                />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Duplicate detection warnings */}
+          {preview && duplicates.length > 0 && (
+            <Card>
+              <CardContent className="pt-6">
+                <DuplicateWarnings
+                  duplicates={duplicates}
+                  acknowledged={duplicatesAcknowledged}
+                  onAcknowledge={acknowledgeDuplicates}
+                />
+              </CardContent>
+            </Card>
+          )}
+
           {/* Step 4 (or 5): Preview data */}
           {preview && mapping.some((m) => m.targetField) && (
             <Card>
@@ -356,7 +390,7 @@ export default function ImportExportPage() {
 
                   <Button
                     onClick={handleImport}
-                    disabled={isImporting || !canImport || !allRequiredMapped}
+                    disabled={isImporting || !canImport || !allRequiredMapped || (duplicates.length > 0 && !duplicatesAcknowledged)}
                   >
                     {isImporting ? (
                       <>Import in progress...</>

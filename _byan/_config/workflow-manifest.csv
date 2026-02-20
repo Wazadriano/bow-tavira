@@ -1,0 +1,6 @@
+id,name,path,description
+interview-workflow,Interview Workflow,_byan/bmb/workflows/byan/interview-workflow.md,Interview-based agent creation (12 questions + 64 mantras)
+quick-create-workflow,Quick Create Workflow,_byan/bmb/workflows/byan/quick-create-workflow.md,Rapid agent creation from minimal input
+edit-agent-workflow,Edit Agent Workflow,_byan/bmb/workflows/byan/edit-agent-workflow.md,Modify an existing agent definition
+delete-agent-workflow,Delete Agent Workflow,_byan/bmb/workflows/byan/delete-agent-workflow.md,Remove an agent from the ecosystem
+validate-agent-workflow,Validate Agent Workflow,_byan/bmb/workflows/byan/validate-agent-workflow.md,Validate agent structure and compliance

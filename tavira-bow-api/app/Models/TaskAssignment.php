@@ -6,6 +6,17 @@ use App\Enums\AssignmentType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int|null $work_item_id
+ * @property int|null $user_id
+ * @property AssignmentType|null $assignment_type
+ * @property \Illuminate\Support\Carbon|null $acknowledged_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read WorkItem|null $workItem
+ * @property-read User|null $user
+ */
 class TaskAssignment extends Model
 {
     protected $fillable = [

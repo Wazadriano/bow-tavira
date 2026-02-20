@@ -213,10 +213,11 @@ export const useGovernanceStore = create<GovernanceState>((set, get) => ({
   // Milestones
   fetchMilestones: async (itemId) => {
     try {
-      const response = await api.get<GovernanceMilestone[]>(
+      const response = await api.get(
         `/governance/items/${itemId}/milestones`
       )
-      set({ milestones: response.data })
+      const raw = response.data
+      set({ milestones: Array.isArray(raw) ? raw : (raw?.data ?? []) })
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to fetch milestones'

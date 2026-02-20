@@ -106,6 +106,19 @@ it('normalizes UpdateFrequency aliases', function () {
     expect($this->service->normalizeEnumValue('week', UpdateFrequency::class))->toBe('Weekly');
 });
 
+// UpdateFrequency One-off
+it('normalizes UpdateFrequency One-off exact match', function () {
+    expect($this->service->normalizeEnumValue('One-off', UpdateFrequency::class))->toBe('One-off');
+});
+
+it('normalizes UpdateFrequency One-off aliases', function () {
+    expect($this->service->normalizeEnumValue('one-off', UpdateFrequency::class))->toBe('One-off');
+    expect($this->service->normalizeEnumValue('one off', UpdateFrequency::class))->toBe('One-off');
+    expect($this->service->normalizeEnumValue('one_off', UpdateFrequency::class))->toBe('One-off');
+    expect($this->service->normalizeEnumValue('once', UpdateFrequency::class))->toBe('One-off');
+    expect($this->service->normalizeEnumValue('ad hoc', UpdateFrequency::class))->toBe('One-off');
+});
+
 // Unknown value returns null with warning
 it('returns null for unknown enum value', function () {
     expect($this->service->normalizeEnumValue('invalid_value', BAUType::class))->toBeNull();

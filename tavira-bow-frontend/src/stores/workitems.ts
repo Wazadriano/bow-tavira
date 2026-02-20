@@ -336,10 +336,11 @@ export const useWorkItemsStore = create<WorkItemsState>((set, get) => ({
   // Assignments
   fetchAssignments: async (workItemId) => {
     try {
-      const response = await api.get<TaskAssignment[]>(
+      const response = await api.get(
         `/workitems/${workItemId}/assignments`
       )
-      set({ assignments: response.data })
+      const raw = response.data
+      set({ assignments: Array.isArray(raw) ? raw : (raw?.data ?? []) })
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Failed to fetch assignments'

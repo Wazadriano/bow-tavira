@@ -10,6 +10,7 @@ use App\Enums\UpdateFrequency;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class ImportNormalizationService
 {
@@ -18,6 +19,43 @@ class ImportNormalizationService
     private array $warnings = [];
 
     private array $userCache = [];
+
+    /**
+     * Get actual column count by scanning header row for last non-null cell.
+     * Prevents PhpSpreadsheet Table object inflation (e.g. 16383 cols on "Operations Will").
+     */
+    public static function getActualColumnCount(Worksheet $sheet): int
+    {
+        $maxCol = 500;
+        $lastNonNull = 0;
+
+        for ($col = 1; $col <= $maxCol; $col++) {
+            $value = $sheet->getCellByColumnAndRow($col, 1)->getValue();
+            if ($value !== null && trim((string) $value) !== '') {
+                $lastNonNull = $col;
+            }
+        }
+
+        return $lastNonNull;
+    }
+
+    /**
+     * Convert worksheet to array using only the actual data range.
+     * Replaces toArray() which may return 16383 columns due to Table objects.
+     */
+    public static function sheetToLimitedArray(Worksheet $sheet): array
+    {
+        $colCount = self::getActualColumnCount($sheet);
+        if ($colCount === 0) {
+            return [];
+        }
+
+        $highestRow = $sheet->getHighestDataRow();
+        $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colCount);
+        $range = "A1:{$colLetter}{$highestRow}";
+
+        return $sheet->rangeToArray($range, null, true, true, false);
+    }
 
     /**
      * Parse CSV file content
@@ -416,7 +454,7 @@ class ImportNormalizationService
     /**
      * Resolve a user ID from name or email
      */
-    public function resolveUserId(?string $nameOrEmail): ?int
+    public function resolveUserId(?string $nameOrEmail, ?array $userOverrides = null): ?int
     {
         if (empty($nameOrEmail)) {
             return null;
@@ -426,6 +464,16 @@ class ImportNormalizationService
 
         if ($nameOrEmail === '') {
             return null;
+        }
+
+        // Check user_overrides first (from frontend validation)
+        if ($userOverrides && isset($userOverrides[$nameOrEmail])) {
+            return (int) $userOverrides[$nameOrEmail];
+        }
+
+        // Apply known name aliases
+        if (isset(self::USER_NAME_ALIASES[$nameOrEmail])) {
+            $nameOrEmail = self::USER_NAME_ALIASES[$nameOrEmail];
         }
 
         // Check cache first
@@ -460,6 +508,155 @@ class ImportNormalizationService
 
         return $userId;
     }
+
+    /**
+     * Suggest matching users for a given name/email string.
+     * Returns an array of suggestions with confidence scores.
+     */
+    public function suggestUsers(string $nameOrEmail, int $limit = 3): array
+    {
+        $nameOrEmail = trim($nameOrEmail);
+        if ($nameOrEmail === '') {
+            return [];
+        }
+
+        $suggestions = [];
+
+        // Apply known aliases first
+        $corrected = self::USER_NAME_ALIASES[$nameOrEmail] ?? null;
+
+        // 1. Exact match on full_name
+        $user = User::where('full_name', $corrected ?? $nameOrEmail)->first();
+        if ($user) {
+            return [[
+                'user_id' => $user->id,
+                'full_name' => $user->full_name,
+                'email' => $user->email,
+                'confidence' => 100,
+                'match_type' => $corrected ? 'alias' : 'exact',
+            ]];
+        }
+
+        // 2. Exact match on email
+        $user = User::where('email', $nameOrEmail)->first();
+        if ($user) {
+            return [[
+                'user_id' => $user->id,
+                'full_name' => $user->full_name,
+                'email' => $user->email,
+                'confidence' => 100,
+                'match_type' => 'exact',
+            ]];
+        }
+
+        // 3. ILIKE substring match
+        $matches = User::where('full_name', 'ILIKE', '%'.$nameOrEmail.'%')
+            ->limit($limit)
+            ->get();
+        foreach ($matches as $match) {
+            $suggestions[] = [
+                'user_id' => $match->id,
+                'full_name' => $match->full_name,
+                'email' => $match->email,
+                'confidence' => 85,
+                'match_type' => 'substring',
+            ];
+        }
+
+        // 4. Initial expansion: "W.Moody" -> W% Moody
+        if (preg_match('/^([A-Z])[\.\s]?\s*(\S+)$/i', $nameOrEmail, $m)) {
+            $initial = $m[1];
+            $surname = $m[2];
+            $expanded = User::where('full_name', 'ILIKE', $initial.'% '.$surname)
+                ->limit($limit)
+                ->get();
+            foreach ($expanded as $match) {
+                if (! $this->hasSuggestion($suggestions, $match->id)) {
+                    $suggestions[] = [
+                        'user_id' => $match->id,
+                        'full_name' => $match->full_name,
+                        'email' => $match->email,
+                        'confidence' => 80,
+                        'match_type' => 'initial_expansion',
+                    ];
+                }
+            }
+        }
+
+        // 5. Token matching: split words and compare
+        $inputTokens = preg_split('/[\s\.]+/', strtolower($nameOrEmail));
+        $inputTokens = array_filter($inputTokens, fn ($t) => strlen($t) > 1);
+
+        if (count($inputTokens) > 0 && empty($suggestions)) {
+            $query = User::query();
+            foreach ($inputTokens as $token) {
+                $query->orWhere('full_name', 'ILIKE', '%'.$token.'%');
+            }
+            $tokenMatches = $query->limit($limit * 2)->get();
+            foreach ($tokenMatches as $match) {
+                if (! $this->hasSuggestion($suggestions, $match->id)) {
+                    $matchTokens = preg_split('/\s+/', strtolower($match->full_name));
+                    $commonTokens = count(array_intersect($inputTokens, $matchTokens));
+                    $totalTokens = max(count($inputTokens), count($matchTokens));
+                    $confidence = (int) round(($commonTokens / $totalTokens) * 80);
+                    if ($confidence >= 40) {
+                        $suggestions[] = [
+                            'user_id' => $match->id,
+                            'full_name' => $match->full_name,
+                            'email' => $match->email,
+                            'confidence' => $confidence,
+                            'match_type' => 'token_match',
+                        ];
+                    }
+                }
+            }
+        }
+
+        // 6. Levenshtein on all users if still no matches
+        if (empty($suggestions)) {
+            $allUsers = User::where('is_active', true)->get();
+            $inputLower = strtolower($nameOrEmail);
+            foreach ($allUsers as $user) {
+                $userFullNameLower = strtolower($user->full_name);
+                $distance = levenshtein($inputLower, $userFullNameLower);
+                $maxLen = max(strlen($inputLower), strlen($userFullNameLower));
+                if ($distance <= 4) {
+                    $confidence = (int) round((1 - $distance / $maxLen) * 100);
+                    $suggestions[] = [
+                        'user_id' => $user->id,
+                        'full_name' => $user->full_name,
+                        'email' => $user->email,
+                        'confidence' => $confidence,
+                        'match_type' => 'levenshtein',
+                    ];
+                }
+            }
+        }
+
+        // Sort by confidence descending and limit
+        usort($suggestions, fn ($a, $b) => $b['confidence'] <=> $a['confidence']);
+
+        return array_slice($suggestions, 0, $limit);
+    }
+
+    private function hasSuggestion(array $suggestions, int $userId): bool
+    {
+        foreach ($suggestions as $s) {
+            if ($s['user_id'] === $userId) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Known user name aliases (typos/variations => correct name)
+     */
+    private const USER_NAME_ALIASES = [
+        'Rebecca Refell' => 'Rebecca Reffell',
+        'rebecca refell' => 'Rebecca Reffell',
+    ];
 
     /**
      * Enum alias mappings: normalized input => enum case value
@@ -525,6 +722,11 @@ class ImportNormalizationService
             'month' => 'Monthly',
             'weekly' => 'Weekly',
             'week' => 'Weekly',
+            'one-off' => 'One-off',
+            'one off' => 'One-off',
+            'one_off' => 'One-off',
+            'once' => 'One-off',
+            'ad hoc' => 'One-off',
         ],
     ];
 
@@ -652,6 +854,22 @@ class ImportNormalizationService
                 'revenue_potential' => 'revenue_potential',
                 'revenue' => 'revenue_potential',
                 'revenue_potential_first_fy_mm' => 'revenue_potential',
+                // Backup person
+                'back_up_person' => 'back_up_person_id',
+                'backup_person' => 'back_up_person_id',
+                'backup' => 'back_up_person_id',
+                // Dependencies
+                'other_item_completion_dependences' => 'other_item_completion_dependences',
+                'dependencies' => 'other_item_completion_dependences',
+                'dependences' => 'other_item_completion_dependences',
+                // Issues/Risks
+                'issues_risks' => 'issues_risks',
+                'issues' => 'issues_risks',
+                'issues___risks' => 'issues_risks',
+                // Initial provider
+                'initial_item_provider_editor' => 'initial_item_provider_editor',
+                'initial_item_provider' => 'initial_item_provider_editor',
+                'initial_item_provider_editor_1' => 'initial_item_provider_editor',
             ],
             'suppliers' => [
                 'ref_no' => 'ref_no',
@@ -716,6 +934,141 @@ class ImportNormalizationService
             ],
             default => [],
         };
+    }
+
+    /**
+     * Detect duplicate rows based on a key field.
+     * In exact mode, groups rows by the key field value and returns one representative per group where count > 1.
+     * In fuzzy mode, uses similar_text() to find rows with similar values (threshold >= 80%).
+     *
+     * @param  array<int, array<string, mixed>>  $rows
+     * @return array<int, array<string, mixed>>
+     */
+    public function detectDuplicates(array $rows, string $keyField, bool $fuzzy = false): array
+    {
+        if ($fuzzy) {
+            return $this->detectFuzzyDuplicates($rows, $keyField);
+        }
+
+        return $this->detectExactDuplicates($rows, $keyField);
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $rows
+     * @return array<int, array<string, mixed>>
+     */
+    private function detectExactDuplicates(array $rows, string $keyField): array
+    {
+        $groups = [];
+
+        foreach ($rows as $row) {
+            $key = $row[$keyField] ?? null;
+            if ($key === null) {
+                continue;
+            }
+
+            $groups[$key][] = $row;
+        }
+
+        $duplicates = [];
+        foreach ($groups as $grouped) {
+            if (count($grouped) > 1) {
+                $duplicates[] = $grouped[0];
+            }
+        }
+
+        return $duplicates;
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $rows
+     * @return array<int, array<string, mixed>>
+     */
+    private function detectFuzzyDuplicates(array $rows, string $keyField): array
+    {
+        $count = count($rows);
+        $matched = [];
+        $duplicates = [];
+
+        for ($i = 0; $i < $count; $i++) {
+            if (isset($matched[$i])) {
+                continue;
+            }
+
+            $valueA = $rows[$i][$keyField] ?? null;
+            if ($valueA === null) {
+                continue;
+            }
+
+            $hasDuplicate = false;
+
+            for ($j = $i + 1; $j < $count; $j++) {
+                if (isset($matched[$j])) {
+                    continue;
+                }
+
+                $valueB = $rows[$j][$keyField] ?? null;
+                if ($valueB === null) {
+                    continue;
+                }
+
+                if ($this->isFuzzyMatch((string) $valueA, (string) $valueB)) {
+                    $matched[$j] = true;
+                    $hasDuplicate = true;
+                }
+            }
+
+            if ($hasDuplicate) {
+                $duplicates[] = $rows[$i];
+            }
+        }
+
+        return $duplicates;
+    }
+
+    private function isFuzzyMatch(string $a, string $b): bool
+    {
+        $lowerA = strtolower($a);
+        $lowerB = strtolower($b);
+
+        $similarity = 0.0;
+        similar_text($lowerA, $lowerB, $similarity);
+        if ($similarity >= 80) {
+            return true;
+        }
+
+        $maxLen = max(strlen($lowerA), strlen($lowerB));
+        if ($maxLen > 0 && levenshtein($lowerA, $lowerB) <= (int) ceil($maxLen * 0.3)) {
+            return true;
+        }
+
+        return $this->tokensMatchWithInitials($lowerA, $lowerB);
+    }
+
+    private function tokensMatchWithInitials(string $a, string $b): bool
+    {
+        $tokensA = preg_split('/[\s.\-]+/', $a, -1, PREG_SPLIT_NO_EMPTY);
+        $tokensB = preg_split('/[\s.\-]+/', $b, -1, PREG_SPLIT_NO_EMPTY);
+
+        if ($tokensA === false || $tokensB === false || count($tokensA) < 2 || count($tokensB) < 2) {
+            return false;
+        }
+
+        $surnameA = end($tokensA);
+        $surnameB = end($tokensB);
+
+        if ($surnameA !== $surnameB) {
+            return false;
+        }
+
+        $firstA = $tokensA[0];
+        $firstB = $tokensB[0];
+
+        if (strlen($firstA) === 1 || strlen($firstB) === 1) {
+            return $firstA[0] === $firstB[0];
+        }
+
+        return false;
     }
 
     /**

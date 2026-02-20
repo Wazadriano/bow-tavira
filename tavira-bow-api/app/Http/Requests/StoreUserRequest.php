@@ -14,6 +14,13 @@ class StoreUserRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('department') && ! $this->has('primary_department')) {
+            $this->merge(['primary_department' => $this->department]);
+        }
+    }
+
     public function rules(): array
     {
         return [

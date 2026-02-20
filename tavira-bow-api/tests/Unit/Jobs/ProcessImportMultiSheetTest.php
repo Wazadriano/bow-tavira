@@ -74,14 +74,18 @@ it('auto-maps real Excel 25-column headers', function () {
     expect($mapping[7])->toBe('comments');          // Comments
     expect($mapping[8])->toBe('department_head_id'); // Department Head
     expect($mapping[9])->toBe('responsible_party_id'); // Responsible Person
+    expect($mapping[10])->toBe('back_up_person_id'); // Back up Person
     expect($mapping[11])->toBe('priority_item');    // Priority Item (currently)
     expect($mapping[12])->toBe('impact_level');     // Impact / Urgency Level
     expect($mapping[13])->toBe('deadline');         // Expected Completion
     expect($mapping[14])->toBe('current_status');   // Current Status
     expect($mapping[15])->toBe('update_frequency'); // Update/Refresh Frequency
+    expect($mapping[16])->toBe('other_item_completion_dependences'); // Other Item Completion Dependences
     expect($mapping[17])->toBe('cost_savings');     // Cost Savings (mm)
     expect($mapping[21])->toBe('rag_status');       // RAG Status
+    expect($mapping[22])->toBe('issues_risks');     // Issues / Risks
     expect($mapping[23])->toBe('completion_date');  // Expected Completion Date
+    expect($mapping[24])->toBe('initial_item_provider_editor'); // Initial Item Provider/editor
 });
 
 // Test that mapColumns works for a 13-column subset (Will Rebecca style)

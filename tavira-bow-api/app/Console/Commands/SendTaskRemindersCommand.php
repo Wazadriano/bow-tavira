@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\TaskAssignment;
 use App\Models\WorkItem;
 use App\Notifications\TaskDueReminderNotification;
 use Illuminate\Console\Command;
@@ -11,11 +12,11 @@ class SendTaskRemindersCommand extends Command
 {
     protected $signature = 'bow:send-task-reminders';
 
-    protected $description = 'Send task deadline reminders at J-30, J-7, J-3, and J-1 (RG-BOW-014)';
+    protected $description = 'Send task deadline reminders at J-14 and Jour J (RG-BOW-014)';
 
     public function handle(): int
     {
-        $reminderDays = [30, 7, 3, 1];
+        $reminderDays = [14, 0];
         $totalSent = 0;
 
         foreach ($reminderDays as $days) {
@@ -53,6 +54,7 @@ class SendTaskRemindersCommand extends Command
 
         // Assigned users: only those who have NOT acknowledged (RG-BOW-014)
         foreach ($workItem->assignments as $assignment) {
+            /** @var TaskAssignment $assignment */
             if ($assignment->user && ! $assignment->isAcknowledged()) {
                 $users->push($assignment->user);
             }

@@ -93,19 +93,19 @@ export default function TasksDashboardPage() {
   }
 
   const ragData = [
-    { name: 'Blue', value: stats.by_rag.blue, color: '#0ea5e9' },
-    { name: 'Green', value: stats.by_rag.green, color: '#22c55e' },
-    { name: 'Amber', value: stats.by_rag.amber, color: '#f59e0b' },
-    { name: 'Red', value: stats.by_rag.red, color: '#ef4444' },
+    { name: 'Blue', value: stats.by_rag?.blue ?? 0, color: '#0ea5e9' },
+    { name: 'Green', value: stats.by_rag?.green ?? 0, color: '#22c55e' },
+    { name: 'Amber', value: stats.by_rag?.amber ?? 0, color: '#f59e0b' },
+    { name: 'Red', value: stats.by_rag?.red ?? 0, color: '#ef4444' },
   ]
 
-  const deptData = stats.by_department.map((d) => ({
+  const deptData = (stats.by_department ?? []).map((d) => ({
     name: d.name,
     Total: d.total,
     Priority: d.priority,
   }))
 
-  const activityData = stats.by_activity.map((a) => ({
+  const activityData = (stats.by_activity ?? []).map((a) => ({
     name: a.name,
     count: a.count,
   }))
@@ -149,7 +149,7 @@ export default function TasksDashboardPage() {
             value={stats.completed}
             icon={CheckCircle}
             variant="success"
-            description={`${Math.round((stats.completed / stats.total_tasks) * 100)}%`}
+            description={`${stats.total_tasks ? Math.round((stats.completed / stats.total_tasks) * 100) : 0}%`}
           />
           <StatsCard
             title="In Progress"
@@ -208,7 +208,7 @@ export default function TasksDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {stats.priority_by_dept.map((item) => (
+                {(stats.priority_by_dept ?? []).map((item) => (
                   <div
                     key={item.department}
                     className="flex items-center justify-between p-3 rounded-lg border"

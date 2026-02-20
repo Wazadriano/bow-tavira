@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/** @mixin \App\Models\User */
 class UserResource extends JsonResource
 {
     public function toArray(Request $request): array
@@ -16,7 +17,7 @@ class UserResource extends JsonResource
             'full_name' => $this->full_name,
             'role' => $this->role,
             'is_active' => $this->is_active,
-            'primary_department' => $this->primary_department,
+            'department' => $this->primary_department,
             'has_2fa' => $this->two_factor_confirmed_at !== null,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),

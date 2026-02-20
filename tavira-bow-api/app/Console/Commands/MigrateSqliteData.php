@@ -198,7 +198,7 @@ class MigrateSqliteData extends Command
         $this->stats[$pgTable] = ['rows' => $transformed, 'errors' => $errors];
     }
 
-    private function transformRow(array $row, string $table, array $pgColumns): ?array
+    private function transformRow(array $row, string $table, array $pgColumns): array
     {
         $data = [];
 

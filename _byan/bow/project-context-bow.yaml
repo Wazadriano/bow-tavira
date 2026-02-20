@@ -326,7 +326,7 @@ regles_gestion:
     module: "Suppliers"
 
   - id: "RG-BOW-014"
-    description: "Toute assignation de tache constitue un engagement. L'assigne doit accuser reception sur la plateforme. Tant que l'accuse n'est pas fait, les rappels email continuent a J-30, J-7, J-3, J-1 avant la deadline. Le manager voit le statut d'accuse de chaque assigne. Les emails de rappel incluent un fichier .ics (iCalendar) pour ajouter la deadline au calendrier."
+    description: "Toute assignation de tache constitue un engagement. L'assigne doit accuser reception sur la plateforme. Notifications email : attribution (sauf self-assign), J-14 avant deadline, Jour J (deadline), J+1 si non validee (escalade chef equipe + Ranjit), rapport hebdomadaire CEO (taches <=14j). Les emails incluent un fichier .ics (iCalendar) pour ajouter la deadline au calendrier."
     priority: "high"
     regulatory: false
     module: "Work Items"
@@ -369,6 +369,14 @@ agents:
   - name: "bow-github-expert"
     role: "GitHub Expert CI/CD"
     status: "draft"
+
+  - name: "bow-excel-specialist"
+    role: "Excel Import/Export Specialist"
+    status: "active"
+
+  - name: "bow-infra-deployer"
+    role: "Infrastructure & Deployment Specialist - OVH, staging, production, SMTP, DNS, SSL"
+    status: "active"
 
 # --- METADATA ---
 metadata:

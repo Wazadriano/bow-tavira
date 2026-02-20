@@ -12,6 +12,7 @@ use App\Models\SupplierEntity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class SupplierController extends Controller
@@ -28,7 +29,7 @@ class SupplierController extends Controller
     {
         $user = $request->user();
         $query = Supplier::query()
-            ->with(['sageCategory', 'responsibleParty', 'entities']);
+            ->with(['sageCategory', 'responsibleParty', 'entities', 'contracts', 'invoices']);
 
         // Filter by user access
         if (! $user->isAdmin()) {
@@ -249,72 +250,98 @@ class SupplierController extends Controller
     }
 
     /**
-     * Suppliers dashboard stats (global)
+     * Suppliers dashboard stats (scoped by user access)
      */
     public function dashboard(Request $request): JsonResponse
     {
-        $totalSuppliers = Supplier::count();
-        $activeSuppliers = Supplier::active()->count();
+        $user = $request->user();
+        $cacheKey = 'supplier_dashboard_'.($user->isAdmin() ? 'admin' : $user->id);
 
-        $totalContracts = \App\Models\SupplierContract::count();
-        $expiringSoon = \App\Models\SupplierContract::expiringSoon(90)->count();
+        $data = Cache::remember($cacheKey, 300, function () use ($user) {
+            $supplierScope = Supplier::query();
+            if (! $user->isAdmin()) {
+                $supplierScope->where(function ($q) use ($user) {
+                    $q->whereHas('access', function ($q2) use ($user) {
+                        $q2->where('user_id', $user->id)->where('can_view', true);
+                    })->orWhere('responsible_party_id', $user->id);
+                });
+            }
 
-        $totalInvoices = \App\Models\SupplierInvoice::count();
-        $pendingInvoices = \App\Models\SupplierInvoice::pending()->count();
+            $supplierIds = (clone $supplierScope)->pluck('id');
 
-        // By location
-        $byLocation = Supplier::selectRaw('location, count(*) as count')
-            ->whereNotNull('location')
-            ->groupBy('location')
-            ->get()
-            ->map(fn ($row) => ['name' => $row->location instanceof \App\Enums\SupplierLocation ? $row->location->value : (string) $row->location, 'count' => (int) $row->count]);
+            $totalSuppliers = (clone $supplierScope)->count();
+            $activeSuppliers = (clone $supplierScope)->active()->count();
 
-        // By sage category (top 10, sorted by count)
-        $byCategory = Supplier::selectRaw('sage_category_id, count(*) as count')
-            ->whereNotNull('sage_category_id')
-            ->groupBy('sage_category_id')
-            ->orderByRaw('count(*) DESC')
-            ->limit(10)
-            ->with('sageCategory')
-            ->get()
-            ->map(fn ($row) => ['name' => $row->sageCategory?->name ?? 'Unknown', 'count' => (int) $row->count]);
+            $contractScope = \App\Models\SupplierContract::whereIn('supplier_id', $supplierIds);
+            $totalContracts = (clone $contractScope)->count();
+            $expiringSoon = (clone $contractScope)->expiringSoon(90)->count();
 
-        // By status
-        $statusCounts = Supplier::selectRaw('status, count(*) as count')
-            ->groupBy('status')
-            ->pluck('count', 'status');
+            $invoiceScope = \App\Models\SupplierInvoice::whereIn('supplier_id', $supplierIds);
+            $totalInvoices = (clone $invoiceScope)->count();
+            $pendingInvoices = (clone $invoiceScope)->pending()->count();
 
-        $byStatus = [
-            'active' => (int) ($statusCounts['Active'] ?? 0),
-            'inactive' => (int) ($statusCounts['Exited'] ?? 0),
-            'pending' => (int) ($statusCounts['Pending'] ?? 0),
-        ];
+            $byLocation = (clone $supplierScope)->selectRaw('location, count(*) as count')
+                ->whereNotNull('location')
+                ->groupBy('location')
+                ->get()
+                ->map(function ($row) {
+                    /** @var Supplier $row */
+                    return ['name' => $row->location !== null ? $row->location->value : 'Unknown', 'count' => (int) $row->count];
+                });
 
-        // Expiring contracts
-        $expiringContracts = \App\Models\SupplierContract::expiringSoon(90)
-            ->with('supplier')
-            ->orderBy('end_date')
-            ->limit(10)
-            ->get()
-            ->map(fn ($c) => [
-                'id' => $c->id,
-                'name' => $c->description ?? $c->contract_ref,
-                'supplier' => $c->supplier?->name ?? '',
-                'end_date' => $c->end_date?->toDateString(),
-            ]);
+            $byCategory = (clone $supplierScope)->selectRaw('sage_category_id, count(*) as count')
+                ->whereNotNull('sage_category_id')
+                ->groupBy('sage_category_id')
+                ->orderByRaw('count(*) DESC')
+                ->limit(10)
+                ->with('sageCategory')
+                ->get()
+                ->map(function ($row) {
+                    /** @var Supplier $row */
+                    return ['name' => $row->sageCategory?->name ?? 'Unknown', 'count' => (int) $row->count];
+                });
 
-        return response()->json([
-            'total_suppliers' => $totalSuppliers,
-            'active_suppliers' => $activeSuppliers,
-            'total_contracts' => $totalContracts,
-            'expiring_soon' => $expiringSoon,
-            'total_invoices' => $totalInvoices,
-            'pending_invoices' => $pendingInvoices,
-            'by_location' => $byLocation->values(),
-            'by_category' => $byCategory->values(),
-            'by_status' => $byStatus,
-            'expiring_contracts' => $expiringContracts->values(),
-        ]);
+            $statusCounts = (clone $supplierScope)->selectRaw('status, count(*) as count')
+                ->groupBy('status')
+                ->pluck('count', 'status');
+
+            $byStatus = [
+                'active' => (int) ($statusCounts['Active'] ?? 0),
+                'inactive' => (int) ($statusCounts['Exited'] ?? 0),
+                'pending' => (int) ($statusCounts['Pending'] ?? 0),
+            ];
+
+            $expiringContracts = \App\Models\SupplierContract::whereIn('supplier_id', $supplierIds)
+                ->expiringSoon(90)
+                ->with('supplier')
+                ->orderBy('end_date')
+                ->limit(10)
+                ->get()
+                ->map(function ($c) {
+                    /** @var \App\Models\SupplierContract $c */
+                    return [
+                        'id' => $c->id,
+                        'name' => $c->description ?? $c->contract_ref,
+                        'supplier' => $c->supplier?->name ?? '',
+                        'end_date' => $c->end_date?->toDateString(),
+                    ];
+                });
+
+            return [
+                'total_suppliers' => $totalSuppliers,
+                'active_suppliers' => $activeSuppliers,
+                'total_contracts' => $totalContracts,
+                'expiring_soon' => $expiringSoon,
+                'total_invoices' => $totalInvoices,
+                'pending_invoices' => $pendingInvoices,
+                'by_location' => $byLocation->values(),
+                'by_category' => $byCategory->values(),
+                'by_status' => $byStatus,
+                'expiring_contracts' => $expiringContracts->values(),
+            ];
+        });
+
+        return response()->json($data);
     }
 
     /**

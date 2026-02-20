@@ -7,6 +7,7 @@ use App\Http\Requests\Import\ConfirmImportRequest;
 use App\Http\Requests\Import\PreviewImportRequest;
 use App\Jobs\ProcessExportFile;
 use App\Jobs\ProcessImportFile;
+use App\Services\DuplicateDetectionService;
 use App\Services\ImportNormalizationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,9 +21,12 @@ class ImportExportController extends Controller
 {
     private ImportNormalizationService $importService;
 
-    public function __construct(ImportNormalizationService $importService)
+    private DuplicateDetectionService $duplicateService;
+
+    public function __construct(ImportNormalizationService $importService, DuplicateDetectionService $duplicateService)
     {
         $this->importService = $importService;
+        $this->duplicateService = $duplicateService;
     }
 
     /**
@@ -48,9 +52,8 @@ class ImportExportController extends Controller
             foreach ($sheets as $sheetName) {
                 $sheet = $spreadsheet->getSheetByName($sheetName);
                 if ($sheet) {
-                    $highestCol = $sheet->getHighestDataColumn();
+                    $colCount = ImportNormalizationService::getActualColumnCount($sheet);
                     $highestRow = $sheet->getHighestDataRow();
-                    $colCount = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($highestCol);
                     $rowCount = max(0, $highestRow - 1); // exclude header row
                     $sheetInfo[] = [
                         'name' => $sheetName,
@@ -71,7 +74,7 @@ class ImportExportController extends Controller
             $activeSheet = $selectedSheet
                 ? ($spreadsheet->getSheetByName($selectedSheet) ?? $spreadsheet->getActiveSheet())
                 : $spreadsheet->getActiveSheet();
-            $data = $activeSheet->toArray(null, true, true, false);
+            $data = ImportNormalizationService::sheetToLimitedArray($activeSheet);
             $data = $this->importService->sanitizeExcelData($data);
         } else {
             $content = file_get_contents($file->getPathname());
@@ -106,6 +109,13 @@ class ImportExportController extends Controller
             }
         }
 
+        // Build user suggestions for user fields
+        $userSuggestions = $this->buildUserSuggestions($previewRows, $columnMapping);
+
+        // Detect duplicates against existing DB records (all data rows, not just preview)
+        $allDataRows = array_slice($data, 1);
+        $duplicates = $this->duplicateService->detect($allDataRows, $columnMapping, $request->type);
+
         // Store file temporarily
         $tempPath = $file->store('imports/temp');
 
@@ -121,6 +131,8 @@ class ImportExportController extends Controller
             'total_rows' => count($data) - 1,
             'validation_errors' => array_slice($validationErrors, 0, 20),
             'warnings' => $this->importService->getWarnings(),
+            'user_suggestions' => $userSuggestions,
+            'duplicates' => $duplicates,
         ]);
     }
 
@@ -146,6 +158,8 @@ class ImportExportController extends Controller
             $sheetNames = $sheetName ? [$sheetName] : null;
         }
 
+        $userOverrides = $request->input('user_overrides');
+
         // Queue the import job
         ProcessImportFile::dispatch(
             $tempFile,
@@ -153,7 +167,8 @@ class ImportExportController extends Controller
             $request->column_mapping,
             $request->user()->id,
             $sheetNames,
-            $jobId
+            $jobId,
+            $userOverrides
         );
 
         return response()->json([
@@ -191,8 +206,10 @@ class ImportExportController extends Controller
                 'bau_or_transformative', 'impact_level', 'current_status',
                 'deadline', 'completion_date', 'monthly_update', 'comments',
                 'update_frequency', 'responsible_party', 'department_head',
-                'tags', 'priority_item', 'cost_savings', 'cost_efficiency_fte',
-                'expected_cost', 'revenue_potential',
+                'back_up_person', 'tags', 'priority_item', 'cost_savings',
+                'cost_efficiency_fte', 'expected_cost', 'revenue_potential',
+                'other_item_completion_dependences', 'issues_risks',
+                'initial_item_provider_editor',
             ],
             'suppliers' => [
                 'ref_no', 'name', 'sage_category', 'location',
@@ -343,22 +360,46 @@ class ImportExportController extends Controller
     }
 
     /**
-     * Parse Excel file with optional sheet name selection
+     * Build user suggestions for preview rows
      */
-    private function parseExcel(string $path, ?string $sheetName = null): array
+    private function buildUserSuggestions(array $previewRows, array $columnMapping): array
     {
-        $spreadsheet = @IOFactory::load($path);
+        $userFields = ['responsible_party_id', 'department_head_id', 'back_up_person_id'];
 
-        if ($sheetName) {
-            $sheet = $spreadsheet->getSheetByName($sheetName);
-            if (! $sheet) {
-                $sheet = $spreadsheet->getActiveSheet();
+        // Collect unique source values per field
+        $sourceValues = []; // [field => [value => [row indices]]]
+        foreach ($previewRows as $index => $row) {
+            $mappedRow = $this->mapRowToFields($row, $columnMapping);
+            foreach ($userFields as $field) {
+                $value = $mappedRow[$field] ?? null;
+                if (! empty($value) && is_string($value)) {
+                    $value = trim($value);
+                    if ($value !== '') {
+                        $sourceValues[$field][$value][] = $index + 2; // +2 for header offset
+                    }
+                }
             }
-        } else {
-            $sheet = $spreadsheet->getActiveSheet();
         }
 
-        return $sheet->toArray(null, true, true, false);
+        $suggestions = [];
+        foreach ($sourceValues as $field => $values) {
+            foreach ($values as $sourceValue => $rows) {
+                $matches = $this->importService->suggestUsers($sourceValue);
+                $status = 'no_match';
+                if (! empty($matches)) {
+                    $status = $matches[0]['confidence'] >= 100 ? 'exact_match' : 'fuzzy_match';
+                }
+                $suggestions[] = [
+                    'source_value' => $sourceValue,
+                    'field' => $field,
+                    'rows' => $rows,
+                    'status' => $status,
+                    'suggestions' => $matches,
+                ];
+            }
+        }
+
+        return $suggestions;
     }
 
     /**

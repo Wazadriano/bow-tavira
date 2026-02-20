@@ -6,6 +6,22 @@ use App\Enums\ControlImplementationStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int|null $risk_id
+ * @property int|null $control_id
+ * @property ControlImplementationStatus|null $implementation_status
+ * @property int $effectiveness_score
+ * @property string|null $notes
+ * @property \Illuminate\Support\Carbon|null $last_tested_date
+ * @property \Illuminate\Support\Carbon|null $next_test_date
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read bool $is_effective
+ * @property-read bool $test_overdue
+ * @property-read Risk|null $risk
+ * @property-read ControlLibrary|null $control
+ */
 class RiskControl extends Model
 {
     protected $fillable = [

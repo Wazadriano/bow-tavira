@@ -16,6 +16,8 @@ import { get } from '@/lib/api'
 import { formatDate } from '@/lib/utils'
 import type { WorkItem, PaginatedResponse, SettingList } from '@/types'
 import { useWorkItemsStore } from '@/stores/workitems'
+import { usePermissions } from '@/hooks/use-permissions'
+import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -56,6 +58,9 @@ export default function TasksPage() {
   const queryClient = useQueryClient()
   const { remove } = useWorkItemsStore()
   const { showConfirm } = useUIStore()
+  const { isAdmin, canCreateInDepartment } = usePermissions()
+  const user = useAuthStore((state) => state.user)
+  const canCreateAny = isAdmin || (user?.department_permissions ?? []).some((p) => p.can_create_tasks)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [ragFilter, setRagFilter] = useState('all')
@@ -334,12 +339,14 @@ export default function TasksPage() {
             </Badge>
 
             {/* New Task Button */}
-            <Button asChild>
-              <Link to="/tasks/new">
-                <Plus className="mr-2 h-4 w-4" />
-                New Task
-              </Link>
-            </Button>
+            {canCreateAny && (
+              <Button asChild>
+                <Link to="/tasks/new">
+                  <Plus className="mr-2 h-4 w-4" />
+                  New Task
+                </Link>
+              </Button>
+            )}
           </div>
 
           {/* Advanced Filters Panel */}

@@ -107,108 +107,127 @@ class ProcessExportFile implements ShouldQueue
     {
         return match ($this->type) {
             'workitems' => WorkItem::query()
-                ->with(['responsibleParty', 'departmentHead'])
+                ->with(['responsibleParty', 'departmentHead', 'backUpPerson'])
                 ->get()
-                ->map(fn ($item) => [
-                    'ref_no' => $item->ref_no,
-                    'type' => $item->type,
-                    'activity' => $item->activity,
-                    'department' => $item->department,
-                    'description' => $item->description,
-                    'goal' => $item->goal,
-                    'bau_or_transformative' => $item->bau_or_transformative?->value,
-                    'impact_level' => $item->impact_level?->value,
-                    'current_status' => $item->current_status?->value,
-                    'rag_status' => $item->rag_status?->value,
-                    'deadline' => $item->deadline?->toDateString(),
-                    'completion_date' => $item->completion_date?->toDateString(),
-                    'monthly_update' => $item->monthly_update,
-                    'comments' => $item->comments,
-                    'update_frequency' => $item->update_frequency?->value,
-                    'responsible_party' => $item->responsibleParty?->full_name,
-                    'department_head' => $item->departmentHead?->full_name,
-                    'tags' => implode(', ', $item->tags ?? []),
-                    'priority_item' => $item->priority_item ? 'Yes' : 'No',
-                    'cost_savings' => $item->cost_savings,
-                    'cost_efficiency_fte' => $item->cost_efficiency_fte,
-                    'expected_cost' => $item->expected_cost,
-                    'revenue_potential' => $item->revenue_potential,
-                ])
+                ->map(function ($item) {
+                    /** @var WorkItem $item */
+                    return [
+                        'ref_no' => $item->ref_no,
+                        'type' => $item->type,
+                        'activity' => $item->activity,
+                        'department' => $item->department,
+                        'description' => $item->description,
+                        'goal' => $item->goal,
+                        'bau_or_transformative' => $item->bau_or_transformative !== null ? $item->bau_or_transformative->value : null,
+                        'impact_level' => $item->impact_level !== null ? $item->impact_level->value : null,
+                        'current_status' => $item->current_status !== null ? $item->current_status->value : null,
+                        'rag_status' => $item->rag_status !== null ? $item->rag_status->value : null,
+                        'deadline' => $item->deadline?->toDateString(),
+                        'completion_date' => $item->completion_date?->toDateString(),
+                        'monthly_update' => $item->monthly_update,
+                        'comments' => $item->comments,
+                        'update_frequency' => $item->update_frequency !== null ? $item->update_frequency->value : null,
+                        'responsible_party' => $item->responsibleParty?->full_name,
+                        'department_head' => $item->departmentHead?->full_name,
+                        'back_up_person' => $item->backUpPerson?->full_name,
+                        'tags' => implode(', ', $item->tags ?? []),
+                        'priority_item' => $item->priority_item ? 'Yes' : 'No',
+                        'cost_savings' => $item->cost_savings,
+                        'cost_efficiency_fte' => $item->cost_efficiency_fte,
+                        'expected_cost' => $item->expected_cost,
+                        'revenue_potential' => $item->revenue_potential,
+                        'other_item_completion_dependences' => $item->other_item_completion_dependences,
+                        'issues_risks' => $item->issues_risks,
+                        'initial_item_provider_editor' => $item->initial_item_provider_editor,
+                    ];
+                })
                 ->toArray(),
             'suppliers' => Supplier::query()
                 ->with(['sageCategory', 'responsibleParty', 'entities'])
                 ->get()
-                ->map(fn ($item) => [
-                    'ref_no' => $item->ref_no,
-                    'name' => $item->name,
-                    'sage_category' => $item->sageCategory?->name,
-                    'location' => $item->location?->value,
-                    'is_common_provider' => $item->is_common_provider ? 'Yes' : 'No',
-                    'status' => $item->status?->value,
-                    'responsible_party' => $item->responsibleParty?->full_name,
-                    'entities' => $item->entities->pluck('entity')->implode(', '),
-                    'notes' => $item->notes,
-                ])
+                ->map(function ($item) {
+                    /** @var Supplier $item */
+                    return [
+                        'ref_no' => $item->ref_no,
+                        'name' => $item->name,
+                        'sage_category' => $item->sageCategory?->name,
+                        'location' => $item->location !== null ? $item->location->value : null,
+                        'is_common_provider' => $item->is_common_provider ? 'Yes' : 'No',
+                        'status' => $item->status !== null ? $item->status->value : null,
+                        'responsible_party' => $item->responsibleParty?->full_name,
+                        'entities' => $item->entities->pluck('entity')->implode(', '),
+                        'notes' => $item->notes,
+                    ];
+                })
                 ->toArray(),
             'risks' => Risk::query()
                 ->with(['category.theme', 'owner', 'responsibleParty'])
                 ->get()
-                ->map(fn ($item) => [
-                    'ref_no' => $item->ref_no,
-                    'theme' => $item->category?->theme?->name,
-                    'category' => $item->category?->name,
-                    'name' => $item->name,
-                    'description' => $item->description,
-                    'tier' => $item->tier?->value,
-                    'owner' => $item->owner?->full_name,
-                    'responsible_party' => $item->responsibleParty?->full_name,
-                    'financial_impact' => $item->financial_impact,
-                    'regulatory_impact' => $item->regulatory_impact,
-                    'reputational_impact' => $item->reputational_impact,
-                    'inherent_probability' => $item->inherent_probability,
-                    'inherent_risk_score' => $item->inherent_risk_score,
-                    'inherent_rag' => $item->inherent_rag?->value,
-                    'residual_risk_score' => $item->residual_risk_score,
-                    'residual_rag' => $item->residual_rag?->value,
-                    'appetite_status' => $item->appetite_status?->value,
-                ])
+                ->map(function ($item) {
+                    /** @var Risk $item */
+                    return [
+                        'ref_no' => $item->ref_no,
+                        'theme' => $item->category?->theme?->name,
+                        'category' => $item->category?->name,
+                        'name' => $item->name,
+                        'description' => $item->description,
+                        'tier' => $item->tier !== null ? $item->tier->value : null,
+                        'owner' => $item->owner?->full_name,
+                        'responsible_party' => $item->responsibleParty?->full_name,
+                        'financial_impact' => $item->financial_impact,
+                        'regulatory_impact' => $item->regulatory_impact,
+                        'reputational_impact' => $item->reputational_impact,
+                        'inherent_probability' => $item->inherent_probability,
+                        'inherent_risk_score' => $item->inherent_risk_score,
+                        'inherent_rag' => $item->inherent_rag !== null ? $item->inherent_rag->value : null,
+                        'residual_risk_score' => $item->residual_risk_score,
+                        'residual_rag' => $item->residual_rag !== null ? $item->residual_rag->value : null,
+                        'appetite_status' => $item->appetite_status !== null ? $item->appetite_status->value : null,
+                    ];
+                })
                 ->toArray(),
             'governance' => GovernanceItem::query()
                 ->with('responsibleParty')
                 ->get()
-                ->map(fn ($item) => [
-                    'ref_no' => $item->ref_no,
-                    'activity' => $item->activity,
-                    'description' => $item->description,
-                    'department' => $item->department,
-                    'frequency' => $item->frequency?->value,
-                    'location' => $item->location?->value,
-                    'current_status' => $item->current_status?->value,
-                    'rag_status' => $item->rag_status?->value,
-                    'deadline' => $item->deadline?->toDateString(),
-                    'completion_date' => $item->completion_date?->toDateString(),
-                    'responsible_party' => $item->responsibleParty?->full_name,
-                    'monthly_update' => $item->monthly_update,
-                    'tags' => implode(', ', $item->tags ?? []),
-                ])
+                ->map(function ($item) {
+                    /** @var GovernanceItem $item */
+                    return [
+                        'ref_no' => $item->ref_no,
+                        'activity' => $item->activity,
+                        'description' => $item->description,
+                        'department' => $item->department,
+                        'frequency' => $item->frequency !== null ? $item->frequency->value : null,
+                        'location' => $item->location !== null ? $item->location->value : null,
+                        'current_status' => $item->current_status !== null ? $item->current_status->value : null,
+                        'rag_status' => $item->rag_status !== null ? $item->rag_status->value : null,
+                        'deadline' => $item->deadline?->toDateString(),
+                        'completion_date' => $item->completion_date?->toDateString(),
+                        'responsible_party' => $item->responsibleParty?->full_name,
+                        'monthly_update' => $item->monthly_update,
+                        'tags' => implode(', ', $item->tags ?? []),
+                    ];
+                })
                 ->toArray(),
             'invoices' => SupplierInvoice::query()
                 ->with('supplier:id,name')
                 ->orderBy('invoice_date', 'desc')
                 ->get()
-                ->map(fn ($item) => [
-                    'supplier_name' => $item->supplier?->name,
-                    'invoice_ref' => $item->invoice_ref,
-                    'description' => $item->description,
-                    'amount' => $item->amount,
-                    'currency' => $item->currency,
-                    'invoice_date' => $item->invoice_date?->toDateString(),
-                    'due_date' => $item->due_date?->toDateString(),
-                    'paid_date' => $item->paid_date?->toDateString(),
-                    'status' => $item->status?->value ?? $item->status,
-                    'frequency' => $item->frequency?->value ?? $item->frequency,
-                    'notes' => $item->notes,
-                ])
+                ->map(function ($item) {
+                    /** @var SupplierInvoice $item */
+                    return [
+                        'supplier_name' => $item->supplier?->name,
+                        'invoice_ref' => $item->invoice_ref,
+                        'description' => $item->description,
+                        'amount' => $item->amount,
+                        'currency' => $item->currency,
+                        'invoice_date' => $item->invoice_date?->toDateString(),
+                        'due_date' => $item->due_date?->toDateString(),
+                        'paid_date' => $item->paid_date?->toDateString(),
+                        'status' => $item->status !== null ? $item->status->value : null,
+                        'frequency' => $item->frequency !== null ? $item->frequency->value : null,
+                        'notes' => $item->notes,
+                    ];
+                })
                 ->toArray(),
             default => [],
         };

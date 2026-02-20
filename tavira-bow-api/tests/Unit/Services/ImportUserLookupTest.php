@@ -38,12 +38,13 @@ it('returns null when input is whitespace only', function () {
 
 // Test 4: exact full_name match returns user id
 it('returns user id for exact full_name match', function () {
+    $uniqueName = 'John Smith '.mt_rand(10000, 99999);
     $user = User::factory()->create([
-        'full_name' => 'John Smith',
-        'email' => 'john.smith@example.com',
+        'full_name' => $uniqueName,
+        'email' => 'john.smith.'.mt_rand(10000, 99999).'@example.com',
     ]);
 
-    $result = $this->service->resolveUserId('John Smith');
+    $result = $this->service->resolveUserId($uniqueName);
 
     expect($result)->toBe($user->id);
 });

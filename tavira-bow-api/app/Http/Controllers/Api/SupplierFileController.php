@@ -21,7 +21,7 @@ class SupplierFileController extends Controller
     public function store(Request $request, Supplier $supplier): JsonResponse
     {
         $request->validate([
-            'file' => 'required|file|max:10240',
+            'file' => 'required|file|max:10240|mimes:pdf,doc,docx,xls,xlsx,csv,txt,png,jpg,jpeg,gif',
             'category' => 'nullable|string',
         ]);
 

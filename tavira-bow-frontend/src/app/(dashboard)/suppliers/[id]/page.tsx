@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PageLoading, ErrorState, AccessManagementPanel } from '@/components/shared'
 import { useSuppliersStore } from '@/stores/suppliers'
 import { useUIStore } from '@/stores/ui'
+import { usePermissions } from '@/hooks/use-permissions'
 import { formatDate, formatCurrency } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -94,6 +95,7 @@ export default function SupplierDetailPage() {
     remove,
   } = useSuppliersStore()
   const { showConfirm } = useUIStore()
+  const { isAdmin } = usePermissions()
   const [newEntity, setNewEntity] = useState('')
   const [isSavingEntities, setIsSavingEntities] = useState(false)
 
@@ -137,9 +139,11 @@ export default function SupplierDetailPage() {
   }
 
   const supplier = selectedItem
-  const totalContracts = contracts.length
-  const activeContracts = contracts.filter(c => (c.status ?? '').toLowerCase() === 'active').length
-  const totalInvoicesAmount = invoices.reduce((sum, inv) => sum + (inv.amount || 0), 0)
+  const safeContracts = Array.isArray(contracts) ? contracts : []
+  const safeInvoices = Array.isArray(invoices) ? invoices : []
+  const totalContracts = safeContracts.length
+  const activeContracts = safeContracts.filter(c => (c.status ?? '').toLowerCase() === 'active').length
+  const totalInvoicesAmount = safeInvoices.reduce((sum, inv) => sum + (inv.amount || 0), 0)
 
   return (
     <>
@@ -154,18 +158,20 @@ export default function SupplierDetailPage() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
           </Button>
-          <div className="flex gap-2">
-            <Button variant="outline" asChild>
-              <Link to={`/suppliers/${id}/edit`}>
-                <Edit className="mr-2 h-4 w-4" />
-                Edit
-              </Link>
-            </Button>
-            <Button variant="destructive" onClick={handleDelete}>
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </Button>
-          </div>
+          {isAdmin && (
+            <div className="flex gap-2">
+              <Button variant="outline" asChild>
+                <Link to={`/suppliers/${id}/edit`}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit
+                </Link>
+              </Button>
+              <Button variant="destructive" onClick={handleDelete}>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Stats cards */}
@@ -204,7 +210,7 @@ export default function SupplierDetailPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Invoices</p>
-                  <p className="text-2xl font-bold">{invoices.length}</p>
+                  <p className="text-2xl font-bold">{safeInvoices.length}</p>
                 </div>
               </div>
             </CardContent>
@@ -229,7 +235,7 @@ export default function SupplierDetailPage() {
             <TabsTrigger value="info">Information</TabsTrigger>
             <TabsTrigger value="entities">Entities ({(supplier as { entities?: { entity: string }[] }).entities?.length ?? 0})</TabsTrigger>
             <TabsTrigger value="contracts">Contracts ({totalContracts})</TabsTrigger>
-            <TabsTrigger value="invoices">Invoices ({invoices.length})</TabsTrigger>
+            <TabsTrigger value="invoices">Invoices ({safeInvoices.length})</TabsTrigger>
             <TabsTrigger value="access">Access</TabsTrigger>
           </TabsList>
 
@@ -427,7 +433,7 @@ export default function SupplierDetailPage() {
                         <Label>Description</Label>
                         <Input value={contractForm.description} onChange={(e) => setContractForm((f) => ({ ...f, description: e.target.value }))} />
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
                           <Label>Start Date</Label>
                           <Input type="date" value={contractForm.start_date} onChange={(e) => setContractForm((f) => ({ ...f, start_date: e.target.value }))} />
@@ -437,7 +443,7 @@ export default function SupplierDetailPage() {
                           <Input type="date" value={contractForm.end_date} onChange={(e) => setContractForm((f) => ({ ...f, end_date: e.target.value }))} />
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
                           <Label>Value</Label>
                           <Input type="number" value={contractForm.value} onChange={(e) => setContractForm((f) => ({ ...f, value: e.target.value }))} />
@@ -479,13 +485,13 @@ export default function SupplierDetailPage() {
                 </Dialog>
               </CardHeader>
               <CardContent>
-                {contracts.length === 0 ? (
+                {safeContracts.length === 0 ? (
                   <p className="py-8 text-center text-muted-foreground">
                     No contracts for this supplier
                   </p>
                 ) : (
                   <div className="space-y-4">
-                    {contracts.map((contract) => (
+                    {safeContracts.map((contract) => (
                       <div
                         key={contract.id}
                         className="flex items-center justify-between rounded-lg border p-4"
@@ -569,7 +575,7 @@ export default function SupplierDetailPage() {
                     <Label>Description</Label>
                     <Input value={contractForm.description} onChange={(e) => setContractForm((f) => ({ ...f, description: e.target.value }))} />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label>Start Date</Label>
                       <Input type="date" value={contractForm.start_date} onChange={(e) => setContractForm((f) => ({ ...f, start_date: e.target.value }))} />
@@ -579,7 +585,7 @@ export default function SupplierDetailPage() {
                       <Input type="date" value={contractForm.end_date} onChange={(e) => setContractForm((f) => ({ ...f, end_date: e.target.value }))} />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label>Value</Label>
                       <Input type="number" value={contractForm.value} onChange={(e) => setContractForm((f) => ({ ...f, value: e.target.value }))} />
@@ -649,7 +655,7 @@ export default function SupplierDetailPage() {
                         <Label>Description</Label>
                         <Input value={invoiceForm.description} onChange={(e) => setInvoiceForm((f) => ({ ...f, description: e.target.value }))} />
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
                           <Label>Amount *</Label>
                           <Input type="number" value={invoiceForm.amount} onChange={(e) => setInvoiceForm((f) => ({ ...f, amount: e.target.value }))} />
@@ -659,7 +665,7 @@ export default function SupplierDetailPage() {
                           <Input value={invoiceForm.currency} onChange={(e) => setInvoiceForm((f) => ({ ...f, currency: e.target.value }))} />
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
                           <Label>Invoice Date</Label>
                           <Input type="date" value={invoiceForm.invoice_date} onChange={(e) => setInvoiceForm((f) => ({ ...f, invoice_date: e.target.value }))} />
@@ -701,13 +707,13 @@ export default function SupplierDetailPage() {
                 </Dialog>
               </CardHeader>
               <CardContent>
-                {invoices.length === 0 ? (
+                {safeInvoices.length === 0 ? (
                   <p className="py-8 text-center text-muted-foreground">
                     No invoices for this supplier
                   </p>
                 ) : (
                   <div className="space-y-4">
-                    {invoices.map((invoice) => {
+                    {safeInvoices.map((invoice) => {
                       const invRef = (invoice as { invoice_ref?: string; invoice_number?: string }).invoice_ref ?? (invoice as { invoice_number?: string }).invoice_number ?? ''
                       return (
                         <div
@@ -809,7 +815,7 @@ export default function SupplierDetailPage() {
                     <Label>Description</Label>
                     <Input value={invoiceForm.description} onChange={(e) => setInvoiceForm((f) => ({ ...f, description: e.target.value }))} />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label>Amount *</Label>
                       <Input type="number" value={invoiceForm.amount} onChange={(e) => setInvoiceForm((f) => ({ ...f, amount: e.target.value }))} />
@@ -819,7 +825,7 @@ export default function SupplierDetailPage() {
                       <Input value={invoiceForm.currency} onChange={(e) => setInvoiceForm((f) => ({ ...f, currency: e.target.value }))} />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label>Invoice Date</Label>
                       <Input type="date" value={invoiceForm.invoice_date} onChange={(e) => setInvoiceForm((f) => ({ ...f, invoice_date: e.target.value }))} />

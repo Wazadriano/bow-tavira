@@ -56,8 +56,9 @@ export function AlertsPanel() {
       try {
         setIsLoading(true)
         const response = await api.get<AlertsResponse>('/dashboard/alerts')
-        setAlerts(response.data.data)
-        setTotal(response.data.total)
+        const raw = response.data?.data ?? response.data
+        setAlerts(Array.isArray(raw) ? raw : [])
+        setTotal(response.data?.total ?? 0)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error loading alerts')
         setAlerts([])

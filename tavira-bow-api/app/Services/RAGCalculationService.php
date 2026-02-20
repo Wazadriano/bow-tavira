@@ -54,17 +54,17 @@ class RAGCalculationService
     public function calculateGovernanceRAG(GovernanceItem $item): RAGStatus
     {
         // Completed items are Blue
-        if ($item->status === CurrentStatus::COMPLETED) {
+        if ($item->current_status === CurrentStatus::COMPLETED) {
             return RAGStatus::BLUE;
         }
 
-        // If no due date, return Green
-        if (! $item->due_date) {
+        // If no deadline, return Green
+        if (! $item->deadline) {
             return RAGStatus::GREEN;
         }
 
         $now = Carbon::now();
-        $dueDate = Carbon::parse($item->due_date);
+        $dueDate = Carbon::parse($item->deadline);
         $daysUntilDue = $now->diffInDays($dueDate, false);
 
         // Past due = Red
@@ -111,7 +111,7 @@ class RAGCalculationService
         $updated = 0;
 
         GovernanceItem::query()
-            ->whereNot('status', 'completed')
+            ->whereNot('current_status', 'completed')
             ->chunk(100, function ($items) use (&$updated) {
                 foreach ($items as $item) {
                     $newRAG = $this->calculateGovernanceRAG($item);
@@ -160,7 +160,7 @@ class RAGCalculationService
 
         return $query->whereIn('rag_status', [RAGStatus::AMBER, RAGStatus::RED])
             ->orderByRaw('CASE WHEN rag_status = ? THEN 1 ELSE 2 END', [RAGStatus::RED->value])
-            ->orderBy($model === 'workitems' ? 'deadline' : 'due_date')
+            ->orderBy('deadline')
             ->limit($limit)
             ->get()
             ->toArray();

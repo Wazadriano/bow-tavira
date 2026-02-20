@@ -47,7 +47,8 @@ export function AreaStats() {
       try {
         setIsLoading(true)
         const response = await api.get<AreaStatsResponse>('/dashboard/by-area')
-        setStats(response.data.data)
+        const raw = response.data?.data ?? response.data
+        setStats(Array.isArray(raw) ? raw : [])
       } catch {
         setStats([])
       } finally {
@@ -93,13 +94,13 @@ export function AreaStats() {
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          {stats.map((stat) => {
+          {(stats ?? []).map((stat) => {
             const TrendIcon = trendIcons[stat.trend]
             const total =
-              stat.rag_distribution.blue +
-              stat.rag_distribution.green +
-              stat.rag_distribution.amber +
-              stat.rag_distribution.red
+              (stat.rag_distribution?.blue ?? 0) +
+              (stat.rag_distribution?.green ?? 0) +
+              (stat.rag_distribution?.amber ?? 0) +
+              (stat.rag_distribution?.red ?? 0)
 
             return (
               <div key={stat.department} className="space-y-2">
@@ -116,32 +117,34 @@ export function AreaStats() {
                 </div>
 
                 {/* RAG Distribution Bar */}
+                {total > 0 && (
                 <div className="flex h-2 overflow-hidden rounded-full bg-muted">
                   <div
                     className="bg-sky-500 transition-all"
                     style={{
-                      width: `${(stat.rag_distribution.blue / total) * 100}%`,
+                      width: `${((stat.rag_distribution?.blue ?? 0) / total) * 100}%`,
                     }}
                   />
                   <div
                     className="bg-green-500 transition-all"
                     style={{
-                      width: `${(stat.rag_distribution.green / total) * 100}%`,
+                      width: `${((stat.rag_distribution?.green ?? 0) / total) * 100}%`,
                     }}
                   />
                   <div
                     className="bg-amber-500 transition-all"
                     style={{
-                      width: `${(stat.rag_distribution.amber / total) * 100}%`,
+                      width: `${((stat.rag_distribution?.amber ?? 0) / total) * 100}%`,
                     }}
                   />
                   <div
                     className="bg-red-500 transition-all"
                     style={{
-                      width: `${(stat.rag_distribution.red / total) * 100}%`,
+                      width: `${((stat.rag_distribution?.red ?? 0) / total) * 100}%`,
                     }}
                   />
                 </div>
+                )}
 
                 {/* Stats row */}
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">

@@ -32,6 +32,7 @@ class ContractExpiryAlertsCommand extends Command
         $totalSent = 0;
 
         foreach ($contracts as $contract) {
+            /** @var SupplierContract $contract */
             $daysUntilExpiry = $contract->days_until_expiry ?? $days;
 
             foreach ($admins as $admin) {
@@ -40,7 +41,7 @@ class ContractExpiryAlertsCommand extends Command
             }
 
             $supplierName = $contract->supplier?->name ?? 'N/A';
-            $this->line("  - [{$contract->contract_ref}] {$supplierName} - expires in {$daysUntilExpiry} days (".$contract->end_date?->toDateString().')');
+            $this->line("  - [{$contract->contract_ref}] {$supplierName} - expires in {$daysUntilExpiry} days (".$contract->end_date->toDateString().')');
         }
 
         $this->info("Contract alerts sent: {$totalSent} notification(s) for {$contracts->count()} contract(s).");

@@ -15,6 +15,8 @@ import { get } from '@/lib/api'
 import { formatDate } from '@/lib/utils'
 import type { GovernanceItem, PaginatedResponse, SettingList } from '@/types'
 import { useGovernanceStore } from '@/stores/governance'
+import { usePermissions } from '@/hooks/use-permissions'
+import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -57,6 +59,9 @@ export default function GovernancePage() {
   const queryClient = useQueryClient()
   const { remove } = useGovernanceStore()
   const { showConfirm } = useUIStore()
+  const { isAdmin } = usePermissions()
+  const user = useAuthStore((state) => state.user)
+  const canCreateAny = isAdmin || (user?.department_permissions ?? []).some((p) => p.can_create_tasks)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [ragFilter, setRagFilter] = useState('all')
@@ -317,12 +322,14 @@ export default function GovernancePage() {
             </Badge>
 
             {/* New Item Button */}
-            <Button asChild>
-              <Link to="/governance/new">
-                <Plus className="mr-2 h-4 w-4" />
-                New Item
-              </Link>
-            </Button>
+            {canCreateAny && (
+              <Button asChild>
+                <Link to="/governance/new">
+                  <Plus className="mr-2 h-4 w-4" />
+                  New Item
+                </Link>
+              </Button>
+            )}
           </div>
 
           {/* Advanced Filters Panel */}
