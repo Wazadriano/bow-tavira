@@ -3,7 +3,6 @@
 use App\Models\Risk;
 use App\Models\RiskCategory;
 use App\Models\RiskTheme;
-use App\Models\RiskThemePermission;
 use App\Models\User;
 use Database\Seeders\RiskThemeSeeder;
 

@@ -26,7 +26,7 @@ interface SettingsState {
   clearError: () => void
 }
 
-export const useSettingsStore = create<SettingsState>((set, get) => ({
+export const useSettingsStore = create<SettingsState>((set) => ({
   // Initial state
   lists: [],
   systemSettings: [],

@@ -24,8 +24,6 @@ export function TeamForm({ team, mode }: TeamFormProps) {
   const {
     register,
     handleSubmit,
-    watch,
-    setValue,
     formState: { errors },
   } = useForm<TeamFormData>({
     resolver: zodResolver(teamSchema),

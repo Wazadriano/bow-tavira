@@ -386,7 +386,7 @@ export const useImportStore = create<ImportState>((set, get) => ({
 
   rejectSuggestion: (sourceValue) => {
     set((state) => {
-      const { [sourceValue]: _, ...rest } = state.userOverrides
+      const { [sourceValue]: _removed, ...rest } = state.userOverrides
       return { userOverrides: rest }
     })
   },

@@ -3,7 +3,6 @@
 use App\Models\GovernanceItem;
 use App\Models\GovernanceItemAccess;
 use App\Models\User;
-use App\Models\UserDepartmentPermission;
 
 beforeEach(function () {
     $this->admin = User::factory()->admin()->create();

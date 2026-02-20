@@ -3,7 +3,6 @@
 use App\Models\TaskAssignment;
 use App\Models\TaskDependency;
 use App\Models\User;
-use App\Models\UserDepartmentPermission;
 use App\Models\WorkItem;
 
 beforeEach(function () {
