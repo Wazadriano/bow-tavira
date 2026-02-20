@@ -61,8 +61,8 @@ export default function PublicDashboardPage() {
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token')
   const [data, setData] = useState<DashboardData | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(!token ? 'No access token provided' : null)
+  const [isLoading, setIsLoading] = useState(!!token)
 
   const ragChartRef = useRef<HTMLDivElement>(null)
   const deptChartRef = useRef<HTMLDivElement>(null)
@@ -82,12 +82,9 @@ export default function PublicDashboardPage() {
   }, [])
 
   useEffect(() => {
-    if (!token) {
-      setError('No access token provided')
-      setIsLoading(false)
-      return
-    }
+    if (!token) return
 
+    setIsLoading(true)
     const baseUrl = import.meta.env.VITE_API_URL || '/api'
     fetch(`${baseUrl}/public/dashboard`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -97,7 +94,7 @@ export default function PublicDashboardPage() {
         return res.json()
       })
       .then((json) => setData(json))
-      .catch((err) => setError(err.message))
+      .catch((err: Error) => setError(err.message))
       .finally(() => setIsLoading(false))
   }, [token])
 
