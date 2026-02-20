@@ -84,7 +84,6 @@ export default function PublicDashboardPage() {
   useEffect(() => {
     if (!token) return
 
-    setIsLoading(true)
     const baseUrl = import.meta.env.VITE_API_URL || '/api'
     fetch(`${baseUrl}/public/dashboard`, {
       headers: { Authorization: `Bearer ${token}` },
